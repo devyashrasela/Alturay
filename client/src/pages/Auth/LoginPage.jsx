@@ -1,12 +1,16 @@
 import { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
+import { AlertCircle } from 'lucide-react';
 import { setCredentials } from '../../store/slices/authSlice';
 import { useLoginMutation } from '../../store/api/authApi';
 import { addToast } from '../../store/slices/uiSlice';
+import { getLoginErrorMessage } from '../../utils/authErrorMessage';
 import Button from '../../components/ui/Button/Button';
 import FormField from '../../components/ui/FormField/FormField';
 import InputField from '../../components/ui/Input/InputField';
+import AuthLayout from '../../components/auth/AuthLayout';
+import PasswordInput from '../../components/auth/PasswordInput';
 
 export default function LoginPage() {
   const dispatch = useDispatch();
@@ -14,10 +18,12 @@ export default function LoginPage() {
   const [login, { isLoading }] = useLoginMutation();
   const [form, setForm] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
+  const [submitError, setSubmitError] = useState('');
 
   const handleChange = (e) => {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
     if (errors[e.target.name]) setErrors((e2) => ({ ...e2, [e.target.name]: '' }));
+    if (submitError) setSubmitError('');
   };
 
   const validate = () => {
@@ -31,74 +37,73 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isLoading) return;
+
+    setSubmitError('');
     if (!validate()) return;
+
     try {
       const result = await login(form).unwrap();
       dispatch(setCredentials(result.data));
       dispatch(addToast({ type: 'success', message: `Welcome back, ${result.data.user.name}!` }));
       navigate('/businesses');
     } catch (err) {
-      const msg = err?.data?.error?.message || 'Login failed. Please try again.';
-      dispatch(addToast({ type: 'error', message: msg }));
+      setSubmitError(getLoginErrorMessage(err));
     }
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        {/* Logo */}
-        <div className="auth-logo" style={{ marginBottom: 32 }}>
-          <img
-            className="auth-logo__icon"
-            src="/alturay_light.png"
-            alt=""
-            width="44"
-            height="44"
-            draggable="false"
+    <AuthLayout
+      title="Welcome Back"
+      subtitle="Enter your email and password to access your account"
+      footer={(
+        <>
+          Don&apos;t have an account?{' '}
+          <Link to="/register" className="auth-panel__link">Sign Up</Link>
+        </>
+      )}
+    >
+      <form className="auth-form" onSubmit={handleSubmit} noValidate>
+        <FormField label="Email" htmlFor="login-email" error={errors.email}>
+          <InputField
+            type="email"
+            name="email"
+            id="login-email"
+            placeholder="Enter your email"
+            value={form.email}
+            onChange={handleChange}
+            error={errors.email}
+            autoComplete="email"
+            required
+            aria-invalid={Boolean(errors.email)}
           />
-          <span className="auth-logo__name">Alturay</span>
-        </div>
+        </FormField>
 
-        <h1 className="auth-card__title">Welcome back</h1>
-        <p className="auth-card__subtitle">Sign in to your account to continue</p>
+        <FormField label="Password" htmlFor="login-password" error={errors.password}>
+          <PasswordInput
+            name="password"
+            id="login-password"
+            placeholder="Enter your password"
+            value={form.password}
+            onChange={handleChange}
+            error={errors.password}
+            autoComplete="current-password"
+            required
+            aria-invalid={Boolean(errors.password)}
+          />
+        </FormField>
 
-        <form className="auth-card__form" onSubmit={handleSubmit}>
-          <FormField label="Email address" required error={errors.email}>
-            <InputField
-              type="email"
-              name="email"
-              id="login-email"
-              placeholder="you@company.com"
-              value={form.email}
-              onChange={handleChange}
-              error={errors.email}
-              autoComplete="email"
-            />
-          </FormField>
+        {submitError && (
+          <div className="auth-alert" role="alert" aria-atomic="true">
+            <AlertCircle className="auth-alert__icon" size={18} aria-hidden="true" />
+            <span>{submitError}</span>
+          </div>
+        )}
 
-          <FormField label="Password" required error={errors.password}>
-            <InputField
-              type="password"
-              name="password"
-              id="login-password"
-              placeholder="Enter your password"
-              value={form.password}
-              onChange={handleChange}
-              error={errors.password}
-              autoComplete="current-password"
-            />
-          </FormField>
-
-          <Button type="submit" variant="primary" size="lg" loading={isLoading} style={{ width: '100%', marginTop: 8 }}>
-            Sign in
-          </Button>
-        </form>
-
-        <div className="auth-card__footer">
-          Don't have an account?{' '}
-          <Link to="/register" className="auth-card__link">Create one</Link>
-        </div>
-      </div>
-    </div>
+        <Button type="submit" className="auth-submit" loading={isLoading}>
+          Sign In
+        </Button>
+      </form>
+    </AuthLayout>
   );
 }

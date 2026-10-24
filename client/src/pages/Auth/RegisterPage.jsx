@@ -7,6 +7,8 @@ import { addToast } from '../../store/slices/uiSlice';
 import Button from '../../components/ui/Button/Button';
 import FormField from '../../components/ui/FormField/FormField';
 import InputField from '../../components/ui/Input/InputField';
+import AuthLayout from '../../components/auth/AuthLayout';
+import PasswordInput from '../../components/auth/PasswordInput';
 
 export default function RegisterPage() {
   const dispatch = useDispatch();
@@ -33,6 +35,7 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isLoading) return;
     if (!validate()) return;
     try {
       const result = await register(form).unwrap();
@@ -49,43 +52,70 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="auth-page">
-      <div className="auth-card">
-        <div className="auth-logo" style={{ marginBottom: 32 }}>
-          <img
-            className="auth-logo__icon"
-            src="/alturay_light.png"
-            alt=""
-            width="44"
-            height="44"
-            draggable="false"
-          />
-          <span className="auth-logo__name">Alturay</span>
-        </div>
-
-        <h1 className="auth-card__title">Create your account</h1>
-        <p className="auth-card__subtitle">Start managing your business for free</p>
-
-        <form className="auth-card__form" onSubmit={handleSubmit}>
-          <FormField label="Full name" required error={errors.name}>
-            <InputField type="text" name="name" id="register-name" placeholder="Your full name" value={form.name} onChange={handleChange} error={errors.name} autoComplete="name" />
-          </FormField>
-          <FormField label="Email address" required error={errors.email}>
-            <InputField type="email" name="email" id="register-email" placeholder="you@company.com" value={form.email} onChange={handleChange} error={errors.email} autoComplete="email" />
-          </FormField>
-          <FormField label="Password" required helper="Minimum 8 characters" error={errors.password}>
-            <InputField type="password" name="password" id="register-password" placeholder="Choose a strong password" value={form.password} onChange={handleChange} error={errors.password} autoComplete="new-password" />
-          </FormField>
-          <Button type="submit" variant="primary" size="lg" loading={isLoading} style={{ width: '100%', marginTop: 8 }}>
-            Create account
-          </Button>
-        </form>
-
-        <div className="auth-card__footer">
+    <AuthLayout
+      title="Create Account"
+      subtitle="Sign up to get started with Alturay"
+      footer={(
+        <>
           Already have an account?{' '}
-          <Link to="/login" className="auth-card__link">Sign in</Link>
-        </div>
-      </div>
-    </div>
+          <Link to="/login" className="auth-panel__link">Sign In</Link>
+        </>
+      )}
+    >
+      <form className="auth-form" onSubmit={handleSubmit} noValidate>
+        <FormField label="Full Name" htmlFor="register-name" error={errors.name}>
+          <InputField
+            type="text"
+            name="name"
+            id="register-name"
+            placeholder="Enter your full name"
+            value={form.name}
+            onChange={handleChange}
+            error={errors.name}
+            autoComplete="name"
+            required
+            aria-invalid={Boolean(errors.name)}
+          />
+        </FormField>
+
+        <FormField label="Email" htmlFor="register-email" error={errors.email}>
+          <InputField
+            type="email"
+            name="email"
+            id="register-email"
+            placeholder="Enter your email"
+            value={form.email}
+            onChange={handleChange}
+            error={errors.email}
+            autoComplete="email"
+            required
+            aria-invalid={Boolean(errors.email)}
+          />
+        </FormField>
+
+        <FormField
+          label="Password"
+          htmlFor="register-password"
+          helper="Minimum 8 characters"
+          error={errors.password}
+        >
+          <PasswordInput
+            name="password"
+            id="register-password"
+            placeholder="Create a password"
+            value={form.password}
+            onChange={handleChange}
+            error={errors.password}
+            autoComplete="new-password"
+            required
+            aria-invalid={Boolean(errors.password)}
+          />
+        </FormField>
+
+        <Button type="submit" className="auth-submit" loading={isLoading}>
+          Create Account
+        </Button>
+      </form>
+    </AuthLayout>
   );
 }
