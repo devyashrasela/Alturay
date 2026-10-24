@@ -2,24 +2,19 @@ import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import {
-  Search,
   Bell,
   Menu,
-  Plus,
   CheckCircle2,
   Clock3,
   FileText,
-  Building2,
-  Settings as SettingsIcon,
-  LogOut,
   ChevronRight,
 } from 'lucide-react';
 import { toggleSidebar } from '../../store/slices/uiSlice';
-import { logout } from '../../store/slices/authSlice';
 import { useGetRecentInvoicesQuery } from '../../store/api/dashboardApi';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatDate } from '../../utils/formatDate';
 import { isOverdue } from '../../utils/invoiceStatus';
+import WorkspaceSwitcher from './WorkspaceSwitcher';
 
 const pageTitles = {
   '/dashboard': 'Dashboard',
@@ -30,27 +25,17 @@ const pageTitles = {
   '/businesses': 'Your Businesses',
 };
 
-// Route-specific primary action surfaced in the header
-const CONTEXT_ACTIONS = {
-  '/dashboard': { id: 'create-invoice-btn', label: 'New Invoice', path: '/invoices/new?type=invoice' },
-  '/invoices': { id: 'create-invoice-btn', label: 'New Invoice', path: '/invoices/new?type=invoice' },
-};
-
 export default function Header() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useSelector((state) => state.auth);
   const { activeBusinessId, activeBusiness } = useSelector((state) => state.business);
 
-  const [openMenu, setOpenMenu] = useState(null); // 'search' | 'notifications' | 'profile'
-  const [searchValue, setSearchValue] = useState('');
+  const [openMenu, setOpenMenu] = useState(null); // 'notifications'
   const headerRef = useRef(null);
 
   const { data: recentData } = useGetRecentInvoicesQuery(activeBusinessId, { skip: !activeBusinessId });
   const recent = recentData?.data?.invoices || [];
-
-  const action = CONTEXT_ACTIONS[location.pathname];
 
   // Notifications: outstanding invoices (issued / overdue), most relevant first
   const outstanding = recent.filter((inv) => inv.type === 'invoice' && inv.status === 'issued');
@@ -64,10 +49,6 @@ export default function Header() {
   const staticTitle = pageTitles[location.pathname];
   const pageTitle =
     staticTitle || (/^\/invoices\/[^/]+$/.test(location.pathname) ? 'Invoice Details' : 'Alturay');
-
-  const initials = user?.name
-    ? user.name.split(' ').map((n) => n[0]).join('').toUpperCase().slice(0, 2)
-    : 'U';
 
   // Global menu behavior: outside click + Escape
   useEffect(() => {
@@ -93,20 +74,6 @@ export default function Header() {
     setOpenMenu(null);
   }
 
-  const handleSearchSubmit = (e) => {
-    e.preventDefault();
-    const q = searchValue.trim();
-    if (!q) return;
-    navigate(`/invoices?search=${encodeURIComponent(q)}`);
-    setOpenMenu(null);
-    setSearchValue('');
-  };
-
-  const handleLogout = () => {
-    dispatch(logout());
-    navigate('/login');
-  };
-
   const toggleMenu = (menu) => setOpenMenu((open) => (open === menu ? null : menu));
 
   return (
@@ -126,41 +93,6 @@ export default function Header() {
         </div>
 
         <div className="header__right">
-          {action && (
-            <button
-              type="button"
-              className="btn btn--primary btn--sm header__icon-btn--desktop"
-              id={action.id}
-              onClick={() => navigate(action.path)}
-            >
-              <Plus size={16} />
-              {action.label}
-            </button>
-          )}
-
-          {/* Expanding search */}
-          {openMenu === 'search' ? (
-            <form className="header__search-field" onSubmit={handleSearchSubmit}>
-              <Search size={16} color="var(--color-text-muted)" />
-              <input
-                autoFocus
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                placeholder={`Search invoices...`}
-                onKeyDown={(e) => { if (e.key === 'Escape') setOpenMenu(null); }}
-              />
-            </form>
-          ) : (
-            <button
-              type="button"
-              className="header__icon-btn header__icon-btn--desktop"
-              onClick={() => toggleMenu('search')}
-              aria-label="Search invoices"
-            >
-              <Search size={18} />
-            </button>
-          )}
-
           {/* Notifications */}
           <div className="header__menu-anchor">
             <button
@@ -232,67 +164,7 @@ export default function Header() {
             )}
           </div>
 
-          {/* Profile */}
-          <div className="header__menu-anchor">
-            <button
-              type="button"
-              className="header__avatar"
-              onClick={() => toggleMenu('profile')}
-              aria-label="Open profile menu"
-            >
-              {initials}
-            </button>
-
-            {openMenu === 'profile' && (
-              <div className="header__menu header__menu--sm" role="dialog">
-                <div className="header__profile-head">
-                  <div className="header__profile-avatar">{initials}</div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div className="header__profile-name">{user?.name}</div>
-                    <div className="header__profile-email">{user?.email}</div>
-                  </div>
-                </div>
-                <div className="header__menu-list">
-                  <button
-                    type="button"
-                    className="header__menu-item"
-                    onClick={() => { setOpenMenu(null); navigate('/businesses'); }}
-                  >
-                    <div className="icon-tile icon-tile--orange" style={{ width: 32, height: 32 }}>
-                      <Building2 size={16} />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 500 }}>Your businesses</div>
-                      <div className="header__menu-sub">Switch or add a business</div>
-                    </div>
-                  </button>
-                  <button
-                    type="button"
-                    className="header__menu-item"
-                    onClick={() => { setOpenMenu(null); navigate('/settings'); }}
-                  >
-                    <div className="icon-tile icon-tile--blue" style={{ width: 32, height: 32 }}>
-                      <SettingsIcon size={16} />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 500 }}>Business settings</div>
-                      <div className="header__menu-sub">Profile, tax and currency</div>
-                    </div>
-                  </button>
-                  <div className="header__menu-divider" />
-                  <button
-                    type="button"
-                    className="header__menu-item header__menu-item--danger"
-                    onClick={handleLogout}
-                    id="header-logout-btn"
-                  >
-                    <LogOut size={16} />
-                    <span style={{ fontWeight: 500 }}>Log out</span>
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
+          <WorkspaceSwitcher onOpen={() => setOpenMenu(null)} />
         </div>
       </header>
     </div>

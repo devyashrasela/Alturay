@@ -1,15 +1,35 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/x-icon" href="/favicon_light.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Alturay — multi-business invoicing, billing and product management in one organized workspace." />
-    <meta name="theme-color" content="#121212" />
-    <title>Alturay — Business Management System</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/x-icon" href="/favicon_light.ico" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="Alturay — multi-business invoicing, billing and product management in one organized workspace." />
+  <meta name="theme-color" content="#121212" />
+  <script>
+    // Apply the saved theme before first paint so there is no flash.
+    (function () {
+      var theme = 'dark';
+      try {
+        var saved = localStorage.getItem('alturay_theme');
+        if (saved === 'light' || saved === 'dark') theme = saved;
+        else localStorage.setItem('alturay_theme', theme);
+      } catch (error) {
+        // Storage can be unavailable; default to dark.
+      }
+      document.documentElement.setAttribute('data-theme', theme);
+      var meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.setAttribute('content', theme === 'light' ? '#F7F7F8' : '#121212');
+    })();
+  </script>
+  <title>Alturay</title>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
+
 </html>

@@ -16,6 +16,8 @@ const InvoicesPage        = lazy(() => import('./pages/Invoices/InvoicesPage'));
 const CreateInvoicePage   = lazy(() => import('./pages/Invoices/CreateInvoicePage'));
 const InvoiceDetailPage   = lazy(() => import('./pages/Invoices/InvoiceDetailPage'));
 const BusinessSettingsPage = lazy(() => import('./pages/Settings/BusinessSettingsPage'));
+const PersonalizationPage = lazy(() => import('./pages/Settings/PersonalizationPage'));
+const UserSettingsLayout  = lazy(() => import('./components/settings/UserSettingsLayout'));
 
 function App() {
   return (
@@ -34,6 +36,11 @@ function App() {
 
             {/* Fully protected (auth + business) */}
             <Route element={<ProtectedRoute requireBusiness={true} />}>
+              {/* User-level settings use their own shell, not the workspace sidebar */}
+              <Route path="/settings/personalization" element={<UserSettingsLayout />}>
+                <Route index element={<PersonalizationPage />} />
+              </Route>
+
               <Route element={<AppLayout />}>
                 <Route path="/dashboard"       element={<DashboardPage />} />
                 <Route path="/products"        element={<ProductsPage />} />
