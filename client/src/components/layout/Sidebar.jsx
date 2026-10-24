@@ -1,4 +1,4 @@
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   LayoutDashboard,
@@ -7,16 +7,17 @@ import {
   Settings,
   ChevronDown,
   Plus,
-  Building2,
-  ChevronsLeft,
-  ChevronsRight,
+  PanelLeftClose,
+  PanelLeftOpen,
   LogOut,
+  Check,
+  X,
 } from 'lucide-react';
-import { toggleSidebar } from '../../store/slices/uiSlice';
+import { useEffect, useRef, useState } from 'react';
+import { toggleSidebar, setSidebarOpen } from '../../store/slices/uiSlice';
 import { setActiveBusiness } from '../../store/slices/businessSlice';
 import { logout } from '../../store/slices/authSlice';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { businessAccent } from '../../utils/businessAccent';
 
 const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -25,13 +26,48 @@ const navItems = [
   { path: '/settings', label: 'Settings', icon: Settings },
 ];
 
+// Track the mobile breakpoint so the drawer always renders fully expanded
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(() => window.matchMedia('(max-width: 768px)').matches);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)');
+    const onChange = (e) => setIsMobile(e.matches);
+    mq.addEventListener('change', onChange);
+    return () => mq.removeEventListener('change', onChange);
+  }, []);
+  return isMobile;
+};
+
 export default function Sidebar() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const location = useLocation();
+  const isMobile = useIsMobile();
   const { sidebarOpen } = useSelector((state) => state.ui);
   const { activeBusiness, businesses } = useSelector((state) => state.business);
   const [bizDropdownOpen, setBizDropdownOpen] = useState(false);
+  const switcherRef = useRef(null);
+
+  const expanded = isMobile || sidebarOpen;
+  const collapsed = !expanded;
+
+  // Close the switcher on outside click / Escape
+  useEffect(() => {
+    if (!bizDropdownOpen) return undefined;
+    const handlePointer = (e) => {
+      if (switcherRef.current && !switcherRef.current.contains(e.target)) {
+        setBizDropdownOpen(false);
+      }
+    };
+    const handleKey = (e) => {
+      if (e.key === 'Escape') setBizDropdownOpen(false);
+    };
+    document.addEventListener('mousedown', handlePointer);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('mousedown', handlePointer);
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, [bizDropdownOpen]);
 
   const handleSwitchBusiness = (biz) => {
     dispatch(setActiveBusiness(biz));
@@ -45,32 +81,57 @@ export default function Sidebar() {
   };
 
   return (
-    <div className={`app-layout__sidebar ${!sidebarOpen ? 'app-layout__sidebar--collapsed' : ''}`}>
-      <aside className="sidebar">
-        {/* Logo */}
-        <div className="sidebar__logo">
-          <div className="sidebar__logo-icon">A</div>
-          {sidebarOpen && <span className="sidebar__logo-text">Alturay</span>}
+    <div
+      className={`app-layout__sidebar ${collapsed ? 'app-layout__sidebar--collapsed' : ''} ${isMobile && sidebarOpen ? 'app-layout__sidebar--open' : ''}`}
+    >
+      <aside className={`sidebar ${collapsed ? 'sidebar--collapsed' : ''}`}>
+        {/* Brand + collapse/close control */}
+        <div className="sidebar__brand">
+          <div className="sidebar__logo">
+            <img
+              className="sidebar__logo-icon"
+              src="/alturay_light.png"
+              alt=""
+              width="32"
+              height="32"
+              draggable="false"
+            />
+            {expanded && <span className="sidebar__brand-text">Alturay</span>}
+          </div>
+          {expanded ? (
+            <button
+              type="button"
+              className="sidebar__collapse"
+              onClick={() => dispatch(isMobile ? setSidebarOpen(false) : toggleSidebar())}
+              title={isMobile ? 'Close menu' : 'Collapse sidebar'}
+              aria-label={isMobile ? 'Close menu' : 'Collapse sidebar'}
+            >
+              {isMobile ? <X size={18} /> : <PanelLeftClose size={18} />}
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="sidebar__expand"
+              onClick={() => dispatch(toggleSidebar())}
+              title="Expand sidebar"
+              aria-label="Expand sidebar"
+            >
+              <PanelLeftOpen size={18} />
+            </button>
+          )}
         </div>
 
-        {/* Collapse toggle */}
-        <button
-          className="sidebar__item"
-          onClick={() => dispatch(toggleSidebar())}
-          style={{ marginBottom: '8px' }}
-        >
-          {sidebarOpen ? <ChevronsLeft size={20} /> : <ChevronsRight size={20} />}
-          {sidebarOpen && <span>Collapse</span>}
-        </button>
-
-        {/* Business Switcher */}
-        {sidebarOpen && activeBusiness && (
-          <div className="biz-switcher" style={{ marginBottom: '16px' }}>
+        {/* Business switcher */}
+        {activeBusiness && (
+          <div className="biz-switcher" ref={switcherRef} style={{ marginBottom: '16px' }}>
             <button
+              type="button"
               className="biz-switcher__trigger"
               onClick={() => setBizDropdownOpen(!bizDropdownOpen)}
+              aria-haspopup="listbox"
+              aria-expanded={bizDropdownOpen}
             >
-              <div className="biz-switcher__icon">
+              <div className={`biz-switcher__icon ${businessAccent(activeBusiness.name)}`}>
                 {activeBusiness.name?.charAt(0)?.toUpperCase()}
               </div>
               <div className="biz-switcher__info">
@@ -81,22 +142,29 @@ export default function Sidebar() {
             </button>
 
             {bizDropdownOpen && (
-              <div className="biz-switcher__dropdown">
+              <div
+                className={`biz-switcher__dropdown ${collapsed ? 'biz-switcher__dropdown--floating' : ''}`}
+                role="listbox"
+              >
                 {businesses.map((biz) => (
                   <button
+                    type="button"
                     key={biz.id}
                     className={`biz-switcher__option ${biz.id === activeBusiness.id ? 'biz-switcher__option--active' : ''}`}
                     onClick={() => handleSwitchBusiness(biz)}
                   >
-                    <div className="biz-switcher__icon">
+                    <div className={`biz-switcher__icon ${businessAccent(biz.name)}`}>
                       {biz.name?.charAt(0)?.toUpperCase()}
                     </div>
                     <div className="biz-switcher__info">
                       <div className="biz-switcher__name">{biz.name}</div>
+                      <div className="biz-switcher__role">{biz.role || 'Owner'}</div>
                     </div>
+                    {biz.id === activeBusiness.id && <Check size={16} className="biz-switcher__check" />}
                   </button>
                 ))}
                 <button
+                  type="button"
                   className="biz-switcher__add"
                   onClick={() => { setBizDropdownOpen(false); navigate('/businesses'); }}
                 >
@@ -110,9 +178,7 @@ export default function Sidebar() {
 
         {/* Navigation */}
         <nav className="sidebar__nav">
-          <div className="sidebar__section-title">
-            {sidebarOpen ? 'Menu' : ''}
-          </div>
+          <div className="sidebar__section-title">Menu</div>
           {navItems.map((item) => (
             <NavLink
               key={item.path}
@@ -122,16 +188,16 @@ export default function Sidebar() {
               }
             >
               <item.icon size={20} className="sidebar__item-icon" />
-              {sidebarOpen && <span>{item.label}</span>}
+              {expanded && <span>{item.label}</span>}
             </NavLink>
           ))}
         </nav>
 
         {/* Footer */}
         <div className="sidebar__footer">
-          <button className="sidebar__item" onClick={handleLogout}>
+          <button type="button" className="sidebar__item" onClick={handleLogout}>
             <LogOut size={20} className="sidebar__item-icon" />
-            {sidebarOpen && <span>Logout</span>}
+            {expanded && <span>Log out</span>}
           </button>
         </div>
       </aside>

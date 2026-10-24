@@ -35,20 +35,22 @@ export default function BusinessSettingsPage() {
   };
 
   return (
-    <div style={{ maxWidth: 640 }}>
-      <div style={{ marginBottom: 24 }}>
-        <h2 style={{ fontSize: 22, fontWeight: 600 }}>Business Settings</h2>
-        <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginTop: 4 }}>
-          Update your business profile and billing details.
-        </p>
+    <div className="settings-page">
+      <div className="page-header">
+        <div>
+          <h2 className="page-header__title">Business Settings</h2>
+          <p className="page-header__sub">
+            Update your business profile and billing details.
+          </p>
+        </div>
       </div>
 
       <Card>
-        <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+        <form onSubmit={handleSave} className="settings-form">
           <FormField label="Business name" required>
             <InputField id="s-name" value={form.name} onChange={setField('name')} placeholder="Business name" />
           </FormField>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div className="form-grid-2">
             <FormField label="Email">
               <InputField id="s-email" type="email" value={form.email} onChange={setField('email')} placeholder="contact@business.com" />
             </FormField>
@@ -65,7 +67,7 @@ export default function BusinessSettingsPage() {
           <FormField label="Default currency">
             <InputField id="s-currency" value={form.currency} onChange={setField('currency')} placeholder="INR" />
           </FormField>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: 8 }}>
+          <div className="settings-form__actions">
             <Button type="submit" variant="primary" size="md" loading={isLoading} id="save-settings-btn">
               Save Changes
             </Button>

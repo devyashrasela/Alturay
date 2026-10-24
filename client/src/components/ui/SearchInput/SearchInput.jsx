@@ -1,19 +1,25 @@
 import { Search, X } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
-export default function SearchInput({ value, onChange, placeholder = 'Search...', className = '' }) {
+export default function SearchInput({ value, onChange, placeholder = 'Search...', className = '', style }) {
   const [internal, setInternal] = useState(value || '');
+
+  // Keep the latest callback in a ref so the debounce effect doesn't need it as a dependency
+  const onChangeRef = useRef(onChange);
+  useEffect(() => {
+    onChangeRef.current = onChange;
+  }, [onChange]);
 
   // Debounce
   useEffect(() => {
-    const t = setTimeout(() => onChange(internal), 300);
+    const t = setTimeout(() => onChangeRef.current(internal), 300);
     return () => clearTimeout(t);
   }, [internal]);
 
   useEffect(() => { setInternal(value || ''); }, [value]);
 
   return (
-    <div className={`search-input ${className}`}>
+    <div className={`search-input ${className}`} style={style}>
       <Search size={16} className="search-input__icon" />
       <input
         className="search-input__input"
@@ -22,7 +28,7 @@ export default function SearchInput({ value, onChange, placeholder = 'Search...'
         onChange={(e) => setInternal(e.target.value)}
       />
       {internal && (
-        <button className="search-input__clear" onClick={() => { setInternal(''); onChange(''); }}>
+        <button className="search-input__clear" onClick={() => { setInternal(''); onChangeRef.current(''); }}>
           <X size={14} />
         </button>
       )}

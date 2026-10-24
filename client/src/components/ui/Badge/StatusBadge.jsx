@@ -4,6 +4,7 @@ const STATUS_MAP = {
   draft:     { variant: 'default', label: 'Draft' },
   cancelled: { variant: 'danger',  label: 'Cancelled' },
   pending:   { variant: 'warning', label: 'Pending' },
+  overdue:   { variant: 'danger',  label: 'Overdue' },
   active:    { variant: 'success', label: 'Active' },
   inactive:  { variant: 'default', label: 'Inactive' },
 };

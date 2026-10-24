@@ -9,8 +9,12 @@ const getInitialTheme = () => {
   return 'light';
 };
 
+const initialTheme = getInitialTheme();
+// Apply immediately to the document so the first paint matches the theme state
+document.documentElement.setAttribute('data-theme', initialTheme === 'light' ? '' : initialTheme);
+
 const initialState = {
-  currentTheme: getInitialTheme(),
+  currentTheme: initialTheme,
 };
 
 const themeSlice = createSlice({

@@ -19,10 +19,10 @@ function ToastItem({ toast }) {
   }, [toast.id, dispatch]);
 
   return (
-    <div className={`toast toast--${toast.type}`}>
+    <div className={`toast toast--${toast.type}`} role="status">
       {icons[toast.type]}
       <span className="toast__message">{toast.message}</span>
-      <button className="toast__close" onClick={() => dispatch(removeToast(toast.id))}>
+      <button type="button" className="toast__close" aria-label="Dismiss notification" onClick={() => dispatch(removeToast(toast.id))}>
         <X size={16} />
       </button>
     </div>

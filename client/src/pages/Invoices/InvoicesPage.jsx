@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Plus, FileText } from 'lucide-react';
 import { useGetInvoicesQuery } from '../../store/api/invoiceApi';
 import Card from '../../components/ui/Card/Card';
@@ -13,6 +13,7 @@ import EmptyState from '../../components/ui/EmptyState/EmptyState';
 import { PageLoader } from '../../components/ui/Loader/Spinner';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatDate } from '../../utils/formatDate';
+import { effectiveStatus } from '../../utils/invoiceStatus';
 
 const tabs = [
   { value: '', label: 'All' },
@@ -22,10 +23,18 @@ const tabs = [
 
 export default function InvoicesPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { activeBusinessId, activeBusiness } = useSelector((s) => s.business);
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(searchParams.get('search') || '');
   const [typeFilter, setTypeFilter] = useState('');
+
+  // Sync when the header search navigates here with ?search=
+  const [lastParams, setLastParams] = useState(searchParams);
+  if (searchParams !== lastParams) {
+    setLastParams(searchParams);
+    setSearch(searchParams.get('search') || '');
+  }
 
   const { data, isLoading } = useGetInvoicesQuery(
     { businessId: activeBusinessId, page, search, type: typeFilter },
@@ -37,14 +46,14 @@ export default function InvoicesPage() {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+      <div className="page-header">
         <div>
-          <h2 style={{ fontSize: 22, fontWeight: 600 }}>Invoices & Bills</h2>
-          <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginTop: 4 }}>
+          <h2 className="page-header__title">Invoices & Bills</h2>
+          <p className="page-header__sub">
             Manage and track all your billing for {activeBusiness?.name}
           </p>
         </div>
-        <div style={{ display: 'flex', gap: 12 }}>
+        <div className="page-header__actions">
           <Button variant="secondary" size="md" id="new-bill-btn" onClick={() => navigate('/invoices/new?type=bill')}>
             <Plus size={16} /> New Bill
           </Button>
@@ -56,19 +65,18 @@ export default function InvoicesPage() {
 
       <Card>
         {/* Filters row */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16, flexWrap: 'wrap' }}>
+        <div className="card-toolbar">
           <Tabs
             tabs={tabs}
             activeTab={typeFilter}
             onChange={(v) => { setTypeFilter(v); setPage(1); }}
           />
-          <div style={{ marginLeft: 'auto' }}>
+          <div className="card-toolbar__end">
             <SearchInput
+              className="invoice-search"
               value={search}
               onChange={(v) => { setSearch(v); setPage(1); }}
               placeholder="Search invoices..."
-              className=""
-              style={{ width: 240 }}
             />
           </div>
         </div>
@@ -83,7 +91,7 @@ export default function InvoicesPage() {
           />
         ) : (
           <>
-            <div style={{ overflowX: 'auto' }}>
+            <div className="table-flush-x table-scroll">
               <table className="data-table">
                 <thead>
                   <tr>
@@ -100,18 +108,18 @@ export default function InvoicesPage() {
                   {invoices.map((inv) => (
                     <tr
                       key={inv.id}
-                      style={{ cursor: 'pointer' }}
+                      className="table-row-link"
                       onClick={() => navigate(`/invoices/${inv.id}`)}
                     >
-                      <td style={{ fontWeight: 600, color: 'var(--color-primary)' }}>{inv.invoice_number}</td>
-                      <td style={{ textTransform: 'capitalize', color: 'var(--color-text-secondary)' }}>{inv.type}</td>
+                      <td className="table-link">{inv.invoice_number}</td>
+                      <td className="table-type">{inv.type}</td>
                       <td>{inv.customer_name}</td>
-                      <td style={{ color: 'var(--color-text-secondary)' }}>{formatDate(inv.issue_date)}</td>
-                      <td style={{ color: 'var(--color-text-secondary)' }}>{formatDate(inv.due_date)}</td>
-                      <td style={{ textAlign: 'right', fontWeight: 600 }}>
+                      <td className="table-date">{formatDate(inv.issue_date)}</td>
+                      <td className="table-date">{formatDate(inv.due_date)}</td>
+                      <td className="num" style={{ textAlign: 'right', fontWeight: 600 }}>
                         {formatCurrency(inv.total_amount, activeBusiness?.currency)}
                       </td>
-                      <td><StatusBadge status={inv.status} /></td>
+                      <td><StatusBadge status={effectiveStatus(inv)} /></td>
                     </tr>
                   ))}
                 </tbody>

@@ -20,8 +20,18 @@ export default function LoginPage() {
     if (errors[e.target.name]) setErrors((e2) => ({ ...e2, [e.target.name]: '' }));
   };
 
+  const validate = () => {
+    const next = {};
+    if (!form.email.trim()) next.email = 'Email is required.';
+    else if (!/^\S+@\S+\.\S+$/.test(form.email)) next.email = 'Enter a valid email address.';
+    if (!form.password) next.password = 'Password is required.';
+    setErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validate()) return;
     try {
       const result = await login(form).unwrap();
       dispatch(setCredentials(result.data));
@@ -37,11 +47,16 @@ export default function LoginPage() {
     <div className="auth-page">
       <div className="auth-card">
         {/* Logo */}
-        <div className="auth-card__logo">
-          <div style={{ width: 44, height: 44, background: 'var(--color-primary)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 700, fontSize: 22 }}>
-            A
-          </div>
-          <span style={{ fontSize: 26, fontWeight: 700, color: 'var(--color-text-primary)' }}>Alturay</span>
+        <div className="auth-logo" style={{ marginBottom: 32 }}>
+          <img
+            className="auth-logo__icon"
+            src="/alturay_light.png"
+            alt=""
+            width="44"
+            height="44"
+            draggable="false"
+          />
+          <span className="auth-logo__name">Alturay</span>
         </div>
 
         <h1 className="auth-card__title">Welcome back</h1>

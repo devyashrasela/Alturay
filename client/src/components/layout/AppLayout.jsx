@@ -1,19 +1,20 @@
 import { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import Toast from '../ui/Toast/Toast';
 import { useGetMeQuery } from '../../store/api/authApi';
 import { setUser } from '../../store/slices/authSlice';
 import { setBusinesses, setActiveBusiness } from '../../store/slices/businessSlice';
+import { setSidebarOpen } from '../../store/slices/uiSlice';
 
 export default function AppLayout() {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
+  const location = useLocation();
   const { sidebarOpen } = useSelector((state) => state.ui);
   const { isAuthenticated } = useSelector((state) => state.auth);
-  const { activeBusinessId, businesses } = useSelector((state) => state.business);
+  const { activeBusinessId } = useSelector((state) => state.business);
 
   const { data: meData } = useGetMeQuery(undefined, {
     skip: !isAuthenticated,
@@ -35,11 +36,24 @@ export default function AppLayout() {
         }
       }
     }
-  }, [meData]);
+  }, [meData, dispatch, activeBusinessId]);
+
+  // Close the mobile drawer after navigating
+  useEffect(() => {
+    if (window.matchMedia('(max-width: 768px)').matches) {
+      dispatch(setSidebarOpen(false));
+    }
+  }, [location.pathname, dispatch]);
 
   return (
     <div className="app-layout">
       <Sidebar />
+      <button
+        type="button"
+        aria-label="Close navigation"
+        onClick={() => dispatch(setSidebarOpen(false))}
+        className={`app-layout__overlay ${sidebarOpen ? 'app-layout__overlay--visible' : ''}`}
+      />
       <div className={`app-layout__main ${!sidebarOpen ? 'app-layout__main--sidebar-collapsed' : ''}`}>
         <Header />
         <main className="app-layout__content">

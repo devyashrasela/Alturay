@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Plus, Trash2 } from 'lucide-react';
@@ -83,21 +83,23 @@ export default function CreateInvoicePage() {
   const typeLabel = form.type === 'invoice' ? 'Invoice' : 'Bill';
 
   return (
-    <div style={{ maxWidth: 900, margin: '0 auto' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+    <div className="create-inv">
+      <div className="page-header">
         <div>
-          <h2 style={{ fontSize: 22, fontWeight: 600 }}>Create {typeLabel}</h2>
-          <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginTop: 4 }}>for {activeBusiness?.name}</p>
+          <h2 className="page-header__title">Create {typeLabel}</h2>
+          <p className="page-header__sub">for {activeBusiness?.name}</p>
         </div>
-        <Button variant="secondary" size="md" onClick={() => navigate('/invoices')}>Cancel</Button>
+        <div className="page-header__actions">
+          <Button variant="secondary" size="md" onClick={() => navigate('/invoices')}>Cancel</Button>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 20 }}>
+        <div className="create-inv__cols">
           {/* Left: Invoice Meta */}
           <Card>
-            <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 16 }}>{typeLabel} Details</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <h3 className="form-section__title">{typeLabel} Details</h3>
+            <div className="form-stack">
               <FormField label="Type">
                 <SelectDropdown id="inv-type" value={form.type} onChange={setField('type')}>
                   <option value="invoice">Invoice</option>
@@ -118,8 +120,8 @@ export default function CreateInvoicePage() {
 
           {/* Right: Customer */}
           <Card>
-            <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 16 }}>Customer Details</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <h3 className="form-section__title">Customer Details</h3>
+            <div className="form-stack">
               <FormField label="Customer name" required>
                 <InputField id="cust-name" placeholder="Full name" value={form.customer_name} onChange={setField('customer_name')} />
               </FormField>
@@ -131,42 +133,57 @@ export default function CreateInvoicePage() {
         </div>
 
         {/* Line Items */}
-        <Card style={{ marginBottom: 20 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <h3 style={{ fontSize: 15, fontWeight: 600 }}>Line Items</h3>
+        <Card className="create-inv__card">
+          <div className="create-inv__items-head">
+            <h3 className="form-section__title" style={{ marginBottom: 0 }}>Line Items</h3>
             <Button type="button" variant="outline-primary" size="sm" onClick={addItem}>
               <Plus size={14} /> Add Item
             </Button>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {/* Header row */}
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 80px 80px 80px 80px 40px', gap: 8, paddingBottom: 8, borderBottom: '1px solid var(--color-border)' }}>
+          <div className="create-inv__item-list">
+            {/* Header row (desktop only) */}
+            <div className="inv-item-grid inv-item-grid--head">
               {['Item / Product', 'Price', 'Qty', 'Disc %', 'Tax %', 'Total', ''].map((h, i) => (
-                <span key={i} style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-secondary)', textTransform: 'uppercase' }}>{h}</span>
+                <span key={i} className="section-label">{h}</span>
               ))}
             </div>
 
             {items.map((item, i) => {
               const calc = totals.items[i] || {};
               return (
-                <div key={i} style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 80px 80px 80px 80px 40px', gap: 8, alignItems: 'center' }}>
+                <div className="inv-item-grid" key={i}>
                   {/* Product picker + name */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    <SelectDropdown value={item.product_id || ''} onChange={(e) => selectProduct(i, e.target.value)} style={{ height: 32, fontSize: 12 }}>
+                    <SelectDropdown value={item.product_id || ''} onChange={(e) => selectProduct(i, e.target.value)} style={{ height: 32, fontSize: 12, fontWeight: 400 }}>
                       <option value="">Custom item...</option>
                       {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                     </SelectDropdown>
                     <InputField placeholder="Item name" value={item.item_name} onChange={setItemField(i, 'item_name')} style={{ height: 32, fontSize: 13 }} />
                   </div>
-                  <InputField type="number" placeholder="0" value={item.unit_price} onChange={setItemField(i, 'unit_price')} style={{ height: 36, fontSize: 13 }} />
-                  <InputField type="number" min="1" value={item.quantity} onChange={setItemField(i, 'quantity')} style={{ height: 36, fontSize: 13 }} />
-                  <InputField type="number" min="0" max="100" value={item.item_discount_percent} onChange={setItemField(i, 'item_discount_percent')} style={{ height: 36, fontSize: 13 }} />
-                  <InputField type="number" min="0" max="100" value={item.tax_rate} onChange={setItemField(i, 'tax_rate')} style={{ height: 36, fontSize: 13 }} />
-                  <div style={{ textAlign: 'right', fontWeight: 600, fontSize: 14 }}>
-                    {formatCurrency(calc.line_total || 0, activeBusiness?.currency)}
+                  <div className="inv-item-field">
+                    <span className="inv-item-field__label">Price</span>
+                    <InputField type="number" aria-label="Unit price" placeholder="0" value={item.unit_price} onChange={setItemField(i, 'unit_price')} style={{ height: 36, fontSize: 13 }} />
                   </div>
-                  <Button type="button" variant="ghost" size="sm" onClick={() => removeItem(i)} disabled={items.length === 1} style={{ color: 'var(--color-danger)', padding: 4 }}>
+                  <div className="inv-item-field">
+                    <span className="inv-item-field__label">Qty</span>
+                    <InputField type="number" aria-label="Quantity" min="1" value={item.quantity} onChange={setItemField(i, 'quantity')} style={{ height: 36, fontSize: 13 }} />
+                  </div>
+                  <div className="inv-item-field">
+                    <span className="inv-item-field__label">Disc %</span>
+                    <InputField type="number" aria-label="Discount percent" min="0" max="100" value={item.item_discount_percent} onChange={setItemField(i, 'item_discount_percent')} style={{ height: 36, fontSize: 13 }} />
+                  </div>
+                  <div className="inv-item-field">
+                    <span className="inv-item-field__label">Tax %</span>
+                    <InputField type="number" aria-label="Tax rate" min="0" max="100" value={item.tax_rate} onChange={setItemField(i, 'tax_rate')} style={{ height: 36, fontSize: 13 }} />
+                  </div>
+                  <div className="inv-item-field">
+                    <span className="inv-item-field__label">Total</span>
+                    <div className="inv-item__total num">
+                      {formatCurrency(calc.line_total || 0, activeBusiness?.currency)}
+                    </div>
+                  </div>
+                  <Button type="button" variant="ghost" size="sm" aria-label="Remove item" onClick={() => removeItem(i)} disabled={items.length === 1} style={{ color: 'var(--color-danger)', padding: 4 }}>
                     <Trash2 size={14} />
                   </Button>
                 </div>
@@ -176,10 +193,10 @@ export default function CreateInvoicePage() {
         </Card>
 
         {/* Totals + Discount */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+        <div className="create-inv__cols">
           <Card>
-            <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 16 }}>Invoice Discount</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <h3 className="form-section__title">{typeLabel} Discount</h3>
+            <div className="form-grid-2">
               <FormField label="Flat discount (₹)">
                 <InputField id="disc-amt" type="number" min="0" value={form.discount_amount} onChange={setField('discount_amount')} />
               </FormField>
@@ -190,29 +207,29 @@ export default function CreateInvoicePage() {
           </Card>
 
           <Card>
-            <h3 style={{ fontSize: 15, fontWeight: 600, marginBottom: 16 }}>Summary</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <h3 className="form-section__title">Summary</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {[
                 { label: 'Subtotal', value: totals.subtotal },
                 { label: 'Tax', value: totals.tax_total },
                 { label: 'Discount', value: -(parseFloat(form.discount_amount) + (totals.subtotal * parseFloat(form.discount_percent || 0) / 100)) },
               ].map(({ label, value }) => (
-                <div key={label} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 14, color: 'var(--color-text-secondary)' }}>
+                <div className="summary-row" key={label}>
                   <span>{label}</span>
-                  <span style={{ color: value < 0 ? 'var(--color-danger)' : 'var(--color-text-primary)' }}>
+                  <span className={`summary-row__value ${value < 0 ? 'summary-row__value--neg' : ''}`}>
                     {value < 0 ? '-' : ''}{formatCurrency(Math.abs(value), activeBusiness?.currency)}
                   </span>
                 </div>
               ))}
-              <div style={{ borderTop: '2px solid var(--color-border)', paddingTop: 10, display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: 18 }}>
-                <span>Total</span>
-                <span style={{ color: 'var(--color-primary)' }}>{formatCurrency(totals.total_amount, activeBusiness?.currency)}</span>
+              <div className="summary-total">
+                <span className="summary-total__label">Total</span>
+                <span className="summary-total__value">{formatCurrency(totals.total_amount, activeBusiness?.currency)}</span>
               </div>
             </div>
           </Card>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, marginTop: 24 }}>
+        <div className="create-inv__actions">
           <Button type="button" variant="secondary" size="lg" onClick={() => navigate('/invoices')}>Cancel</Button>
           <Button type="submit" variant="primary" size="lg" loading={isLoading} id="submit-invoice-btn">
             Create {typeLabel}

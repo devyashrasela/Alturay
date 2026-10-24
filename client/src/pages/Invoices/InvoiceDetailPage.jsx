@@ -9,6 +9,7 @@ import StatusBadge from '../../components/ui/Badge/StatusBadge';
 import { PageLoader } from '../../components/ui/Loader/Spinner';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatDate } from '../../utils/formatDate';
+import { effectiveStatus } from '../../utils/invoiceStatus';
 
 export default function InvoiceDetailPage() {
   const { id } = useParams();
@@ -34,28 +35,28 @@ export default function InvoiceDetailPage() {
   };
 
   if (isLoading) return <PageLoader />;
-  if (!invoice) return <div style={{ padding: 32, color: 'var(--color-text-muted)' }}>Invoice not found.</div>;
+  if (!invoice) return <div className="invoice-detail__not-found">Invoice not found.</div>;
 
   return (
-    <div style={{ maxWidth: 820, margin: '0 auto' }}>
+    <div className="invoice-detail">
       {/* Back + Actions */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+      <div className="invoice-detail__toolbar">
         <Button variant="ghost" size="sm" onClick={() => navigate('/invoices')}>
           <ArrowLeft size={16} /> Back
         </Button>
-        <div style={{ display: 'flex', gap: 10 }}>
+        <div className="invoice-detail__actions">
           {invoice.status === 'draft' && (
-            <Button variant="secondary" size="md" onClick={() => handleStatus('issued')} loading={updatingStatus}>
+            <Button variant="secondary" size="md" id="issue-invoice-btn" onClick={() => handleStatus('issued')} loading={updatingStatus}>
               <Send size={15} /> Issue
             </Button>
           )}
           {invoice.status === 'issued' && (
-            <Button variant="secondary" size="md" onClick={() => handleStatus('paid')} loading={updatingStatus}>
+            <Button variant="secondary" size="md" id="mark-paid-btn" onClick={() => handleStatus('paid')} loading={updatingStatus}>
               <CheckCircle size={15} /> Mark Paid
             </Button>
           )}
           {invoice.status !== 'cancelled' && (
-            <Button variant="ghost" size="md" onClick={() => handleStatus('cancelled')} style={{ color: 'var(--color-danger)' }}>
+            <Button variant="ghost" size="md" style={{ color: 'var(--color-danger)' }} onClick={() => handleStatus('cancelled')}>
               <XCircle size={15} /> Cancel
             </Button>
           )}
@@ -67,37 +68,41 @@ export default function InvoiceDetailPage() {
 
       <Card>
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 32 }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-              <h2 style={{ fontSize: 26, fontWeight: 700, color: 'var(--color-primary)' }}>{invoice.invoice_number}</h2>
-              <StatusBadge status={invoice.status} />
+        <div className="invoice-hero">
+          <div className="invoice-hero__top">
+            <div>
+              <div className="invoice-hero__number-row">
+                <h2 className="invoice-hero__number">{invoice.invoice_number}</h2>
+                <StatusBadge status={effectiveStatus(invoice)} />
+              </div>
+              <p className="invoice-hero__meta">
+                {invoice.type === 'invoice' ? 'Invoice' : 'Bill'} · {activeBusiness?.name}
+              </p>
             </div>
-            <p style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>
-              {invoice.type === 'invoice' ? 'Invoice' : 'Bill'} for {activeBusiness?.name}
-            </p>
-          </div>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>Issue Date</div>
-            <div style={{ fontWeight: 600 }}>{formatDate(invoice.issue_date)}</div>
-            {invoice.due_date && (
-              <>
-                <div style={{ fontSize: 13, color: 'var(--color-text-muted)', marginTop: 8 }}>Due Date</div>
-                <div style={{ fontWeight: 600 }}>{formatDate(invoice.due_date)}</div>
-              </>
-            )}
+            <div className="invoice-hero__dates">
+              <div>
+                <div className="invoice-hero__date-label">Issue Date</div>
+                <div className="invoice-hero__date-value">{formatDate(invoice.issue_date)}</div>
+              </div>
+              {invoice.due_date && (
+                <div>
+                  <div className="invoice-hero__date-label">Due Date</div>
+                  <div className="invoice-hero__date-value">{formatDate(invoice.due_date)}</div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Bill To */}
-        <div style={{ marginBottom: 28 }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.8px', marginBottom: 6 }}>Bill To</div>
-          <div style={{ fontWeight: 600, fontSize: 16 }}>{invoice.customer_name}</div>
-          {invoice.customer_phone && <div style={{ fontSize: 14, color: 'var(--color-text-secondary)' }}>{invoice.customer_phone}</div>}
+        <div className="invoice-detail__bill-to">
+          <div className="invoice-detail__label">Bill To</div>
+          <div className="invoice-detail__customer">{invoice.customer_name}</div>
+          {invoice.customer_phone && <div className="invoice-detail__customer-sub">{invoice.customer_phone}</div>}
         </div>
 
         {/* Line Items Table */}
-        <div style={{ overflowX: 'auto', marginBottom: 24 }}>
+        <div className="invoice-detail__items table-flush-x table-scroll">
           <table className="data-table">
             <thead>
               <tr>
@@ -113,13 +118,13 @@ export default function InvoiceDetailPage() {
               {invoice.items?.map((item) => (
                 <tr key={item.id}>
                   <td style={{ fontWeight: 500 }}>{item.item_name}</td>
-                  <td style={{ textAlign: 'right', color: 'var(--color-text-secondary)' }}>{item.quantity}</td>
-                  <td style={{ textAlign: 'right' }}>{formatCurrency(item.unit_price, activeBusiness?.currency)}</td>
-                  <td style={{ textAlign: 'right', color: 'var(--color-text-secondary)' }}>
+                  <td className="num" style={{ textAlign: 'right', color: 'var(--color-text-secondary)' }}>{item.quantity}</td>
+                  <td className="num" style={{ textAlign: 'right' }}>{formatCurrency(item.unit_price, activeBusiness?.currency)}</td>
+                  <td className="num" style={{ textAlign: 'right', color: 'var(--color-text-secondary)' }}>
                     {parseFloat(item.item_discount_percent) > 0 ? `${item.item_discount_percent}%` : parseFloat(item.item_discount_amount) > 0 ? formatCurrency(item.item_discount_amount) : '—'}
                   </td>
-                  <td style={{ textAlign: 'right', color: 'var(--color-text-secondary)' }}>{item.tax_rate}%</td>
-                  <td style={{ textAlign: 'right', fontWeight: 600 }}>{formatCurrency(item.line_total, activeBusiness?.currency)}</td>
+                  <td className="num" style={{ textAlign: 'right', color: 'var(--color-text-secondary)' }}>{item.tax_rate}%</td>
+                  <td className="num" style={{ textAlign: 'right', fontWeight: 600 }}>{formatCurrency(item.line_total, activeBusiness?.currency)}</td>
                 </tr>
               ))}
             </tbody>
@@ -127,34 +132,36 @@ export default function InvoiceDetailPage() {
         </div>
 
         {/* Totals */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <div style={{ width: 280 }}>
+        <div className="invoice-detail__totals">
+          <div className="invoice-detail__totals-inner">
             {[
               { label: 'Subtotal', value: invoice.subtotal },
               { label: 'Tax', value: invoice.tax_total },
               { label: 'Discount', value: parseFloat(invoice.discount_amount) + parseFloat(invoice.subtotal) * parseFloat(invoice.discount_percent) / 100, negative: true },
             ].map(({ label, value, negative }) =>
               parseFloat(value) > 0 ? (
-                <div key={label} style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', fontSize: 14, color: 'var(--color-text-secondary)', borderBottom: '1px solid var(--color-border-subtle)' }}>
+                <div className="summary-row" style={{ padding: '8px 0', borderBottom: '1px solid var(--color-border-subtle)' }} key={label}>
                   <span>{label}</span>
-                  <span style={{ color: negative ? 'var(--color-danger)' : undefined }}>
+                  <span className={`summary-row__value ${negative ? 'summary-row__value--neg' : ''}`}>
                     {negative ? '−' : ''}{formatCurrency(value, activeBusiness?.currency)}
                   </span>
                 </div>
               ) : null
             )}
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 0 0', fontWeight: 700, fontSize: 20 }}>
-              <span>Total</span>
-              <span style={{ color: 'var(--color-primary)' }}>{formatCurrency(invoice.total_amount, activeBusiness?.currency)}</span>
+            <div className="invoice-detail__total-row">
+              <span className="invoice-detail__total-label">Total</span>
+              <span className="invoice-detail__total-value num">
+                {formatCurrency(invoice.total_amount, activeBusiness?.currency)}
+              </span>
             </div>
           </div>
         </div>
 
         {/* Notes */}
         {invoice.notes && (
-          <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid var(--color-border)' }}>
-            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.6px', marginBottom: 6 }}>Notes</div>
-            <p style={{ fontSize: 14, color: 'var(--color-text-secondary)' }}>{invoice.notes}</p>
+          <div className="invoice-detail__notes">
+            <div className="invoice-detail__label">Notes</div>
+            <p className="invoice-detail__notes-text">{invoice.notes}</p>
           </div>
         )}
       </Card>

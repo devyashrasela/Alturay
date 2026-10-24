@@ -9,10 +9,14 @@ for (const envVar of requiredEnvVars) {
   }
 }
 
+// Browsers send the Origin header without a trailing slash, so normalize the
+// configured client URL to avoid CORS mismatches (e.g. "…:5173/" vs "…:5173").
+const normalizeOrigin = (url = '') => url.trim().replace(/\/+$/, '');
+
 module.exports = {
   nodeEnv: process.env.NODE_ENV || 'development',
   port: parseInt(process.env.PORT, 10) || 8001,
-  clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',
+  clientUrl: normalizeOrigin(process.env.CLIENT_URL || 'http://localhost:5173'),
 
   db: {
     host: process.env.DB_HOST,

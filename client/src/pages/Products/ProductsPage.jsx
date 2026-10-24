@@ -66,21 +66,28 @@ export default function ProductsPage() {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+      <div className="page-header">
         <div>
-          <h2 style={{ fontSize: 22, fontWeight: 600 }}>Products</h2>
-          <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginTop: 4 }}>
+          <h2 className="page-header__title">Products</h2>
+          <p className="page-header__sub">
             Manage your product catalog for {activeBusiness?.name}
           </p>
         </div>
-        <Button variant="primary" size="md" id="add-product-btn" onClick={openCreate}>
-          <Plus size={16} /> Add Product
-        </Button>
+        <div className="page-header__actions">
+          <Button variant="primary" size="md" id="add-product-btn" onClick={openCreate}>
+            <Plus size={16} /> Add Product
+          </Button>
+        </div>
       </div>
 
       <Card>
-        <div style={{ marginBottom: 16 }}>
-          <SearchInput value={search} onChange={(v) => { setSearch(v); setPage(1); }} placeholder="Search products..." />
+        <div className="card-toolbar">
+          <SearchInput
+            className="products-search"
+            value={search}
+            onChange={(v) => { setSearch(v); setPage(1); }}
+            placeholder="Search products..."
+          />
         </div>
 
         {isLoading ? <PageLoader /> : products.length === 0 ? (
@@ -93,7 +100,7 @@ export default function ProductsPage() {
           />
         ) : (
           <>
-            <div style={{ overflowX: 'auto' }}>
+            <div className="table-scroll">
               <table className="data-table">
                 <thead>
                   <tr>
@@ -109,17 +116,17 @@ export default function ProductsPage() {
                   {products.map((p) => (
                     <tr key={p.id}>
                       <td>
-                        <div style={{ fontWeight: 500 }}>{p.name}</div>
-                        {p.description && <div style={{ fontSize: 12, color: 'var(--color-text-muted)', marginTop: 2 }}>{p.description.slice(0, 60)}{p.description.length > 60 ? '…' : ''}</div>}
+                        <div className="product-name">{p.name}</div>
+                        {p.description && <div className="product-description">{p.description.slice(0, 60)}{p.description.length > 60 ? '…' : ''}</div>}
                       </td>
-                      <td style={{ color: 'var(--color-text-secondary)', fontSize: 13 }}>{p.sku || '—'}</td>
-                      <td style={{ color: 'var(--color-text-secondary)', fontSize: 13 }}>{p.unit}</td>
-                      <td style={{ textAlign: 'right', fontWeight: 600 }}>{formatCurrency(p.unit_price, activeBusiness?.currency)}</td>
-                      <td style={{ textAlign: 'right', color: 'var(--color-text-secondary)' }}>{p.tax_rate}%</td>
+                      <td className="table-date">{p.sku || '—'}</td>
+                      <td className="table-date">{p.unit}</td>
+                      <td className="num" style={{ textAlign: 'right', fontWeight: 600 }}>{formatCurrency(p.unit_price, activeBusiness?.currency)}</td>
+                      <td className="num" style={{ textAlign: 'right', color: 'var(--color-text-secondary)' }}>{p.tax_rate}%</td>
                       <td style={{ textAlign: 'right' }}>
-                        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-                          <Button variant="ghost" size="sm" onClick={() => openEdit(p)}><Pencil size={14} /></Button>
-                          <Button variant="ghost" size="sm" onClick={() => setDeleteProduct(p)} style={{ color: 'var(--color-danger)' }}><Trash2 size={14} /></Button>
+                        <div className="table-actions">
+                          <Button variant="ghost" size="sm" aria-label={`Edit ${p.name}`} onClick={() => openEdit(p)}><Pencil size={14} /></Button>
+                          <Button variant="ghost" size="sm" aria-label={`Delete ${p.name}`} onClick={() => setDeleteProduct(p)} style={{ color: 'var(--color-danger)' }}><Trash2 size={14} /></Button>
                         </div>
                       </td>
                     </tr>
@@ -146,11 +153,11 @@ export default function ProductsPage() {
           </>
         }
       >
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div className="form-stack">
           <FormField label="Product name" required>
             <InputField id="p-name" name="name" placeholder="e.g. Website Design" value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} />
           </FormField>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div className="form-grid-2">
             <FormField label="SKU (optional)">
               <InputField id="p-sku" name="sku" placeholder="e.g. SVC-001" value={form.sku} onChange={(e) => setForm(f => ({ ...f, sku: e.target.value }))} />
             </FormField>
@@ -158,7 +165,7 @@ export default function ProductsPage() {
               <InputField id="p-unit" name="unit" placeholder="pcs" value={form.unit} onChange={(e) => setForm(f => ({ ...f, unit: e.target.value }))} />
             </FormField>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+          <div className="form-grid-2">
             <FormField label="Unit price" required>
               <InputField id="p-price" type="number" name="unit_price" placeholder="0.00" value={form.unit_price} onChange={(e) => setForm(f => ({ ...f, unit_price: e.target.value }))} />
             </FormField>
