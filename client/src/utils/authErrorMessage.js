@@ -1,9 +1,11 @@
 const FALLBACK = 'Unable to sign in right now. Please try again.';
+const REGISTER_FALLBACK = 'Unable to create your account right now. Please try again.';
 const NETWORK_FALLBACK = 'Unable to connect. Check your internet connection and try again.';
 const TIMEOUT_FALLBACK = 'The request timed out. Please try again.';
 const INVALID_CREDENTIALS = 'Invalid email or password. Please try again.';
 const INVALID_INPUT = 'Please check your details and try again.';
 const RATE_LIMIT = 'Too many attempts. Please wait a moment and try again.';
+const ACCOUNT_EXISTS = 'An account with this email already exists. Please sign in instead.';
 
 const GENERIC_MESSAGES = /^(invalid input data|bad request|validation failed|unauthorized|forbidden)\.?$/i;
 
@@ -111,6 +113,43 @@ export function getLoginErrorMessage(error) {
   }
 
   return FALLBACK;
+}
+
+/**
+ * Converts an RTK Query registration error into safe, actionable copy.
+ */
+export function getRegisterErrorMessage(error) {
+  const status = error?.status;
+
+  if (status === 'FETCH_ERROR') return NETWORK_FALLBACK;
+  if (status === 'TIMEOUT_ERROR') return TIMEOUT_FALLBACK;
+  if (status === 'PARSING_ERROR') return REGISTER_FALLBACK;
+
+  if (error instanceof Error && /failed to fetch|networkerror|load failed/i.test(error.message)) {
+    return NETWORK_FALLBACK;
+  }
+
+  const data = error?.data;
+  const directMessage = readDirectMessage(data);
+
+  if (status === 400) {
+    return readDetailMessage(data)
+      || (isUsefulMessage(directMessage) ? directMessage : INVALID_INPUT);
+  }
+
+  if (status === 409) {
+    return isUsefulMessage(directMessage) ? directMessage : ACCOUNT_EXISTS;
+  }
+
+  if (status === 429) {
+    return directMessage || RATE_LIMIT;
+  }
+
+  if (typeof status === 'number' && status >= 400 && status < 500) {
+    return isUsefulMessage(directMessage) ? directMessage : REGISTER_FALLBACK;
+  }
+
+  return REGISTER_FALLBACK;
 }
 
 export default getLoginErrorMessage;

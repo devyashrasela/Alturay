@@ -1,10 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { getLoginErrorMessage, sanitizeServerMessage } from './authErrorMessage.js';
+import {
+  getLoginErrorMessage,
+  getRegisterErrorMessage,
+  sanitizeServerMessage,
+} from './authErrorMessage.js';
 
 const FALLBACK = 'Unable to sign in right now. Please try again.';
 const NETWORK = 'Unable to connect. Check your internet connection and try again.';
 const INVALID = 'Invalid email or password. Please try again.';
+const REGISTER_FALLBACK = 'Unable to create your account right now. Please try again.';
 
 test('shows the backend invalid-credentials message', () => {
   const error = {
@@ -75,6 +80,45 @@ test('handles unexpected response formats safely', () => {
   assert.equal(getLoginErrorMessage({ status: 'PARSING_ERROR' }), FALLBACK);
   assert.equal(getLoginErrorMessage({ status: 400, data: '<html>bad gateway</html>' }), 'Please check your details and try again.');
   assert.equal(getLoginErrorMessage({ status: undefined }), FALLBACK);
+});
+
+test('shows a safe registration conflict message', () => {
+  const error = {
+    status: 409,
+    data: {
+      error: {
+        code: 'CONFLICT',
+        message: 'An account with this email already exists.',
+      },
+    },
+  };
+
+  assert.equal(getRegisterErrorMessage(error), 'An account with this email already exists.');
+});
+
+test('shows registration validation details', () => {
+  const error = {
+    status: 400,
+    data: {
+      error: {
+        message: 'Invalid input data.',
+        details: [{ field: 'password', message: 'Password must be at least 8 characters long' }],
+      },
+    },
+  };
+
+  assert.equal(
+    getRegisterErrorMessage(error),
+    'Password must be at least 8 characters long',
+  );
+});
+
+test('uses registration fallbacks for network and server failures', () => {
+  assert.equal(getRegisterErrorMessage({ status: 'FETCH_ERROR' }), NETWORK);
+  assert.equal(
+    getRegisterErrorMessage({ status: 500, data: { error: { message: 'SQL connection failed' } } }),
+    REGISTER_FALLBACK,
+  );
 });
 
 test('rejects unsafe server text', () => {

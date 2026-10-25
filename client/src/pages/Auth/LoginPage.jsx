@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import { AlertCircle } from 'lucide-react';
@@ -19,6 +19,7 @@ export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState('');
+  const submittingRef = useRef(false);
 
   const handleChange = (e) => {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
@@ -37,11 +38,12 @@ export default function LoginPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isLoading) return;
+    if (submittingRef.current || isLoading) return;
 
     setSubmitError('');
     if (!validate()) return;
 
+    submittingRef.current = true;
     try {
       const result = await login(form).unwrap();
       dispatch(setCredentials(result.data));
@@ -49,27 +51,29 @@ export default function LoginPage() {
       navigate('/businesses');
     } catch (err) {
       setSubmitError(getLoginErrorMessage(err));
+    } finally {
+      submittingRef.current = false;
     }
   };
 
   return (
     <AuthLayout
-      title="Welcome Back"
-      subtitle="Enter your email and password to access your account"
+      title="Welcome back!"
+      subtitle="Enter to get unlimited access to data & information."
       footer={(
         <>
           Don&apos;t have an account?{' '}
-          <Link to="/register" className="auth-panel__link">Sign Up</Link>
+          <Link to="/register" className="auth-panel__link">Register here</Link>
         </>
       )}
     >
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
-        <FormField label="Email" htmlFor="login-email" error={errors.email}>
+        <FormField label="Email" htmlFor="login-email" error={errors.email} required>
           <InputField
             type="email"
             name="email"
             id="login-email"
-            placeholder="Enter your email"
+            placeholder="Enter your mail address"
             value={form.email}
             onChange={handleChange}
             error={errors.email}
@@ -79,11 +83,11 @@ export default function LoginPage() {
           />
         </FormField>
 
-        <FormField label="Password" htmlFor="login-password" error={errors.password}>
+        <FormField label="Password" htmlFor="login-password" error={errors.password} required>
           <PasswordInput
             name="password"
             id="login-password"
-            placeholder="Enter your password"
+            placeholder="Enter password"
             value={form.password}
             onChange={handleChange}
             error={errors.password}
@@ -100,8 +104,8 @@ export default function LoginPage() {
           </div>
         )}
 
-        <Button type="submit" className="auth-submit" loading={isLoading}>
-          Sign In
+        <Button type="submit" size="lg" className="auth-submit" loading={isLoading}>
+          Log In
         </Button>
       </form>
     </AuthLayout>

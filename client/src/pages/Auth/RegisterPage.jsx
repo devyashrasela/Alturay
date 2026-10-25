@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
+import { AlertCircle } from 'lucide-react';
 import { setCredentials } from '../../store/slices/authSlice';
 import { useRegisterMutation } from '../../store/api/authApi';
 import { addToast } from '../../store/slices/uiSlice';
+import { getRegisterErrorMessage } from '../../utils/authErrorMessage';
 import Button from '../../components/ui/Button/Button';
 import FormField from '../../components/ui/FormField/FormField';
 import InputField from '../../components/ui/Input/InputField';
@@ -16,10 +18,13 @@ export default function RegisterPage() {
   const [register, { isLoading }] = useRegisterMutation();
   const [form, setForm] = useState({ name: '', email: '', password: '' });
   const [errors, setErrors] = useState({});
+  const [submitError, setSubmitError] = useState('');
+  const submittingRef = useRef(false);
 
   const handleChange = (e) => {
     setForm((f) => ({ ...f, [e.target.name]: e.target.value }));
     if (errors[e.target.name]) setErrors((e2) => ({ ...e2, [e.target.name]: '' }));
+    if (submitError) setSubmitError('');
   };
 
   const validate = () => {
@@ -35,35 +40,37 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isLoading) return;
+    if (submittingRef.current || isLoading) return;
+
+    setSubmitError('');
     if (!validate()) return;
+
+    submittingRef.current = true;
     try {
       const result = await register(form).unwrap();
       dispatch(setCredentials(result.data));
       dispatch(addToast({ type: 'success', message: `Account created! Welcome, ${result.data.user.name}!` }));
       navigate('/businesses');
     } catch (err) {
-      const details = err?.data?.error?.details;
-      const msg = details?.length
-        ? details.map((d) => d.message).join('. ')
-        : err?.data?.error?.message || 'Registration failed.';
-      dispatch(addToast({ type: 'error', message: msg }));
+      setSubmitError(getRegisterErrorMessage(err));
+    } finally {
+      submittingRef.current = false;
     }
   };
 
   return (
     <AuthLayout
-      title="Create Account"
-      subtitle="Sign up to get started with Alturay"
+      title="Create your account"
+      subtitle="Enter your details to get started with Alturay."
       footer={(
         <>
           Already have an account?{' '}
-          <Link to="/login" className="auth-panel__link">Sign In</Link>
+          <Link to="/login" className="auth-panel__link">Sign in</Link>
         </>
       )}
     >
       <form className="auth-form" onSubmit={handleSubmit} noValidate>
-        <FormField label="Full Name" htmlFor="register-name" error={errors.name}>
+        <FormField label="Full Name" htmlFor="register-name" error={errors.name} required>
           <InputField
             type="text"
             name="name"
@@ -78,12 +85,12 @@ export default function RegisterPage() {
           />
         </FormField>
 
-        <FormField label="Email" htmlFor="register-email" error={errors.email}>
+        <FormField label="Email" htmlFor="register-email" error={errors.email} required>
           <InputField
             type="email"
             name="email"
             id="register-email"
-            placeholder="Enter your email"
+            placeholder="Enter your mail address"
             value={form.email}
             onChange={handleChange}
             error={errors.email}
@@ -98,11 +105,12 @@ export default function RegisterPage() {
           htmlFor="register-password"
           helper="Minimum 8 characters"
           error={errors.password}
+          required
         >
           <PasswordInput
             name="password"
             id="register-password"
-            placeholder="Create a password"
+            placeholder="Create password"
             value={form.password}
             onChange={handleChange}
             error={errors.password}
@@ -112,7 +120,14 @@ export default function RegisterPage() {
           />
         </FormField>
 
-        <Button type="submit" className="auth-submit" loading={isLoading}>
+        {submitError && (
+          <div className="auth-alert" role="alert" aria-atomic="true">
+            <AlertCircle className="auth-alert__icon" size={18} aria-hidden="true" />
+            <span>{submitError}</span>
+          </div>
+        )}
+
+        <Button type="submit" size="lg" className="auth-submit" loading={isLoading}>
           Create Account
         </Button>
       </form>

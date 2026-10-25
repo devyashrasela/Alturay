@@ -1,0 +1,251 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1250" role="img" aria-label="Abstract geometric composition in Alturay blue and purple">
+  <!--
+    Palette is derived from Alturay design tokens:
+    primary #2563EB / active #1E40AF / link #60A5FA,
+    purple #7C3AED / #A78BFA, warning #FBBF24,
+    on navy surfaces #070D1B and #0B1224.
+  -->
+  <defs>
+    <linearGradient id="bgNavy" x1="0" y1="0" x2="0.7" y2="1">
+      <stop offset="0" stop-color="#070D1B"/>
+      <stop offset="0.55" stop-color="#0B1224"/>
+      <stop offset="1" stop-color="#101A33"/>
+    </linearGradient>
+
+    <linearGradient id="midBlue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1E40AF"/>
+      <stop offset="0.5" stop-color="#2563EB"/>
+      <stop offset="1" stop-color="#1D4ED8"/>
+    </linearGradient>
+
+    <linearGradient id="purpleField" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4C1D95"/>
+      <stop offset="0.6" stop-color="#6D28D9"/>
+      <stop offset="1" stop-color="#7C3AED"/>
+    </linearGradient>
+
+    <linearGradient id="navyPanel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0B1224"/>
+      <stop offset="1" stop-color="#0E1730"/>
+    </linearGradient>
+
+    <linearGradient id="tileBlue" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3B82F6"/>
+      <stop offset="1" stop-color="#1D4ED8"/>
+    </linearGradient>
+
+    <pattern id="dotGrid" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="4" cy="4" r="2.4" fill="#93C5FD"/>
+    </pattern>
+
+    <pattern id="dotGridLight" width="22" height="22" patternUnits="userSpaceOnUse">
+      <circle cx="3" cy="3" r="1.8" fill="#DBEAFE"/>
+    </pattern>
+
+    <pattern id="hatch" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="16" stroke="#DBEAFE" stroke-width="1.4"/>
+    </pattern>
+
+    <!-- Isometric cube, centred on 0,0 -->
+    <g id="cube">
+      <path d="M0-38L70 0 0 38-70 0Z" fill="#60A5FA"/>
+      <path d="M-70 0L0 38V112L-70 74Z" fill="#1D4ED8"/>
+      <path d="M70 0L0 38V112L70 74Z" fill="#2563EB"/>
+      <path d="M0-38L70 0 0 38-70 0Z" fill="none" stroke="#BFDBFE" stroke-width="1.2" opacity="0.35"/>
+    </g>
+  </defs>
+
+  <rect width="1000" height="1250" fill="url(#bgNavy)"/>
+
+  <!-- ══════════ TOP BAND ══════════ -->
+
+  <!-- Purple field with layered circles -->
+  <rect x="0" y="0" width="340" height="360" fill="url(#purpleField)"/>
+  <circle cx="34" cy="24" r="248" fill="#8B5CF6" opacity="0.9"/>
+  <circle cx="34" cy="24" r="286" fill="none" stroke="#C4B5FD" stroke-width="1.4" opacity="0.3"/>
+  <circle cx="258" cy="196" r="196" fill="#A78BFA" opacity="0.6"/>
+  <circle cx="258" cy="196" r="226" fill="none" stroke="#DDD6FE" stroke-width="1.2" opacity="0.24"/>
+  <circle cx="146" cy="92" r="58" fill="#4C1D95" opacity="0.38"/>
+  <path d="M0 300L340 128" stroke="#DDD6FE" stroke-width="1" opacity="0.2"/>
+
+  <!-- Navy field with barcode and stacked bars -->
+  <rect x="340" y="0" width="300" height="360" fill="url(#navyPanel)"/>
+  <g fill="#60A5FA">
+    <rect x="372" y="42" width="7" height="96" opacity="0.9"/>
+    <rect x="386" y="62" width="4" height="76" opacity="0.5"/>
+    <rect x="398" y="30" width="12" height="108" opacity="0.8"/>
+    <rect x="418" y="52" width="5" height="86" opacity="0.45"/>
+    <rect x="430" y="38" width="8" height="100" opacity="0.7"/>
+    <rect x="446" y="66" width="3" height="72" opacity="0.4"/>
+    <rect x="456" y="26" width="10" height="112" opacity="0.85"/>
+    <rect x="474" y="56" width="6" height="82" opacity="0.55"/>
+    <rect x="488" y="44" width="4" height="94" opacity="0.45"/>
+    <rect x="500" y="34" width="9" height="104" opacity="0.75"/>
+    <rect x="518" y="60" width="6" height="78" opacity="0.5"/>
+    <rect x="532" y="48" width="3" height="90" opacity="0.35"/>
+    <rect x="544" y="28" width="11" height="110" opacity="0.8"/>
+    <rect x="564" y="58" width="5" height="80" opacity="0.45"/>
+    <rect x="578" y="42" width="7" height="96" opacity="0.65"/>
+  </g>
+
+  <rect x="372" y="168" width="236" height="142" fill="#101A33" stroke="#1E3A8A" stroke-width="1"/>
+  <g>
+    <path d="M412 236L490 190L568 236L490 282Z" fill="#2563EB"/>
+    <path d="M412 236L490 282V314L412 268Z" fill="#1E40AF"/>
+    <path d="M568 236L490 282V314L568 268Z" fill="#3B82F6"/>
+    <path d="M412 236L490 190L568 236" fill="none" stroke="#93C5FD" stroke-width="1.6" opacity="0.7"/>
+  </g>
+  <g stroke="#60A5FA" stroke-width="1.2" opacity="0.3">
+    <line x1="372" y1="334" x2="608" y2="334"/>
+    <line x1="372" y1="342" x2="562" y2="342"/>
+  </g>
+
+  <!-- Right navy field with cubes and concentric rings -->
+  <rect x="640" y="0" width="360" height="360" fill="#0E1730"/>
+  <use href="#cube" transform="translate(746 158)"/>
+  <use href="#cube" transform="translate(700 254) scale(0.56)"/>
+  <g fill="none">
+    <circle cx="892" cy="166" r="104" stroke="#60A5FA" stroke-width="1.4" opacity="0.4"/>
+    <circle cx="892" cy="166" r="74" stroke="#93C5FD" stroke-width="1.2" opacity="0.3"/>
+    <circle cx="892" cy="166" r="44" fill="#2563EB" fill-opacity="0.55" stroke="#BFDBFE" stroke-width="1.2" opacity="0.55"/>
+    <path d="M892 62A104 104 0 0 1 996 166" stroke="#93C5FD" stroke-width="5" opacity="0.55"/>
+  </g>
+  <circle cx="694" cy="86" r="5" fill="#93C5FD" opacity="0.8"/>
+  <circle cx="884" cy="288" r="7" fill="#A78BFA" opacity="0.7"/>
+
+  <!-- ══════════ MIDDLE BAND ══════════ -->
+
+  <rect x="0" y="360" width="1000" height="590" fill="url(#midBlue)"/>
+  <rect x="0" y="360" width="248" height="262" fill="#1E3A8A" opacity="0.55"/>
+  <path d="M248 360V622" stroke="#1E3A8A" stroke-width="1.2" opacity="0.5"/>
+
+  <!-- Large chevrons -->
+  <g fill="none" stroke="#BFDBFE" stroke-width="24" stroke-linecap="square" stroke-linejoin="miter" opacity="0.85">
+    <path d="M38 468L112 414 186 468"/>
+    <path d="M38 542L112 488 186 542"/>
+  </g>
+
+  <!-- Sprout / leaf mark -->
+  <g transform="translate(342 520)">
+    <path d="M0 0C-12-56 16-92 64-98 60-52 38-16 0 0Z" fill="#BFDBFE"/>
+    <path d="M0 0C12-56-16-92-64-98-60-52-38-16 0 0Z" fill="#93C5FD"/>
+    <path d="M0 0V58" stroke="#DBEAFE" stroke-width="4"/>
+    <path d="M0 58L-22 36M0 58L22 36" stroke="#DBEAFE" stroke-width="3"/>
+  </g>
+
+  <!-- Pixel mosaic -->
+  <g transform="translate(714 428)">
+    <rect width="34" height="34" fill="#93C5FD"/>
+    <rect x="38" width="34" height="34" fill="#60A5FA"/>
+    <rect x="76" width="34" height="34" fill="#BFDBFE" opacity="0.7"/>
+    <rect x="114" width="34" height="34" fill="#3B82F6"/>
+    <rect x="0" y="38" width="34" height="34" fill="#3B82F6"/>
+    <rect x="38" y="38" width="34" height="34" fill="#BFDBFE" opacity="0.5"/>
+    <rect x="114" y="38" width="34" height="34" fill="#60A5FA"/>
+    <rect x="38" y="76" width="34" height="34" fill="#60A5FA"/>
+    <rect x="76" y="76" width="34" height="34" fill="#1E40AF"/>
+    <rect x="114" y="76" width="34" height="34" fill="#93C5FD"/>
+    <rect x="0" y="76" width="34" height="34" fill="#BFDBFE" opacity="0.6"/>
+  </g>
+
+  <!-- Amber star and diamonds from the Alturay warning accent -->
+  <g transform="translate(268 778)">
+    <rect x="-42" y="-42" width="84" height="84" fill="#FBBF24" opacity="0.95"/>
+    <rect x="-42" y="-42" width="84" height="84" fill="#FBBF24" opacity="0.95" transform="rotate(45)"/>
+    <circle cx="0" cy="0" r="13" fill="#1E3A8A" opacity="0.35"/>
+  </g>
+  <g fill="#FBBF24" opacity="0.95">
+    <path d="M500 726L526 752 500 778 474 752Z"/>
+    <path d="M500 790L521 811 500 832 479 811Z" opacity="0.8"/>
+  </g>
+
+  <!-- Sparkle -->
+  <path d="M520 618Q528 650 560 658Q528 666 520 698Q512 666 480 658Q512 650 520 618Z" fill="#DBEAFE"/>
+
+  <!-- Dotted rows -->
+  <g fill="#BFDBFE" opacity="0.6">
+    <circle cx="618" cy="812" r="5"/>
+    <circle cx="644" cy="812" r="5"/>
+    <circle cx="670" cy="812" r="5"/>
+    <circle cx="696" cy="812" r="5"/>
+    <circle cx="722" cy="812" r="5"/>
+    <circle cx="618" cy="842" r="4" opacity="0.7"/>
+    <circle cx="642" cy="842" r="4" opacity="0.7"/>
+    <circle cx="666" cy="842" r="4" opacity="0.7"/>
+    <circle cx="690" cy="842" r="4" opacity="0.7"/>
+  </g>
+
+  <!-- Radiating spokes -->
+  <g transform="translate(884 694)" stroke="#BFDBFE" stroke-width="2.2" opacity="0.42">
+    <path d="M0-92V-42M0 42V92M-92 0H-42M42 0H92"/>
+    <path d="M-66-66L-32-32M32-32L66-66M-66 66L-32 32M32 32L66 66"/>
+    <path d="M-86-36L-40-17M40-17L86-36M-86 36L-40 17M40 17L86 36"/>
+    <path d="M-36-86L-17-40M17-40L36-86M-36 86L-17 40M17 40L36 86"/>
+  </g>
+  <circle cx="884" cy="694" r="20" fill="#1E40AF" stroke="#DBEAFE" stroke-width="1.6" opacity="0.8"/>
+
+  <!-- Folded blue tile with hatching -->
+  <g transform="translate(74 704)">
+    <rect width="152" height="152" fill="url(#tileBlue)"/>
+    <rect width="152" height="152" fill="url(#hatch)" opacity="0.18"/>
+    <path d="M0 152L152 0V52L52 152Z" fill="#1E3A8A" opacity="0.28"/>
+    <path d="M0 152L152 0" stroke="#DBEAFE" stroke-width="1.2" opacity="0.35"/>
+    <rect x="16" y="16" width="30" height="30" fill="#DBEAFE" opacity="0.35"/>
+  </g>
+
+  <!-- Right-hand circle outline and rules -->
+  <circle cx="948" cy="484" r="150" fill="none" stroke="#BFDBFE" stroke-width="1.2" opacity="0.18"/>
+  <g stroke="#BFDBFE" stroke-width="1.2" opacity="0.24">
+    <line x1="42" y1="880" x2="388" y2="880"/>
+    <line x1="42" y1="898" x2="350" y2="898"/>
+    <line x1="42" y1="916" x2="308" y2="916"/>
+  </g>
+  <g fill="#DBEAFE">
+    <circle cx="588" cy="430" r="6" opacity="0.8"/>
+    <circle cx="620" cy="560" r="4" opacity="0.55"/>
+    <circle cx="404" cy="682" r="7" opacity="0.6"/>
+    <circle cx="940" cy="884" r="5" opacity="0.5"/>
+  </g>
+
+  <!-- ══════════ BOTTOM BAND ══════════ -->
+
+  <path d="M1000 950V1250H0V1010Q0 950 60 950Z" fill="#070D1B"/>
+  <path d="M60 950H1000" stroke="#2563EB" stroke-width="1.4" opacity="0.35"/>
+
+  <!-- Concentric arcs -->
+  <g fill="none" stroke="#2563EB" opacity="0.5">
+    <circle cx="56" cy="1250" r="62" stroke-width="1.6"/>
+    <circle cx="56" cy="1250" r="112" stroke-width="1.4" opacity="0.8"/>
+    <circle cx="56" cy="1250" r="162" stroke-width="1.2" opacity="0.6"/>
+    <circle cx="56" cy="1250" r="212" stroke-width="1" opacity="0.4"/>
+  </g>
+
+  <!-- Wavy rules -->
+  <g fill="none" stroke="#3B82F6" stroke-width="2" opacity="0.55">
+    <path d="M170 1082C200 1062 230 1062 260 1082S320 1102 350 1082S410 1062 440 1082S500 1102 530 1082"/>
+    <path d="M170 1112C200 1092 230 1092 260 1112S320 1132 350 1112S410 1092 440 1112S500 1132 530 1112" opacity="0.75"/>
+    <path d="M170 1142C200 1122 230 1122 260 1142S320 1162 350 1142S410 1122 440 1142S500 1162 530 1142" opacity="0.5"/>
+    <path d="M170 1172C200 1152 230 1152 260 1172S320 1192 350 1172S410 1152 440 1172S500 1192 530 1172" opacity="0.3"/>
+  </g>
+
+  <!-- Dot grid -->
+  <rect x="574" y="1012" width="236" height="196" fill="url(#dotGrid)" opacity="0.42"/>
+  <rect x="574" y="1012" width="236" height="196" fill="none" stroke="#1E3A8A" stroke-width="1" opacity="0.7"/>
+
+  <!-- Overlapping circles -->
+  <circle cx="862" cy="1132" r="108" fill="#2563EB" opacity="0.7"/>
+  <circle cx="916" cy="1078" r="78" fill="#60A5FA" opacity="0.5"/>
+  <circle cx="862" cy="1132" r="136" fill="none" stroke="#93C5FD" stroke-width="1.2" opacity="0.25"/>
+
+  <!-- Light-blue detail block -->
+  <g transform="translate(858 966)">
+    <rect width="106" height="106" fill="#60A5FA"/>
+    <rect width="106" height="106" fill="url(#dotGridLight)" opacity="0.5"/>
+    <path d="M0 106L106 0" stroke="#DBEAFE" stroke-width="1.2" opacity="0.4"/>
+  </g>
+
+  <g stroke="#2563EB" stroke-width="1" opacity="0.4">
+    <line x1="574" y1="1226" x2="810" y2="1226"/>
+    <line x1="610" y1="1236" x2="810" y2="1236"/>
+  </g>
+</svg>
