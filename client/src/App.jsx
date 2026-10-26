@@ -7,6 +7,7 @@ import ProtectedRoute from './routes/ProtectedRoute';
 import { PageLoader } from './components/ui/Loader/Spinner';
 
 // Lazy-loaded pages
+const LandingPage         = lazy(() => import('./pages/Landing/LandingPage'));
 const LoginPage           = lazy(() => import('./pages/Auth/LoginPage'));
 const RegisterPage        = lazy(() => import('./pages/Auth/RegisterPage'));
 const BusinessSelectPage  = lazy(() => import('./pages/Businesses/BusinessSelectPage'));
@@ -26,6 +27,7 @@ function App() {
         <Suspense fallback={<div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--color-bg-main)' }}><PageLoader /></div>}>
           <Routes>
             {/* Public */}
+            <Route path="/"         element={<LandingPage />} />
             <Route path="/login"    element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
 
