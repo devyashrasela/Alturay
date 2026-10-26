@@ -4,10 +4,10 @@ import { removeToast } from '../../../store/slices/uiSlice';
 import { useEffect } from 'react';
 
 const icons = {
-  success: <CheckCircle size={18} color="var(--color-success)" />,
-  error: <XCircle size={18} color="var(--color-danger)" />,
-  warning: <AlertTriangle size={18} color="var(--color-warning)" />,
-  info: <Info size={18} color="var(--color-info)" />,
+  success: <CheckCircle size={18} color="var(--color-success)" aria-hidden="true" />,
+  error: <XCircle size={18} color="var(--color-danger)" aria-hidden="true" />,
+  warning: <AlertTriangle size={18} color="var(--color-warning)" aria-hidden="true" />,
+  info: <Info size={18} color="var(--color-info)" aria-hidden="true" />,
 };
 
 function ToastItem({ toast }) {

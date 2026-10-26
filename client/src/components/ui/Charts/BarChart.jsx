@@ -1,15 +1,16 @@
 import { formatCompactCurrency } from '../../../utils/formatCurrency';
 
-// Lightweight, dependency-free bar chart with orange bars and light grid.
+// Lightweight, dependency-free bar chart (bars + light grid).
 // data: [{ key, label, value }]
 export default function BarChart({ data = [], currency = 'INR', height = 210 }) {
   const max = Math.max(...data.map((d) => d.value));
+  const summary = data.map((d) => `${d.label}: ${formatCompactCurrency(d.value, currency)}`).join(', ');
 
   if (!data.length || max <= 0) {
     return (
       <div className="bar-chart" style={{ '--chart-h': `${height}px` }}>
         <div className="bar-chart__empty">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <path d="M3 3v18h18" />
             <path d="m19 9-5 5-4-4-3 3" />
           </svg>
@@ -23,7 +24,12 @@ export default function BarChart({ data = [], currency = 'INR', height = 210 }) 
   }
 
   return (
-    <div className="bar-chart" style={{ '--chart-h': `${height}px` }}>
+    <div
+      className="bar-chart"
+      style={{ '--chart-h': `${height}px` }}
+      role="img"
+      aria-label={`Revenue by month. ${summary}`}
+    >
       <div className="bar-chart__plot">
         {data.map((d, i) => {
           const pct = Math.max((d.value / max) * 100, d.value > 0 ? 4 : 0);

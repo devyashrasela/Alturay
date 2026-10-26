@@ -86,7 +86,7 @@ export default function ProductsPage() {
             className="products-search"
             value={search}
             onChange={(v) => { setSearch(v); setPage(1); }}
-            placeholder="Search products..."
+            placeholder="Search products…"
           />
         </div>
 
@@ -174,7 +174,7 @@ export default function ProductsPage() {
             </FormField>
           </div>
           <FormField label="Description (optional)">
-            <InputField textarea id="p-desc" name="description" placeholder="Short description..." value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} />
+            <InputField textarea id="p-desc" name="description" placeholder="Short description…" value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} />
           </FormField>
         </div>
       </Modal>

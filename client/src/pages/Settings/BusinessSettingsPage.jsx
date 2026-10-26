@@ -46,7 +46,7 @@ export default function BusinessSettingsPage() {
       </div>
 
       <Card>
-        <form onSubmit={handleSave} className="settings-form">
+        <form onSubmit={handleSave} className="settings-form" autoComplete="off">
           <FormField label="Business name" required>
             <InputField id="s-name" value={form.name} onChange={setField('name')} placeholder="Business name" />
           </FormField>
@@ -62,7 +62,7 @@ export default function BusinessSettingsPage() {
             <InputField id="s-tax" value={form.tax_id} onChange={setField('tax_id')} placeholder="22AAAAA0000A1Z5" />
           </FormField>
           <FormField label="Address">
-            <InputField textarea id="s-addr" value={form.address} onChange={setField('address')} placeholder="Full business address..." style={{ minHeight: 80 }} />
+            <InputField textarea id="s-addr" value={form.address} onChange={setField('address')} placeholder="Full business address…" style={{ minHeight: 80 }} />
           </FormField>
           <FormField label="Default currency">
             <InputField id="s-currency" value={form.currency} onChange={setField('currency')} placeholder="INR" />

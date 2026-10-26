@@ -1,5 +1,5 @@
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Package,
   FileText,
@@ -79,7 +79,7 @@ export default function DashboardPage() {
             Good {getTimeOfDay()}, {user?.name?.split(' ')[0]}
           </h2>
           <p className="dashboard__welcome-sub">
-            Here's what's happening with <strong>{activeBusiness?.name}</strong> today.
+            Here’s what’s happening with <strong>{activeBusiness?.name}</strong> today.
           </p>
         </div>
         <div className="dashboard__actions">
@@ -265,7 +265,7 @@ export default function DashboardPage() {
                         className="table-row-link"
                         onClick={() => navigate(`/invoices/${inv.id}`)}
                       >
-                        <td className="table-link">{inv.invoice_number}</td>
+                        <td><Link to={`/invoices/${inv.id}`} className="table-link">{inv.invoice_number}</Link></td>
                         <td className="table-type">{inv.type}</td>
                         <td>{inv.customer_name}</td>
                         <td className="table-date">{formatDate(inv.issue_date)}</td>
@@ -288,7 +288,7 @@ export default function DashboardPage() {
               <h3 className="dash-card__title">Top Products</h3>
               <p className="dash-card__sub">Best sellers by revenue</p>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => navigate('/products')}>
+            <Button variant="ghost" size="sm" aria-label="View products" onClick={() => navigate('/products')}>
               <Package size={15} />
             </Button>
           </div>

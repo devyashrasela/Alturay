@@ -1271,7 +1271,9 @@ select.form-field__input:disabled {
   width: 100%;
   max-width: 520px;
   max-height: 90vh;
+  max-height: 90dvh;
   overflow-y: auto;
+  overscroll-behavior: contain;
   animation: modal-slide-up 200ms ease;
 }
 

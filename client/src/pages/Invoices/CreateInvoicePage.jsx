@@ -15,6 +15,12 @@ import { calculateInvoiceTotals } from '../../utils/calculateInvoiceTotals';
 
 const EMPTY_ITEM = { product_id: null, item_name: '', unit_price: '', quantity: 1, tax_rate: 0, item_discount_amount: 0, item_discount_percent: 0 };
 
+// Local calendar date (YYYY-MM-DD) — toISOString would slip to yesterday after midnight in UTC+ zones.
+const localDate = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
 export default function CreateInvoicePage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -31,7 +37,7 @@ export default function CreateInvoicePage() {
     type: defaultType,
     customer_name: '',
     customer_phone: '',
-    issue_date: new Date().toISOString().split('T')[0],
+    issue_date: localDate(),
     due_date: '',
     discount_amount: 0,
     discount_percent: 0,
@@ -113,7 +119,7 @@ export default function CreateInvoicePage() {
                 <InputField id="inv-due" type="date" value={form.due_date} onChange={setField('due_date')} />
               </FormField>
               <FormField label="Notes">
-                <InputField textarea id="inv-notes" placeholder="Payment terms, notes..." value={form.notes} onChange={setField('notes')} style={{ minHeight: 80 }} />
+                <InputField textarea id="inv-notes" placeholder="e.g. Net 30, bank transfer to ACME Ltd…" value={form.notes} onChange={setField('notes')} style={{ minHeight: 80 }} />
               </FormField>
             </div>
           </Card>
@@ -155,11 +161,11 @@ export default function CreateInvoicePage() {
                 <div className="inv-item-grid" key={i}>
                   {/* Product picker + name */}
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    <SelectDropdown value={item.product_id || ''} onChange={(e) => selectProduct(i, e.target.value)} style={{ height: 32, fontSize: 12, fontWeight: 400 }}>
-                      <option value="">Custom item...</option>
+                    <SelectDropdown aria-label="Select a product" value={item.product_id || ''} onChange={(e) => selectProduct(i, e.target.value)} style={{ height: 32, fontSize: 12, fontWeight: 400 }}>
+                      <option value="">Custom item…</option>
                       {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
                     </SelectDropdown>
-                    <InputField placeholder="Item name" value={item.item_name} onChange={setItemField(i, 'item_name')} style={{ height: 32, fontSize: 13 }} />
+                    <InputField aria-label="Item name" placeholder="Item name" value={item.item_name} onChange={setItemField(i, 'item_name')} style={{ height: 32, fontSize: 13 }} />
                   </div>
                   <div className="inv-item-field">
                     <span className="inv-item-field__label">Price</span>

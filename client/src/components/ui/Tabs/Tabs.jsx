@@ -4,7 +4,9 @@ export default function Tabs({ tabs, activeTab, onChange }) {
       {tabs.map((tab) => (
         <button
           key={tab.value}
+          type="button"
           className={`tabs__item ${activeTab === tab.value ? 'tabs__item--active' : ''}`}
+          aria-pressed={activeTab === tab.value}
           onClick={() => onChange(tab.value)}
         >
           {tab.label}

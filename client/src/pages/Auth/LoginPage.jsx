@@ -73,7 +73,7 @@ export default function LoginPage() {
             type="email"
             name="email"
             id="login-email"
-            placeholder="Enter your mail address"
+            placeholder="name@company.com"
             value={form.email}
             onChange={handleChange}
             error={errors.email}

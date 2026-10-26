@@ -90,7 +90,7 @@ export default function RegisterPage() {
             type="email"
             name="email"
             id="register-email"
-            placeholder="Enter your mail address"
+            placeholder="name@company.com"
             value={form.email}
             onChange={handleChange}
             error={errors.email}

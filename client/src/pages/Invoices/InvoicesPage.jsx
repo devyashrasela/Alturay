@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Plus, FileText } from 'lucide-react';
 import { useGetInvoicesQuery } from '../../store/api/invoiceApi';
 import Card from '../../components/ui/Card/Card';
@@ -76,7 +76,7 @@ export default function InvoicesPage() {
               className="invoice-search"
               value={search}
               onChange={(v) => { setSearch(v); setPage(1); }}
-              placeholder="Search invoices..."
+              placeholder="Search invoices…"
             />
           </div>
         </div>
@@ -111,7 +111,7 @@ export default function InvoicesPage() {
                       className="table-row-link"
                       onClick={() => navigate(`/invoices/${inv.id}`)}
                     >
-                      <td className="table-link">{inv.invoice_number}</td>
+                      <td><Link to={`/invoices/${inv.id}`} className="table-link">{inv.invoice_number}</Link></td>
                       <td className="table-type">{inv.type}</td>
                       <td>{inv.customer_name}</td>
                       <td className="table-date">{formatDate(inv.issue_date)}</td>

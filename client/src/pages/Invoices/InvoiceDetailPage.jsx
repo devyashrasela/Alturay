@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Download, ArrowLeft, CheckCircle, XCircle, Send } from 'lucide-react';
@@ -5,6 +6,7 @@ import { useGetInvoiceQuery, useUpdateInvoiceStatusMutation } from '../../store/
 import { addToast } from '../../store/slices/uiSlice';
 import Card from '../../components/ui/Card/Card';
 import Button from '../../components/ui/Button/Button';
+import ConfirmDialog from '../../components/ui/Modal/ConfirmDialog';
 import StatusBadge from '../../components/ui/Badge/StatusBadge';
 import { PageLoader } from '../../components/ui/Loader/Spinner';
 import { formatCurrency } from '../../utils/formatCurrency';
@@ -18,6 +20,7 @@ export default function InvoiceDetailPage() {
   const { activeBusinessId, activeBusiness } = useSelector((s) => s.business);
   const { data, isLoading } = useGetInvoiceQuery({ businessId: activeBusinessId, invoiceId: id }, { skip: !activeBusinessId });
   const [updateStatus, { isLoading: updatingStatus }] = useUpdateInvoiceStatusMutation();
+  const [confirmCancel, setConfirmCancel] = useState(false);
 
   const invoice = data?.data?.invoice;
 
@@ -56,7 +59,7 @@ export default function InvoiceDetailPage() {
             </Button>
           )}
           {invoice.status !== 'cancelled' && (
-            <Button variant="ghost" size="md" style={{ color: 'var(--color-danger)' }} onClick={() => handleStatus('cancelled')}>
+            <Button variant="ghost" size="md" style={{ color: 'var(--color-danger)' }} id="cancel-invoice-btn" onClick={() => setConfirmCancel(true)}>
               <XCircle size={15} /> Cancel
             </Button>
           )}
@@ -165,6 +168,16 @@ export default function InvoiceDetailPage() {
           </div>
         )}
       </Card>
+
+      {/* Cancel confirmation — cancelling is destructive and must not be immediate */}
+      <ConfirmDialog
+        isOpen={confirmCancel}
+        onClose={() => setConfirmCancel(false)}
+        onConfirm={() => { setConfirmCancel(false); handleStatus('cancelled'); }}
+        loading={updatingStatus}
+        title="Cancel Invoice"
+        message={`Are you sure you want to cancel ${invoice.invoice_number}? Cancelled invoices are excluded from revenue and can't be issued again.`}
+      />
     </div>
   );
 }
