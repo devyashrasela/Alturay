@@ -1,6 +1,7 @@
 import { useRef } from 'react';
 import LandingNavbar from '../../components/landing/LandingNavbar';
 import LandingHero from '../../components/landing/LandingHero';
+import LandingEverything from '../../components/landing/LandingEverything';
 import useHeroScrollSequence from './useHeroScrollSequence';
 import './landing.css';
 
@@ -22,9 +23,12 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Page-background run-out. A future section can replace this spacer
-            without changing the pinned timeline. */}
+        {/* Page-background run-out. The "Everything in One Place" section
+            below replaces the old spacer content without changing the pinned
+            timeline. */}
         <div className="landing-hero-release" aria-hidden="true" />
+
+        <LandingEverything />
       </main>
     </div>
   );
