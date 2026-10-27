@@ -1308,7 +1308,20 @@ body:has(.landing-page) {
   border-bottom: 1px solid rgba(10, 10, 11, 0.06);
 }
 
-/* ── Feature cards ─────────────────────────────────────────── */.landing-eio__cards {
+/* ── Navbar backdrop when the Multi-Business statement passes beneath the
+   fixed nav — the same contextual treatment the hero and the Everything-
+   in-One-Place heading use (their own class toggles it). Colors and layout
+   of the approved navbar are unchanged; only a backdrop is raised. */
+.landing-page.is-mb-under-nav .landing-nav {
+  background: rgba(255, 255, 255, 0.88);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(10, 10, 11, 0.06);
+}
+
+/* ── Feature cards ─────────────────────────────────────────── */
+
+.landing-eio__cards {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: clamp(18px, 1.9vw, 28px);
@@ -2207,5 +2220,789 @@ body:has(.landing-page) {
   .landing-mb--stats-armed .landing-mb-row:not(.landing-mb-row--in) .landing-mb-row__chip {
     opacity: 1;
     transform: rotate(-8deg);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   "FAQ"
+   Reference film grammar: plain document flow. After the previous section's
+   tail row exits, the centered heading and question list rise into the empty
+   band as one shared block with only an in-block trailing bias (never
+   independent per-row staggers and never a per-word cascade). Rows carry
+   hairline dividers + a light chevron from their first appearance. The
+   film's body-clamp look (rows riding ON TOP of the nav band as they exit)
+   is honored by the same under-nav treatment at page level. The film never
+   expands a row — the accordion's disclosure motion follows the film's
+   motion language (rise + fade, one shared ease). Film reveals an empty
+   fourth-row ghost at rest (question text faint); kept as a plain resting
+   row here.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.landing-faq {
+  position: relative;
+  padding:
+    clamp(88px, 13vh, 168px)
+    clamp(20px, 4.6vw, 64px)
+    clamp(108px, 15.5vh, 196px);
+  scroll-margin-top: calc(var(--landing-nav-height) + 16px);
+  background: var(--landing-paper);
+}
+
+.landing-faq__intro {
+  max-width: 1092px;
+  margin: 0 auto;
+}
+
+.landing-faq__title {
+  margin: 0 auto;
+  max-width: 560px;
+  text-align: center;
+  color: var(--landing-ink);
+  font-size: clamp(30px, 3.05vw, 44px);
+  font-weight: 540;
+  line-height: 1.2;
+  letter-spacing: -0.024em;
+}
+
+.landing-faq__title-line {
+  display: block;
+}
+
+/* ── Entrance: one shared block rise + in-block trailing bias ────────── */
+
+.landing-faq__title,
+.landing-faq__list {
+  transition:
+    opacity 460ms var(--landing-ease),
+    transform 700ms var(--landing-ease);
+}
+
+.landing-faq__item {
+  transition:
+    opacity 460ms var(--landing-ease),
+    transform 700ms var(--landing-ease);
+}
+
+/* the list rises with the heading; each row carries its proportional trailing
+   bias (deep rows trail slightly more — the film's in-block bias ≈ +1 row) */
+.landing-faq__item:nth-child(2) { transition-delay: 60ms; }
+.landing-faq__item:nth-child(3) { transition-delay: 120ms; }
+.landing-faq__item:nth-child(4) { transition-delay: 180ms; }
+.landing-faq__item:nth-child(5) { transition-delay: 240ms; }
+
+.landing-faq--armed:not(.landing-faq--revealed) .landing-faq__title {
+  opacity: 0;
+  transform: translateY(clamp(26px, 3.1vw, 42px));
+}
+
+.landing-faq--armed:not(.landing-faq--revealed) .landing-faq__item {
+  opacity: 0;
+  transform: translateY(clamp(30px, 3.6vw, 50px));
+}
+
+/* ── Question rows ────────────────────────────────────────────────────── */
+
+.landing-faq__list {
+  list-style: none;
+  margin: clamp(34px, 4.6vw, 72px) auto 0;
+  padding: 0;
+  max-width: 918px;
+}
+
+.landing-faq__item {
+  position: relative;
+}
+
+.landing-faq__divider {
+  display: block;
+  height: 1px;
+  margin: 0;
+  background: var(--landing-line);
+}
+
+.landing-faq__q {
+  margin: 0;
+  font: inherit;
+  font-weight: inherit;
+}
+
+.landing-faq__button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  margin: 0;
+  padding: clamp(19px, 1.9vw, 27px) clamp(2px, 0.3vw, 5px);
+  border: 0;
+  background: transparent;
+  color: var(--landing-ink);
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: clamp(16px, 1.5vw, 21.5px);
+  font-weight: 460;
+  line-height: 1.35;
+  letter-spacing: -0.008em;
+}
+
+.landing-faq__button:focus-visible {
+  outline: 2px solid var(--landing-ink);
+  outline-offset: 3px;
+}
+
+.landing-faq__chev {
+  flex: 0 0 auto;
+  color: var(--landing-ink-muted);
+  opacity: 0.75;
+  transition: transform 300ms var(--landing-ease);
+}
+
+/* ── Disclosure panel: reveals with a height animation (grid-rows trick) and
+   a rise + fade inside, in the film's motion language. When closed the inner
+   is visibility-hidden so nothing inside can be tabbed into. ─────────── */
+
+.landing-faq__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  visibility: hidden;
+  transition:
+    grid-template-rows 320ms var(--landing-ease),
+    visibility 0s linear 320ms;
+}
+
+.landing-faq__panel.is-open {
+  grid-template-rows: 1fr;
+  visibility: visible;
+  transition: grid-template-rows 320ms var(--landing-ease);
+}
+
+.landing-faq__panel-inner {
+  min-height: 0;
+  overflow: hidden;
+  padding: 2px clamp(2px, 0.3vw, 5px) clamp(18px, 1.8vw, 26px);
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: none;
+}
+
+.landing-faq__panel.is-open .landing-faq__panel-inner {
+  opacity: 1;
+  transform: translateY(0);
+  transition:
+    opacity 300ms var(--landing-ease) 60ms,
+    transform 300ms var(--landing-ease) 60ms;
+}
+
+.landing-faq__answer {
+  margin: 0;
+  max-width: 720px;
+  color: var(--landing-ink-muted);
+  font-size: clamp(14.5px, 1.18vw, 16.5px);
+  font-weight: 470;
+  line-height: 1.62;
+  letter-spacing: -0.005em;
+  text-wrap: pretty;
+}
+
+/* ── Under-nav crossing: raise the page-level nav backdrop. Own class —
+   independent of the other sections' toggles. ─────────────────────────── */
+
+.landing-page.is-faq-under-nav .landing-nav {
+  background: rgba(255, 255, 255, 0.88);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(10, 10, 11, 0.06);
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────── */
+
+@media (max-width: 760px) {
+  .landing-faq__intro {
+    max-width: 100%;
+  }
+
+  .landing-faq__list {
+    max-width: 100%;
+  }
+}
+
+/* ── Reduced motion: everything renders motionless ────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-faq__title,
+  .landing-faq__item,
+  .landing-faq__chev,
+  .landing-faq__panel,
+  .landing-faq__panel-inner {
+    transition: none;
+  }
+  .landing-faq--armed:not(.landing-faq--revealed) .landing-faq__title,
+  .landing-faq--armed:not(.landing-faq--revealed) .landing-faq__item {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* ═══════════════════════════════════════════════════════════════════════
+   "FINAL CTA"
+   Reference film: periwinkle rounded panel in the white field, plain flow
+   entry, lead-in color swatch riding above the panel's final top edge
+   (violet leaf + yellow + rose, inside the clip), heading centered within
+   the left half, white outline pill button, stationery illustration right,
+   bottom-right corner rounded more. Colors sampled from the film frames:
+   panel #7183F5, copy white; button outline white; rose/violet/yellow as
+   the brand trio. Drop space follows (footer reveal slot).
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.landing-cta {
+  --cta-panel: #7183F5;
+  --cta-panel-deep: #5B6EE0;
+
+  position: relative;
+  padding: clamp(8px, 1.2vw, 20px) clamp(20px, 4.6vw, 64px) 0;
+  scroll-margin-top: calc(var(--landing-nav-height) + 16px);
+  background: var(--landing-paper);
+}
+
+.landing-cta__panel {
+  position: relative;
+  max-width: 1288px;
+  margin: 0 auto;
+  border-radius: clamp(18px, 1.75vw, 26px);
+  border-bottom-right-radius: clamp(48px, 4.8vw, 68px);
+  background: linear-gradient(158deg, var(--cta-panel) 8%, var(--cta-panel-deep) 92%);
+  padding: clamp(44px, 5.5vw, 84px) clamp(24px, 4.2vw, 72px) clamp(52px, 6.5vw, 96px);
+  display: grid;
+  grid-template-columns: minmax(0, 1.12fr) minmax(0, 1fr);
+  align-items: center;
+  /* No overflow clip here: the film's lead-in swatch always rides ABOVE the
+     panel's final top edge (its grain continues off the panel edge), so the
+     swatch must be paintable outside this box. All panel children stay
+     inside the padding area by construction. */
+}
+
+.landing-cta__drop {
+  height: min(46vh, 460px);
+  background: var(--landing-paper);
+}
+
+/* ── Entrance: plain-flow rise + fade; the swatch rides its own clip ──── */
+
+.landing-cta__panel {
+  transition:
+    opacity 480ms var(--landing-ease),
+    transform 720ms var(--landing-ease);
+}
+
+.landing-cta__swatch {
+  transition:
+    transform 860ms var(--landing-ease),
+    opacity 420ms var(--landing-ease);
+}
+
+.landing-cta--armed:not(.landing-cta--revealed) .landing-cta__panel {
+  opacity: 0;
+  transform: translateY(clamp(30px, 3.8vw, 54px));
+}
+
+.landing-cta--armed:not(.landing-cta--revealed) .landing-cta__swatch {
+  opacity: 0;
+  transform: translateY(clamp(46px, 5.6vw, 88px)) rotate(4deg) scale(0.88);
+}
+
+.landing-cta--revealed .landing-cta__swatch {
+  transition-delay: 80ms;
+}
+
+/* ── Lead-in swatch (violet leaf + yellow + rose) ────────────────────── */
+
+.landing-cta__swatch {
+  position: absolute;
+  right: clamp(56px, 11vw, 196px);
+  top: clamp(-26px, -2vw, -14px);
+  z-index: 3;
+  width: clamp(52px, 5.4vw, 78px);
+  height: clamp(44px, 4.5vw, 66px);
+  pointer-events: none;
+}
+
+.landing-cta__swatch-leaf {
+  position: absolute;
+  inset: 0 12% 6% 0;
+  border-radius: 46% 54% 58% 42%;
+  background: var(--landing-violet);
+  transform: rotate(-8deg);
+}
+
+.landing-cta__swatch-pip {
+  position: absolute;
+  left: -18%;
+  top: 12%;
+  width: 34%;
+  height: 34%;
+  border-radius: 50%;
+  background: var(--landing-yellow);
+}
+
+.landing-cta__swatch-dot {
+  position: absolute;
+  right: -6%;
+  bottom: -4%;
+  width: 30%;
+  height: 30%;
+  border-radius: 50%;
+  background: var(--landing-pink);
+}
+
+/* ── Copy ─────────────────────────────────────────────────────────────── */
+
+.landing-cta__copy {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  justify-self: center;
+  max-width: 430px;
+}
+
+.landing-cta__title {
+  margin: 0;
+  color: #FFFFFF;
+  font-size: clamp(27px, 2.6vw, 37px);
+  font-weight: 520;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+}
+
+.landing-cta__title-line {
+  display: block;
+}
+
+.landing-cta__lede {
+  margin: clamp(14px, 1.6vw, 22px) auto 0;
+  max-width: 340px;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: clamp(14px, 1.15vw, 16px);
+  font-weight: 460;
+  line-height: 1.6;
+  letter-spacing: -0.008em;
+}
+
+.landing-cta__button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: clamp(26px, 3vw, 42px);
+  padding: 13px 30px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 999px;
+  color: #FFFFFF;
+  background: transparent;
+  font-size: clamp(13px, 1vw, 14.5px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  text-decoration: none;
+  transition:
+    background 220ms var(--landing-ease),
+    color 220ms var(--landing-ease),
+    border-color 220ms var(--landing-ease);
+}
+
+.landing-cta__button:hover {
+  background: #FFFFFF;
+  border-color: #FFFFFF;
+  color: var(--cta-panel-deep);
+}
+
+.landing-cta__button:focus-visible {
+  outline: 2px solid #FFFFFF;
+  outline-offset: 3px;
+}
+
+/* ── Illustration (flat brand-toned stationery mock) ─────────────────── */
+
+.landing-cta__art {
+  position: relative;
+  z-index: 1;
+  min-height: clamp(200px, 25vw, 340px);
+}
+
+.landing-cta__art-dot {
+  position: absolute;
+  right: 34%;
+  top: -8%;
+  width: clamp(24px, 2.4vw, 34px);
+  height: clamp(24px, 2.4vw, 34px);
+  border-radius: 50%;
+  background: #F8D648;
+}
+
+.landing-cta__art-card {
+  position: absolute;
+  left: 6%;
+  top: 6%;
+  width: clamp(150px, 15vw, 220px);
+  height: clamp(240px, 24vw, 320px);
+  border-radius: clamp(18px, 1.8vw, 26px);
+  background:
+    radial-gradient(120% 90% at 18% 10%, #7FA6FF 0%, #5F7DFF 34%, #4C5BE8 70%, #4646C9 100%);
+  transform: rotate(8deg);
+}
+
+.landing-cta__art-spiral {
+  position: absolute;
+  left: -12%;
+  top: -14%;
+  width: clamp(220px, 22vw, 320px);
+  height: clamp(220px, 22vw, 320px);
+  border-radius: 50%;
+  border: clamp(20px, 2.2vw, 30px) solid transparent;
+  border-radius: 50%;
+  background:
+    conic-gradient(from 210deg, #8E7BFF 0deg, #6D5BE8 110deg, #F28BB9 200deg, #8E7BFF 360deg);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - clamp(20px, 2.2vw, 30px)), #000 calc(100% - clamp(19px, 2.1vw, 29px)));
+  mask: radial-gradient(farthest-side, transparent calc(100% - clamp(20px, 2.2vw, 30px)), #000 calc(100% - clamp(19px, 2.1vw, 29px)));
+  transform: rotate(14deg);
+}
+
+.landing-cta__art-plane {
+  position: absolute;
+  left: 18%;
+  top: 34%;
+  width: clamp(64px, 6.4vw, 92px);
+  height: clamp(44px, 4.4vw, 62px);
+  transform: rotate(-12deg);
+  z-index: 2;
+}
+
+.landing-cta__art-plane-leaf {
+  position: absolute;
+  inset: 0 44% 6% 0;
+  border-radius: 42% 58% 46% 54%;
+  background: #FFF9F0;
+  box-shadow: 0 10px 24px -14px rgba(20, 7, 72, 0.55);
+}
+
+.landing-cta__art-plane-leaf--rose {
+  left: 42%;
+  right: 0;
+  border-radius: 58% 42% 52% 48%;
+  background: var(--landing-pink);
+}
+
+.landing-cta__art-tri {
+  position: absolute;
+  left: 30%;
+  bottom: 12%;
+  width: clamp(26px, 2.6vw, 38px);
+  height: clamp(26px, 2.6vw, 38px);
+  background: #F0523C;
+  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+  outline: none;
+  transform: rotate(10deg);
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────── */
+
+@media (max-width: 980px) {
+  .landing-cta__panel {
+    grid-template-columns: 1fr;
+    row-gap: clamp(30px, 4.5vw, 44px);
+  }
+
+  .landing-cta__art {
+    min-height: clamp(220px, 42vw, 300px);
+    max-width: 420px;
+    margin: 0 auto;
+    width: 100%;
+  }
+}
+
+/* ── Reduced motion ───────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-cta__panel,
+  .landing-cta__swatch {
+    transition: none;
+  }
+
+  .landing-cta--armed:not(.landing-cta--revealed) .landing-cta__panel {
+    opacity: 1;
+    transform: none;
+  }
+
+  .landing-cta--armed:not(.landing-cta--revealed) .landing-cta__swatch {
+    opacity: 1;
+    transform: none;
+  }
+}
+/* ═══════════════════════════════════════════════════════════════════════
+   "FOOTER"
+   Reference (footer-reference.png + films): a solid #000 sheet with rounded
+   top corners, arriving as the page's final normal-flow block (the entrance
+   film shows a plain scroll — no pin, no overlay reveal, nothing animates).
+   A white notch (the page above, ending just before the sheet) peeks over
+   the sheet's corners. Two-line display heading + pill action top-left;
+   newsletter block top-right (kept as a disabled, honestly-labelled
+   control — no fabricated delivery backend); giant wordmark bottom whose
+   letters deform around the pointer and reset cleanly on leave (hover
+   film: transform-only, no layout shift); copyright line bottom-left;
+   static subject chips bottom-right (no invented destinations). Font:
+   Mona Sans via the landing tokens.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+.landing-footer {
+  position: relative;
+  padding: 0 clamp(8px, 0.7vw, 12px);
+  background: var(--landing-paper);
+  scroll-margin-top: calc(var(--landing-nav-height) + 16px);
+}
+
+.landing-footer__sheet {
+  background: #000000;
+  border-radius: clamp(20px, 1.9vw, 30px) clamp(20px, 1.9vw, 30px) 0 0;
+  color: #FFFFFF;
+  padding:
+    clamp(48px, 5vw, 72px)
+    clamp(24px, 2.6vw, 40px)
+    clamp(30px, 3vw, 44px);
+}
+
+/* ── Top row: pitch (left) + newsletter (right) ───────────────────────── */
+
+.landing-footer__top {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+  gap: clamp(28px, 4vw, 64px);
+  align-items: start;
+}
+
+.landing-footer__title {
+  margin: 0;
+  color: #FFFFFF;
+  font-size: clamp(46px, 6.3vw, 92px);
+  font-weight: 480;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+
+.landing-footer__title-line {
+  display: block;
+}
+
+.landing-footer__collab {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: clamp(26px, 3vw, 42px);
+  padding: 15px 26px;
+  border-radius: 999px;
+  background: #FFFFFF;
+  color: var(--landing-ink);
+  font-size: clamp(11.5px, 0.95vw, 13px);
+  font-weight: 680;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  font-variant-ligatures: none;
+  text-decoration: none;
+  transition: opacity 200ms var(--landing-ease);
+}
+
+.landing-footer__collab:hover {
+  opacity: 0.82;
+}
+
+.landing-footer__collab:focus-visible {
+  outline: 2px solid #FFFFFF;
+  outline-offset: 3px;
+}
+
+.landing-footer__collab-arrow {
+  font-size: 0.9em;
+  line-height: 1;
+  transform: translateY(-0.5px);
+}
+
+/* Newsletter — reference wedge, honestly disabled */
+
+.landing-footer__news-label {
+  display: block;
+  color: rgba(255, 255, 255, 0.72);
+  font-size: clamp(10.5px, 0.85vw, 11.5px);
+  font-weight: 560;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.landing-footer__news-row {
+  display: flex;
+  margin-top: 14px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.07);
+  padding: 4px;
+}
+
+.landing-footer__input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  padding: 13px 14px;
+  color: rgba(255, 255, 255, 0.85);
+  font-family: inherit;
+  font-size: 13.5px;
+  letter-spacing: 0.01em;
+}
+
+.landing-footer__input::placeholder {
+  color: rgba(255, 255, 255, 0.38);
+}
+
+.landing-footer__subscribe {
+  flex: 0 0 auto;
+  border: 0;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.85);
+  color: #141414;
+  padding: 11px 18px;
+  font-size: 10.5px;
+  font-weight: 680;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: not-allowed;
+}
+
+.landing-footer__news-note {
+  margin: 10px 2px 0;
+  color: rgba(255, 255, 255, 0.42);
+  font-size: clamp(10.5px, 0.83vw, 11px);
+  font-weight: 460;
+  line-height: 1.5;
+  letter-spacing: 0.005em;
+}
+
+/* ── Bottom band: legal (left) + wordmark (right) ─────────────────────── */
+
+.landing-footer__bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 26px;
+  margin-top: clamp(64px, 11vw, 168px);
+}
+
+.landing-footer__legal {
+  margin: 0 0 10px;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: clamp(10px, 0.8vw, 10.5px);
+  font-weight: 500;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  line-height: 1.6;
+}
+
+.landing-footer__brand {
+  text-align: right;
+  min-width: 0;
+}
+
+/* Giant wordmark — per the hover film, letters deform around the pointer
+   (stair-step/liquid melt, transform-only) and reset cleanly on leave. */
+.landing-footer__word {
+  display: block;
+  color: #FFFFFF;
+  font-size: clamp(58px, 10.4vw, 150px);
+  font-weight: 500;
+  line-height: 0.96;
+  letter-spacing: -0.042em;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.landing-footer__glyphs {
+  display: inline-flex;
+  align-items: baseline;
+}
+
+.landing-footer__glyph {
+  display: inline-block;
+  transform-origin: 50% 88%;
+  transition: transform 240ms var(--landing-ease);
+  will-change: transform;
+}
+
+.landing-footer__word--hoverable {
+  cursor: pointer;
+}
+
+.landing-footer__word:focus-visible {
+  outline: 2px solid #FFFFFF;
+  outline-offset: 4px;
+}
+
+.landing-footer__chips {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: clamp(14px, 1.6vw, 22px);
+}
+
+.landing-footer__chip {
+  display: inline-block;
+  padding: 7px 14px;
+  border-radius: 999px;
+  background: #2A2A28;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 10.5px;
+  font-weight: 560;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────── */
+
+@media (max-width: 900px) {
+  .landing-footer__top {
+    grid-template-columns: 1fr;
+    gap: clamp(34px, 6vw, 44px);
+  }
+
+  .landing-footer__news {
+    max-width: 460px;
+  }
+}
+
+@media (max-width: 640px) {
+  .landing-footer__bottom {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 30px;
+    margin-top: clamp(40px, 9vw, 60px);
+  }
+
+  .landing-footer__word {
+    font-size: clamp(46px, 13.5vw, 96px);
+    text-align: left;
+    white-space: normal;
+    word-break: break-word;
+  }
+
+  .landing-footer__brand {
+    text-align: left;
+  }
+
+  .landing-footer__chips {
+    justify-content: flex-start;
+  }
+}
+
+/* ── Reduced motion ───────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-footer__collab,
+  .landing-footer__word,
+  .landing-footer__glyph {
+    transition: none;
   }
 }

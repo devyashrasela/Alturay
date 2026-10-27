@@ -2,6 +2,10 @@ import { useRef } from 'react';
 import LandingNavbar from '../../components/landing/LandingNavbar';
 import LandingHero from '../../components/landing/LandingHero';
 import LandingEverything from '../../components/landing/LandingEverything';
+import LandingMultiBusiness from '../../components/landing/LandingMultiBusiness';
+import LandingFaq from '../../components/landing/LandingFaq';
+import LandingFinalCta from '../../components/landing/LandingFinalCta';
+import LandingFooter from '../../components/landing/LandingFooter';
 import useHeroScrollSequence from './useHeroScrollSequence';
 import './landing.css';
 
@@ -29,6 +33,16 @@ export default function LandingPage() {
         <div className="landing-hero-release" aria-hidden="true" />
 
         <LandingEverything />
+
+        <LandingMultiBusiness />
+
+        {/* FAQ: next section in the same white field. Its own reveal runs as
+            the section's heading resolves out of the fold, like the film. */}
+        <LandingFaq />
+
+        <LandingFinalCta />
+
+        <LandingFooter />
       </main>
     </div>
   );
