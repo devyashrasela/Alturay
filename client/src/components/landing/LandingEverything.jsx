@@ -294,7 +294,19 @@ export default function LandingEverything() {
               <div className="landing-eio__frag-seal" />
             </div>
             <div className="landing-eio__frag landing-eio__frag--chip">
-              <span className="landing-eio__frag-monogram">Alturay</span>
+              <div className="landing-eio__marquee">
+                <div className="landing-eio__marquee-track">
+                  {[0, 1].map((copy) => (
+                    <span
+                      className="landing-eio__marquee-copy"
+                      key={copy}
+                      aria-hidden="true"
+                    >
+                      <span className="landing-eio__frag-monogram">Alturay</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         </div>

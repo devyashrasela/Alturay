@@ -6,8 +6,33 @@
 
 /* Keep overscroll and the browser canvas white while the landing
    page is mounted. This does not affect any application route. */
+
+html {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none;
+}
+
+
 body:has(.landing-page) {
   background-color: #FFFFFF;
+}
+
+/* Hide scrollbar while keeping page scrolling enabled */
+.landing-page {
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* Internet Explorer / Edge legacy */
+}
+
+.landing-page::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari, and other WebKit browsers */
 }
 
 .landing-page {
@@ -1067,7 +1092,7 @@ body:has(.landing-page) {
 .landing-eio__intro {
   position: relative;
   max-width: 1160px;
-  margin: 0 auto 300px;
+  margin: 0 auto 35vh;
   text-align: center;
 }
 
@@ -1182,10 +1207,47 @@ body:has(.landing-page) {
   background: var(--landing-yellow);
 }
 
+.landing-eio__marquee {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.landing-eio__marquee-track {
+  display: flex;
+  width: max-content;
+  animation: landing-eio-marquee 8s linear infinite;
+  will-change: transform;
+}
+
+.landing-eio__marquee-copy {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  gap: 0;
+}
+
+.landing-eio__frag-monogram {
+  display: block;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
+  white-space: nowrap;
+  letter-spacing: 0;
+}
+
+@keyframes landing-eio-marquee {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
 .landing-eio__frag-monogram {
   padding-left: 10%;
   color: #F9DE8A;
-  font-size: clamp(30px, 3.4vw, 48px);
+  font-size: clamp(30px, 8vw, 72px);
   font-weight: 720;
   line-height: 1;
   letter-spacing: -0.05em;
@@ -1266,7 +1328,7 @@ body:has(.landing-page) {
 }
 
 .landing-eio--revealed .landing-eio__frag--doc {
-  transition-delay: calc(var(--eio-cascade, 1200ms) + 60ms);
+  transition-delay: calc(var(--eio-cascade, 1200ms) - 60ms);
 }
 
 .landing-eio--revealed .landing-eio__frag--chip {
@@ -1291,29 +1353,6 @@ body:has(.landing-page) {
   .landing-eio--armed:not(.landing-eio--revealed) .landing-eio__frag--doc {
     transform: rotate(-9deg);
   }
-}
-
-/* ── Navbar backdrop when this section's heading passes beneath the
-   fixed nav. The hero already raises the nav over its artwork; this gives
-   the same contextual treatment over plain page content so the giant
-   heading and the nav labels never interleave illegibly. Colors and layout
-   of the approved navbar are unchanged — only a backdrop is added. */
-.landing-page.is-eio-under-nav .landing-nav {
-  background: rgba(255, 255, 255, 0.88);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(10, 10, 11, 0.06);
-}
-
-/* ── Navbar backdrop when the Multi-Business statement passes beneath the
-   fixed nav — the same contextual treatment the hero and the Everything-
-   in-One-Place heading use (their own class toggles it). Colors and layout
-   of the approved navbar are unchanged; only a backdrop is raised. */
-.landing-page.is-mb-under-nav .landing-nav {
-  background: rgba(255, 255, 255, 0.88);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(10, 10, 11, 0.06);
 }
 
 /* ── Feature cards ─────────────────────────────────────────── */
@@ -1847,9 +1886,38 @@ body:has(.landing-page) {
 
 .landing-mb__icon--orb {
   border-radius: 50%;
-  background:
-    radial-gradient(circle at 34% 28%, #FFE9A8 0%, var(--landing-yellow) 22%, var(--landing-pink) 52%, var(--landing-violet) 100%);
+  background: radial-gradient(circle at 34% 28%,
+      #FFE9A8 0%,
+      var(--landing-yellow) 22%,
+      var(--landing-pink) 52%,
+      var(--landing-violet) 100%);
+
+  /* Preserve the existing entrance transform */
   transform: scale(1);
+
+  /* Continuously levitate */
+  animation: landing-mb-orb-levitate 3.5s ease-in-out infinite;
+  will-change: translate;
+}
+
+@keyframes landing-mb-orb-levitate {
+
+  0%,
+  100% {
+    translate: 0 0;
+  }
+
+  50% {
+    translate: 0 -4px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-mb__icon--orb {
+    animation: none;
+    translate: none;
+    will-change: auto;
+  }
 }
 
 /* ── Entrance (armed → revealed once). Hidden state applies before first
@@ -2066,16 +2134,6 @@ body:has(.landing-page) {
   text-wrap: pretty;
 }
 
-/* ── Under-nav crossing: raise the page-level nav backdrop. Own class —
-   independent of the other sections' toggles. ─────────────────────────── */
-
-.landing-page.is-faq-under-nav .landing-nav {
-  background: rgba(255, 255, 255, 0.88);
-  -webkit-backdrop-filter: blur(14px);
-  backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(10, 10, 11, 0.06);
-}
-
 /* ── Responsive ───────────────────────────────────────────────────────── */
 
 @media (max-width: 760px) {
@@ -2123,7 +2181,7 @@ body:has(.landing-page) {
   --cta-panel-deep: #5B6EE0;
 
   position: relative;
-  padding: clamp(8px, 1.2vw, 20px) clamp(20px, 4.6vw, 64px) 0;
+  padding: clamp(8px, 1.2vw, 20px) clamp(20px, 4.6vw, 64px) clamp(56px, 7vw, 100px);
   scroll-margin-top: calc(var(--landing-nav-height) + 16px);
   background: var(--landing-paper);
 }
@@ -2146,8 +2204,8 @@ body:has(.landing-page) {
 }
 
 .landing-cta__drop {
-  height: min(46vh, 460px);
-  background: var(--landing-paper);
+  display: none;
+  height: 0;
 }
 
 /* ── Entrance: plain-flow rise + fade; the swatch rides its own clip ──── */
@@ -2403,32 +2461,94 @@ body:has(.landing-page) {
 
 /* ═══════════════════════════════════════════════════════════════════════
    "FOOTER"
-   Reference (footer-reference.png + films): a solid #000 sheet with rounded
-   top corners, arriving as the page's final normal-flow block (the entrance
-   film shows a plain scroll — no pin, no overlay reveal, nothing animates).
-   A white notch (the page above, ending just before the sheet) peeks over
-   the sheet's corners. Two-line display heading + pill action top-left;
-   newsletter block top-right (kept as a disabled, honestly-labelled
-   control — no fabricated delivery backend); giant wordmark bottom whose
-   letters deform around the pointer and reset cleanly on leave (hover
-   film: transform-only, no layout shift); copyright line bottom-left;
-   static subject chips bottom-right (no invented destinations). Font:
-   Mona Sans via the landing tokens.
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════════════
+   FOOTER TRANSITION — layered blue and yellow strips
    ═══════════════════════════════════════════════════════════════════════ */
 
 .landing-footer {
+  --footer-transition-blue: #7183F5;
+  --footer-transition-yellow: #F5D65E;
+  --footer-strip-step: clamp(20px, 1.9vw, 28px);
+  --footer-radius: clamp(20px, 1.9vw, 30px);
+  --footer-side-inset: clamp(8px, 0.7vw, 12px);
+
   position: relative;
-  padding: 0 clamp(8px, 0.7vw, 12px);
+  padding: calc(2 * var(--footer-strip-step)) var(--footer-side-inset) 0;
+  margin-top: 0;
   background: var(--landing-paper);
   scroll-margin-top: calc(var(--landing-nav-height) + 16px);
+  overflow: visible;
 }
 
+/* Scroll-linked footer transition strips wrapper */
+.landing-footer__transition {
+  position: absolute;
+  top: 0;
+  left: var(--footer-side-inset);
+  right: var(--footer-side-inset);
+  height: calc(2 * var(--footer-strip-step));
+  pointer-events: none;
+}
+
+/* Blue strip (bottom layer: z-index 1, enters first) */
+.landing-footer__transition-blue {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: clamp(80px, 8vw, 120px);
+  display: block;
+  border-radius: var(--footer-radius) var(--footer-radius) 0 0;
+  background: var(--footer-transition-blue);
+  z-index: 1;
+}
+
+/* Yellow strip (middle layer: z-index 2, enters 28px behind blue) */
+.landing-footer__transition-yellow {
+  position: absolute;
+  top: var(--footer-strip-step);
+  left: 0;
+  right: 0;
+  height: clamp(80px, 8vw, 120px);
+  display: block;
+  border-radius: var(--footer-radius) var(--footer-radius) 0 0;
+  background: var(--footer-transition-yellow);
+  z-index: 2;
+}
+
+/* Black sheet (top layer: z-index 3, enters 28px behind yellow) */
 .landing-footer__sheet {
+  position: relative;
+  z-index: 3;
+  margin-top: 0;
   background: #000000;
-  border-radius: clamp(20px, 1.9vw, 30px) clamp(20px, 1.9vw, 30px) 0 0;
+  border-radius: var(--footer-radius) var(--footer-radius) 0 0;
   color: #FFFFFF;
-  padding:
-    clamp(48px, 5vw, 72px) clamp(24px, 2.6vw, 40px) clamp(30px, 3vw, 44px);
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow: hidden;
+  box-shadow: 0 -12px 32px -16px rgba(0, 0, 0, 0.45);
+}
+
+/* Pinned inner content: stays pinned at the viewport bottom during sheet entrance */
+.landing-footer__inner {
+  min-height: 100vh;
+  min-height: 100dvh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: clamp(48px, 5vw, 72px) clamp(24px, 2.6vw, 40px) clamp(30px, 3vw, 44px);
+  will-change: transform;
+}
+
+/* Respect reduced-motion preferences. */
+@media (prefers-reduced-motion: reduce) {
+  .landing-footer__inner {
+    transform: none !important;
+  }
 }
 
 /* ── Top row: pitch (left) + newsletter (right) ───────────────────────── */
@@ -2443,7 +2563,7 @@ body:has(.landing-page) {
 .landing-footer__title {
   margin: 0;
   color: #FFFFFF;
-  font-size: clamp(46px, 6.3vw, 92px);
+  font-size: clamp(46px, calc(4.8vw + 10px), 78px);
   font-weight: 480;
   line-height: 1.08;
   letter-spacing: -0.03em;

@@ -108,9 +108,6 @@ export default function LandingFinalCta() {
           <span className="landing-cta__swatch-dot" />
         </span>
       </div>
-
-      {/* The footer reveal's breathing room. */}
-      <div className="landing-cta__drop" aria-hidden="true" />
     </section>
   );
 }

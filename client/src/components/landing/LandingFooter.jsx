@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import useFooterScrollTransition from '../../pages/Landing/useFooterScrollTransition';
 
 /*
  * "Footer" landing section.
@@ -33,6 +34,10 @@ const WORDMARK = 'ALTURAY'.split('');
 
 export default function LandingFooter() {
   const wordRef = useRef(null);
+  const sheetRef = useRef(null);
+  const innerRef = useRef(null);
+
+  useFooterScrollTransition({ sheetRef, innerRef });
 
   /*
    * Wordmark hover (per the hover film): letters near the pointer deform
@@ -121,61 +126,66 @@ export default function LandingFooter() {
 
   return (
     <footer className="landing-footer" id="footer">
-      <div className="landing-footer__sheet">
-        <div className="landing-footer__top">
-          <div className="landing-footer__pitch">
-            <h2 className="landing-footer__title">
-              <span className="landing-footer__title-line">Let’s explore</span>
-              <span className="landing-footer__title-line">what’s next</span>
-            </h2>
-            <Link className="landing-footer__collab" to="/register">
-              Get started
-              <span className="landing-footer__collab-arrow" aria-hidden="true">▸</span>
-            </Link>
-          </div>
-
-          <div className="landing-footer__news">
-            <span className="landing-footer__news-label">Join our newsletter</span>
-            <div className="landing-footer__news-row">
-              <input
-                className="landing-footer__input"
-                type="email"
-                name="email"
-                placeholder="Email address"
-                aria-label="Email address"
-                autoComplete="off"
-                disabled
-              />
-              <button type="button" className="landing-footer__subscribe" disabled tabIndex={-1}>
-                Subscribe
-              </button>
+      <div className="landing-footer__transition" aria-hidden="true">
+        <span className="landing-footer__transition-blue" />
+        <span className="landing-footer__transition-yellow" />
+      </div>
+      <div className="landing-footer__sheet" ref={sheetRef}>
+        <div className="landing-footer__inner" ref={innerRef}>
+          <div className="landing-footer__top">
+            <div className="landing-footer__pitch">
+              <h2 className="landing-footer__title">
+                <span className="landing-footer__title-line">Let’s explore</span>
+                <span className="landing-footer__title-line">what’s next</span>
+              </h2>
+              <Link className="landing-footer__collab" to="/register">
+                Get started
+              </Link>
             </div>
-            <p className="landing-footer__news-note">
-              Subscriptions aren’t wired up in this preview build yet.
-            </p>
-          </div>
-        </div>
 
-        <div className="landing-footer__bottom">
-          <div>
-            <p className="landing-footer__legal">© Alturay 2026. All rights reserved.</p>
+            <div className="landing-footer__news">
+              <span className="landing-footer__news-label">Join our newsletter</span>
+              <div className="landing-footer__news-row">
+                <input
+                  className="landing-footer__input"
+                  type="email"
+                  name="email"
+                  placeholder="Email address"
+                  aria-label="Email address"
+                  autoComplete="off"
+                  disabled
+                />
+                <button type="button" className="landing-footer__subscribe" disabled tabIndex={-1}>
+                  Subscribe
+                </button>
+              </div>
+              <p className="landing-footer__news-note">
+                Subscriptions aren’t wired up in this preview build yet.
+              </p>
+            </div>
           </div>
-          <div className="landing-footer__brand">
-            <span className="landing-footer__word" id="landing-footer-word" ref={wordRef}>
-              <span className="sr-only">ALTURAY</span>
-              <span className="landing-footer__glyphs" aria-hidden="true">
-                {WORDMARK.map((letter, index) => (
-                  <span className="landing-footer__glyph" key={`${letter}-${index}`}>
-                    {letter}
-                  </span>
-                ))}
+
+          <div className="landing-footer__bottom">
+            <div>
+              <p className="landing-footer__legal">© Alturay 2026. All rights reserved.</p>
+            </div>
+            <div className="landing-footer__brand">
+              <span className="landing-footer__word" id="landing-footer-word" ref={wordRef}>
+                <span className="sr-only">ALTURAY</span>
+                <span className="landing-footer__glyphs" aria-hidden="true">
+                  {WORDMARK.map((letter, index) => (
+                    <span className="landing-footer__glyph" key={`${letter}-${index}`}>
+                      {letter}
+                    </span>
+                  ))}
+                </span>
               </span>
-            </span>
-            <div className="landing-footer__chips">
-              <span className="landing-footer__chip">Alturay Studio</span>
-              <span className="landing-footer__chip">Multi-Business</span>
-              <span className="landing-footer__chip">Billing</span>
-              <span className="landing-footer__chip">Team access</span>
+              <div className="landing-footer__chips">
+                <span className="landing-footer__chip">Alturay Studio</span>
+                <span className="landing-footer__chip">Multi-Business</span>
+                <span className="landing-footer__chip">Billing</span>
+                <span className="landing-footer__chip">Team access</span>
+              </div>
             </div>
           </div>
         </div>
