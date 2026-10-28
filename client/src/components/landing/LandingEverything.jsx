@@ -1,39 +1,88 @@
-import { Fragment, useEffect, useRef, useState } from 'react';
+import { Fragment, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ArrowRight } from 'lucide-react';
 
 /*
  * "Everything in One Place" landing section.
  *
- * Composition follows the section reference film: a giant centered type
- * moment that resolves through a left-to-right cascade of characters
- * rising into the line, then two fragments that pop in with a short
- * center-anchored scale while the page keeps scrolling normally. The
- * card row rises in normal flow with the first card leading by a small
- * offset before it settles level. Nothing is pinned or scrubbed; all
- * decorative elements are aria-hidden and the cards are static
- * illustrations, not clickable controls.
+ * Composition follows the section reference film:
+ *  1. a giant centered heading resolves through a left-to-right cascade of
+ *     characters rising into the line;
+ *  2. two fragments (doc + chip), anchored to the heading itself, pop in with
+ *     a short center-anchored scale once the cascade has finished;
+ *  3. the card row enters in normal flow: each card scales up from ~35% about
+ *     its own center, left to right, while the middle card stays raised.
+ *
+ * Nothing is pinned or scrubbed. Decorative elements are aria-hidden and the
+ * cards are static illustrations, not controls.
  */
 
 const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
 
-/* Heading text split once at module scope. Spaces advance the stagger
-   index (they give words their beat in the cascade) but are not wrapped
-   in animated spans, and words become atomic inline-blocks so line
-   breaking still happens between words at every width. */
+const STAGGER_MS = 18; // delay between consecutive characters
+const WORD_GAP_STEPS = 2; // extra "beats" between words (spaces advance the index)
+const CHAR_RISE_MS = 380; // must match the .landing-eio__char transform duration
+
+/* Heading text split once at module scope. Spaces are not wrapped in animated
+   spans, but they DO advance the stagger index so words get their beat in the
+   cascade. Words are atomic inline-blocks so line breaking still happens
+   between words at every width. CASCADE_MS is the time at which the last
+   character has finished rising; the fragments and lede key off it. */
 const TITLE_LINES = ['Everything you need.', 'All in one place.'];
-const TITLE_CHARS = (() => {
+const { TITLE_CHARS, CASCADE_MS } = (() => {
   let index = 0;
-  return TITLE_LINES.map((line) =>
-    line.split(' ').map((word) =>
-      Array.from(word).map((char) => ({
+  const lines = TITLE_LINES.map((line) =>
+    line.split(' ').map((word) => {
+      const chars = Array.from(word).map((char) => ({
         char,
-        delay: `${index++ * 18}ms`,
-      })),
-    ),
+        delay: `${index++ * STAGGER_MS}ms`,
+      }));
+      index += WORD_GAP_STEPS;
+      return chars;
+    }),
   );
+  return { TITLE_CHARS: lines, CASCADE_MS: index * STAGGER_MS + CHAR_RISE_MS };
 })();
 
-function PRODUCTS_PANEL() {
+/* ── Reveal-once hook ──────────────────────────────────────────────────────
+   none     → reduced motion / no IntersectionObserver: content just shows.
+   armed    → hidden state applied BEFORE first paint (layout effect), so the
+              content never flashes visible and then disappears.
+   revealed → plays once and stays resolved.
+
+   Reveals when the node intersects OR when it is already above the viewport
+   (restored scroll position, deep link below the section, fast scroll), so
+   the content can never stay hidden forever. */
+function useRevealOnce(ref, rootMargin) {
+  const [state, setState] = useState('none');
+
+  useLayoutEffect(() => {
+    if (window.matchMedia(REDUCED_MOTION_QUERY).matches) return undefined;
+    if (typeof IntersectionObserver === 'undefined') return undefined;
+    const node = ref.current;
+    if (!node) return undefined;
+
+    setState('armed');
+    const io = new IntersectionObserver(
+      (entries) => {
+        const hit = entries.some(
+          (entry) => entry.isIntersecting || entry.boundingClientRect.top < 0,
+        );
+        if (hit) {
+          setState('revealed');
+          io.disconnect();
+        }
+      },
+      { rootMargin },
+    );
+    io.observe(node);
+
+    return () => io.disconnect();
+  }, [ref, rootMargin]);
+
+  return state;
+}
+
+function ProductsPanel() {
   return (
     <div
       className="landing-eio-card__panel landing-eio-card__panel--violet"
@@ -58,7 +107,7 @@ function PRODUCTS_PANEL() {
   );
 }
 
-function BILLING_PANEL() {
+function BillingPanel() {
   return (
     <div
       className="landing-eio-card__panel landing-eio-card__panel--pink"
@@ -89,7 +138,7 @@ function BILLING_PANEL() {
   );
 }
 
-function TEAM_PANEL() {
+function TeamPanel() {
   return (
     <div
       className="landing-eio-card__panel landing-eio-card__panel--yellow"
@@ -123,107 +172,59 @@ const CARDS = [
   {
     title: 'Products',
     description: 'Keep your business’s product catalog organized and easy to manage.',
-    panel: PRODUCTS_PANEL(),
+    panel: <ProductsPanel />,
     modifier: 'landing-eio-card--first',
   },
   {
     title: 'Billing & Invoices',
     description: 'Create professional invoices and keep your billing workflow organized.',
-    panel: BILLING_PANEL(),
+    panel: <BillingPanel />,
     modifier: 'landing-eio-card--middle',
   },
   {
     title: 'Team Access',
     description: 'Give team members access to the businesses they need to work with.',
-    panel: TEAM_PANEL(),
+    panel: <TeamPanel />,
     modifier: 'landing-eio-card--last',
   },
 ];
 
 export default function LandingEverything() {
-  const [reveal, setReveal] = useState('none'); // none | armed | revealed
-  const [cardsReveal, setCardsReveal] = useState('none'); // none | armed | revealed
-  const cardsRef = useRef(null);
   const titleRef = useRef(null);
+  const cardsRef = useRef(null);
+
+  // Heading cascade starts when the HEADING (not the whole intro block)
+  // reaches the lower third of the viewport; the card row has its own beat.
+  const reveal = useRevealOnce(titleRef, '0px 0px -28% 0px');
+  const cardsReveal = useRevealOnce(cardsRef, '0px 0px -14% 0px');
 
   useEffect(() => {
-    if (window.matchMedia(REDUCED_MOTION_QUERY).matches) return undefined;
-    if (typeof IntersectionObserver === 'undefined') return undefined;
+    const targets = [titleRef.current, cardsRef.current].filter(Boolean);
+    const page = targets[0]?.closest('.landing-page');
+    if (!page) return undefined;
 
-    // The intro reveal mirrors the reference: the character cascade starts
-    // when the heading band enters the lower third of the viewport, and it
-    // plays once (it keeps its resolved state afterwards).
-    const node = document.getElementById('landing-eio-intro');
-    if (!node) return undefined;
-
-    let io;
-    // Attach the armed state after paint so the entrance transition runs.
-    const arm = window.requestAnimationFrame(() => {
-      setReveal('armed');
-      io = new IntersectionObserver(
-        (entries) => {
-          if (entries.some((entry) => entry.isIntersecting)) {
-            setReveal('revealed');
-            io.disconnect();
-          }
-        },
-        { rootMargin: '0px 0px -28% 0px' },
-      );
-      io.observe(node);
-    });
-
-    return () => {
-      window.cancelAnimationFrame(arm);
-      io?.disconnect();
-    };
-  }, []);
-
-  useEffect(() => {
-    if (window.matchMedia(REDUCED_MOTION_QUERY).matches) return undefined;
-    if (typeof IntersectionObserver === 'undefined') return undefined;
-    const node = cardsRef.current;
-    if (!node) return undefined;
-
-    // The card row has its own beat: it enters in normal flow, with the
-    // first card settling level with the others shortly after the row
-    // arrives (measured in both reference films).
-    let io;
-    const arm = window.requestAnimationFrame(() => {
-      setCardsReveal('armed');
-      io = new IntersectionObserver(
-        (entries) => {
-          if (entries.some((entry) => entry.isIntersecting)) {
-            setCardsReveal('revealed');
-            io.disconnect();
-          }
-        },
-        { rootMargin: '0px 0px -14% 0px' },
-      );
-      io.observe(node);
-    });
-
-    return () => {
-      window.cancelAnimationFrame(arm);
-      io?.disconnect();
-    };
-  }, []);
-
-  useEffect(() => {
-    const title = titleRef.current;
-    const nav = document.querySelector('.landing-nav');
-    const page = title?.closest('.landing-page');
-    if (!title || !nav || !page) return undefined;
-
-    // Keep the navbar legible while the giant heading passes beneath it.
-    // Same contextual treatment the hero applies when its artwork reaches
-    // the nav (the hero toggles is-hero-art-under-nav).
+    // Keep the navbar legible while the giant heading OR the card row passes
+    // beneath it. The nav is looked up lazily so a late-mounting nav is still
+    // found, and the class is toggled only when the state actually changes.
+    let nav = null;
     let frame = 0;
+    let wasUnder = false;
+
     const update = () => {
       frame = 0;
-      const rect = title.getBoundingClientRect();
+      if (!nav || !nav.isConnected) nav = page.querySelector('.landing-nav');
+      if (!nav) return;
+
       const navHeight = nav.getBoundingClientRect().height;
-      const under = rect.top < navHeight && rect.bottom > 0;
-      page.classList.toggle('is-eio-under-nav', under);
+      const under = targets.some((el) => {
+        const rect = el.getBoundingClientRect();
+        return rect.top < navHeight && rect.bottom > 0;
+      });
+
+      if (under !== wasUnder) {
+        wasUnder = under;
+        page.classList.toggle('is-eio-under-nav', under);
+      }
     };
     const request = () => {
       if (!frame) frame = window.requestAnimationFrame(update);
@@ -251,59 +252,63 @@ export default function LandingEverything() {
         `${cardsReveal === 'armed' ? ' landing-eio--cards-armed' : ''}` +
         `${cardsReveal === 'revealed' ? ' landing-eio--cards-revealed' : ''}`
       }
+      style={{ '--eio-cascade': `${CASCADE_MS}ms` }}
       aria-labelledby="landing-eio-title"
     >
       <div className="landing-eio__intro" id="landing-eio-intro">
         <p className="landing-eio__eyebrow">BUILT FOR YOUR BUSINESS</p>
 
-        <h2 className="landing-eio__title" id="landing-eio-title" ref={titleRef}>
-          <span className="landing-eio__sr">Everything you need. All in one
-            place.</span>
-          <span aria-hidden="true" className="landing-eio__title-copy">
-            {TITLE_CHARS.map((words, lineIndex) => (
-              <Fragment key={lineIndex}>
-                {lineIndex === 1 ? <br className="landing-eio__break" /> : null}
-                {words.map((chars, wordIndex) => (
-                  <Fragment key={wordIndex}>
-                    <span className="landing-eio__word">
-                      {chars.map((item, charIndex) => (
-                        <span
-                          key={charIndex}
-                          className="landing-eio__char"
-                          style={{ transitionDelay: item.delay }}
-                        >
-                          {item.char}
-                        </span>
-                      ))}
-                    </span>
-                    {wordIndex < words.length - 1 ? ' ' : ''}
-                  </Fragment>
-                ))}
-              </Fragment>
-            ))}
-          </span>
-        </h2>
+        {/* The fragments live INSIDE this wrapper so they are positioned
+            against the heading box itself, not the whole intro block. */}
+        <div className="landing-eio__headline">
+          <h2 className="landing-eio__title" id="landing-eio-title" ref={titleRef}>
+            <span className="landing-eio__sr">Everything you need. All in one place.</span>
+            <span aria-hidden="true" className="landing-eio__title-copy">
+              {TITLE_CHARS.map((words, lineIndex) => (
+                <Fragment key={lineIndex}>
+                  {lineIndex === 1 ? <br className="landing-eio__break" /> : null}
+                  {words.map((chars, wordIndex) => (
+                    <Fragment key={wordIndex}>
+                      <span className="landing-eio__word">
+                        {chars.map((item, charIndex) => (
+                          <span
+                            key={charIndex}
+                            className="landing-eio__char"
+                            style={{ transitionDelay: item.delay }}
+                          >
+                            {item.char}
+                          </span>
+                        ))}
+                      </span>
+                      {wordIndex < words.length - 1 ? ' ' : ''}
+                    </Fragment>
+                  ))}
+                </Fragment>
+              ))}
+            </span>
+          </h2>
 
-        <p className="landing-eio__lede">
-          Manage products, create invoices, and bring your team together without
-          juggling multiple tools.
-        </p>
-
-        <div className="landing-eio__fragments" aria-hidden="true">
-          <div className="landing-eio__frag landing-eio__frag--doc">
-            <div className="landing-eio__frag-sheet" />
-            <div className="landing-eio__frag-seal" />
-          </div>
-          <div className="landing-eio__frag landing-eio__frag--chip">
-            <span className="landing-eio__frag-monogram">Alturay</span>
+          <div className="landing-eio__fragments" aria-hidden="true">
+            <div className="landing-eio__frag landing-eio__frag--doc">
+              <div className="landing-eio__frag-sheet" />
+              <div className="landing-eio__frag-seal" />
+            </div>
+            <div className="landing-eio__frag landing-eio__frag--chip">
+              <span className="landing-eio__frag-monogram">Alturay</span>
+            </div>
           </div>
         </div>
+
+        <p className="landing-eio__lede">
+          Manage products, create invoices, and bring your team together.
+        </p>
       </div>
 
       <ul className="landing-eio__cards" ref={cardsRef}>
-        {CARDS.map((card) => (
+        {CARDS.map((card, index) => (
           <li
             className={`landing-eio-card${card.modifier ? ` ${card.modifier}` : ''}`}
+            style={{ '--i': index }}
             key={card.title}
           >
             <div className="landing-eio-card__head">

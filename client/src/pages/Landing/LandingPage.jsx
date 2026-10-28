@@ -7,9 +7,11 @@ import LandingFaq from '../../components/landing/LandingFaq';
 import LandingFinalCta from '../../components/landing/LandingFinalCta';
 import LandingFooter from '../../components/landing/LandingFooter';
 import useHeroScrollSequence from './useHeroScrollSequence';
+import useSmoothScroll from './Usesmoothscroll';
 import './landing.css';
 
 export default function LandingPage() {
+  useSmoothScroll();
   const sequenceRef = useRef(null);
   const stageRef = useRef(null);
   const motionEnabled = useHeroScrollSequence({ sequenceRef, stageRef });

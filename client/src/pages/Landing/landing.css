@@ -24,7 +24,7 @@ body:has(.landing-page) {
   --landing-yellow: #F5C84B;
   --landing-pink: #F28BB9;
   --hero-scroll-distance: 140dvh;
-  --hero-release-distance: 40dvh;
+  --hero-release-distance: 30dvh;
 
   min-height: 100dvh;
   overflow-x: clip;
@@ -415,6 +415,7 @@ body:has(.landing-page) {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .landing-nav__link,
   .landing-nav__login,
   .landing-nav__cta,
@@ -434,9 +435,7 @@ body:has(.landing-page) {
 .landing-hero {
   position: relative;
   padding:
-    calc(var(--landing-nav-height) + clamp(24px, 3.4vw, 42px))
-    clamp(20px, 4.2vw, 60px)
-    clamp(68px, 8vw, 116px);
+    calc(var(--landing-nav-height) + clamp(24px, 3.4vw, 42px)) clamp(20px, 4.2vw, 60px) clamp(68px, 8vw, 116px);
   text-align: center;
 }
 
@@ -513,8 +512,7 @@ body:has(.landing-page) {
 
 .landing-page--motion .landing-hero__art {
   transform:
-    translate3d(0, calc(var(--hero-shift-y, 0px) * var(--hero-expand, 0)), 0)
-    scale(calc(1 + (var(--hero-scale, 1) - 1) * var(--hero-expand, 0)));
+    translate3d(0, calc(var(--hero-shift-y, 0px) * var(--hero-expand, 0)), 0) scale(calc(1 + (var(--hero-scale, 1) - 1) * var(--hero-expand, 0)));
   transform-origin: 50% 50%;
   will-change: transform;
 }
@@ -666,13 +664,9 @@ body:has(.landing-page) {
   left: 5.5%;
   top: 14%;
   transform:
-    translate3d(
-      calc(var(--ui-drift-x) * var(--hero-expand, 0)),
+    translate3d(calc(var(--ui-drift-x) * var(--hero-expand, 0)),
       calc(var(--ui-drift-y) * var(--hero-expand, 0)),
-      0
-    )
-    rotate(calc(var(--ui-rotate) * (1 - var(--hero-expand, 0) * 0.55)))
-    scale(calc(1 + (var(--ui-scale) - 1) * var(--hero-expand, 0)));
+      0) rotate(calc(var(--ui-rotate) * (1 - var(--hero-expand, 0) * 0.55))) scale(calc(1 + (var(--ui-scale) - 1) * var(--hero-expand, 0)));
 }
 
 .landing-hero__ui--invoice {
@@ -683,13 +677,9 @@ body:has(.landing-page) {
   right: 5.5%;
   top: 17.5%;
   transform:
-    translate3d(
-      calc(var(--ui-drift-x) * var(--hero-expand, 0)),
+    translate3d(calc(var(--ui-drift-x) * var(--hero-expand, 0)),
       calc(var(--ui-drift-y) * var(--hero-expand, 0)),
-      0
-    )
-    rotate(calc(var(--ui-rotate) * (1 - var(--hero-expand, 0) * 0.55)))
-    scale(calc(1 + (var(--ui-scale) - 1) * var(--hero-expand, 0)));
+      0) rotate(calc(var(--ui-rotate) * (1 - var(--hero-expand, 0) * 0.55))) scale(calc(1 + (var(--ui-scale) - 1) * var(--hero-expand, 0)));
 }
 
 .landing-hero__ui--access {
@@ -700,13 +690,9 @@ body:has(.landing-page) {
   left: 50%;
   bottom: 7%;
   transform:
-    translate3d(
-      calc(-50% + var(--ui-drift-x) * var(--hero-expand, 0)),
+    translate3d(calc(-50% + var(--ui-drift-x) * var(--hero-expand, 0)),
       calc(var(--ui-drift-y) * var(--hero-expand, 0)),
-      0
-    )
-    rotate(calc(var(--ui-rotate) * (1 - var(--hero-expand, 0) * 0.55)))
-    scale(calc(1 + (var(--ui-scale) - 1) * var(--hero-expand, 0)));
+      0) rotate(calc(var(--ui-rotate) * (1 - var(--hero-expand, 0) * 0.55))) scale(calc(1 + (var(--ui-scale) - 1) * var(--hero-expand, 0)));
 }
 
 .landing-hero__ui-head {
@@ -751,7 +737,7 @@ body:has(.landing-page) {
   margin-top: 10px;
 }
 
-.landing-hero__product-row + .landing-hero__product-row {
+.landing-hero__product-row+.landing-hero__product-row {
   margin-top: 8px;
   padding-top: 8px;
   border-top: 1px solid #F1EEF5;
@@ -857,7 +843,7 @@ body:has(.landing-page) {
   font-weight: 700;
 }
 
-.landing-hero__avatar + .landing-hero__avatar {
+.landing-hero__avatar+.landing-hero__avatar {
   margin-left: -7px;
 }
 
@@ -1056,8 +1042,14 @@ body:has(.landing-page) {
 
 /* Anchor scroll lands the heading below the fixed navbar. */
 @media (prefers-reduced-motion: no-preference) {
-  html:has(.landing-page) {
-    scroll-behavior: smooth;
+
+  html.lenis,
+  html.lenis body {
+    height: auto;
+  }
+
+  .lenis.lenis-smooth {
+    scroll-behavior: auto !important;
   }
 }
 
@@ -1067,9 +1059,7 @@ body:has(.landing-page) {
 
   position: relative;
   padding:
-    clamp(84px, 12.5vh, 156px)
-    clamp(20px, 4.6vw, 64px)
-    clamp(96px, 13vh, 172px);
+    clamp(84px, 12.5vh, 156px) clamp(20px, 4.6vw, 64px) clamp(96px, 13vh, 172px);
   scroll-margin-top: calc(var(--landing-nav-height) + 16px);
   background: var(--landing-paper);
 }
@@ -1077,7 +1067,7 @@ body:has(.landing-page) {
 .landing-eio__intro {
   position: relative;
   max-width: 1160px;
-  margin: 0 auto;
+  margin: 0 auto 300px;
   text-align: center;
 }
 
@@ -1091,8 +1081,15 @@ body:has(.landing-page) {
   text-transform: uppercase;
 }
 
-.landing-eio__title {
+.landing-eio__headline {
+  position: relative;
+  width: fit-content;
+  max-width: 100%;
   margin: clamp(16px, 2.2vw, 26px) auto 0;
+}
+
+.landing-eio__title {
+  margin: 0;
   color: var(--landing-ink);
   font-size: clamp(27px, 7.8vw, 112px);
   font-weight: 560;
@@ -1128,8 +1125,8 @@ body:has(.landing-page) {
    reference's envelope, which clears the giant word). Bottom-anchored so it
    clears the heading at every size. */
 .landing-eio__frag--doc {
-  left: clamp(-8px, 1vw, 20px);
-  bottom: calc(100% + 14px);
+  left: clamp(-8px, 0.5vw, 12px);
+  bottom: calc(100% + 10px);
   width: clamp(64px, 8.2vw, 110px);
   aspect-ratio: 1.26;
   border-radius: clamp(14px, 1.5vw, 20px);
@@ -1175,7 +1172,7 @@ body:has(.landing-page) {
    tone-on-tone cropped wordmark the reference uses. */
 .landing-eio__frag--chip {
   right: clamp(-84px, -5.6vw, -34px);
-  top: 46%;
+  top: 52%;
   width: clamp(112px, 12.5vw, 178px);
   aspect-ratio: 1.9;
   overflow: hidden;
@@ -1244,7 +1241,7 @@ body:has(.landing-page) {
 }
 
 .landing-eio--revealed .landing-eio__lede {
-  transition-delay: 760ms;
+  transition-delay: calc(var(--eio-cascade, 1200ms) * 0.6);
 }
 
 .landing-eio__frag {
@@ -1269,24 +1266,24 @@ body:has(.landing-page) {
 }
 
 .landing-eio--revealed .landing-eio__frag--doc {
-  transition-delay: 1250ms;
+  transition-delay: calc(var(--eio-cascade, 1200ms) + 60ms);
 }
 
 .landing-eio--revealed .landing-eio__frag--chip {
-  transition-delay: 1350ms;
+  transition-delay: calc(var(--eio-cascade, 1200ms) + 160ms);
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   .landing-eio__char,
   .landing-eio__frag,
-  .landing-eio-card--first {
+  .landing-eio-card {
     transition: none;
   }
 
   .landing-eio--armed:not(.landing-eio--revealed) .landing-eio__char,
   .landing-eio--armed:not(.landing-eio--revealed) .landing-eio__frag,
-  .landing-eio--cards-armed:not(.landing-eio--cards-revealed)
-    .landing-eio-card--first {
+  .landing-eio--cards-armed:not(.landing-eio--cards-revealed) .landing-eio-card {
     opacity: 1;
     transform: none;
   }
@@ -1326,7 +1323,7 @@ body:has(.landing-page) {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: clamp(18px, 1.9vw, 28px);
   max-width: 1180px;
-  margin: clamp(64px, 9.4vh, 132px) auto 0;
+  margin: clamp(100px, 12vh, 160px) auto 0;
 }
 
 .landing-eio-card {
@@ -1336,29 +1333,26 @@ body:has(.landing-page) {
   padding: clamp(16px, 1.8vw, 24px);
   border-radius: clamp(18px, 2vw, 26px);
   background: var(--eio-shell);
+  transform-origin: 50% 55%;
+  transition: transform 820ms var(--landing-ease);
+  transition-delay: calc(var(--i, 0) * 90ms);
 }
 
 @media (min-width: 901px) {
-  /* Deliberate stagger from the reference: the middle card sits higher. */
+
+  /* Permanent stagger from the reference: the middle card sits higher. */
   .landing-eio-card--middle {
-    transform: translateY(clamp(-70px, -4.9vw, -22px));
+    translate: 0 clamp(-70px, -4.9vw, -22px);
   }
 }
 
-/* The row rises with the scroll as one unit, but the reference films
-   show the first card leading the entry by a small offset that settles
-   level with the others within about a second (timed, not scrubbed —
-   the settle kept running through near-stationary scroll moments).
-   Stacked mobile layout has no differential to converge. */
-.landing-eio-card--first {
-  transform: translateY(0);
-  transition: transform 950ms var(--landing-ease);
-  transition-delay: 60ms;
+.landing-eio--cards-armed:not(.landing-eio--cards-revealed) .landing-eio-card {
+  transform: translateY(24px) scale(0.35);
+  transition: none;
 }
 
 @media (min-width: 901px) {
-  .landing-eio--cards-armed:not(.landing-eio--cards-revealed)
-    .landing-eio-card--first {
+  .landing-eio--cards-armed:not(.landing-eio--cards-revealed) .landing-eio-card--first {
     transform: translateY(clamp(-36px, -2.5vw, -18px));
   }
 }
@@ -1466,7 +1460,7 @@ body:has(.landing-page) {
   padding: 8px 0;
 }
 
-.landing-eio-card__row + .landing-eio-card__row {
+.landing-eio-card__row+.landing-eio-card__row {
   border-top: 1px solid rgba(255, 255, 255, 0.24);
 }
 
@@ -1545,7 +1539,7 @@ body:has(.landing-page) {
   font-weight: 500;
 }
 
-.landing-eio-card__doc-line span + span {
+.landing-eio-card__doc-line span+span {
   color: #1B1624;
   font-weight: 620;
 }
@@ -1605,7 +1599,7 @@ body:has(.landing-page) {
   padding: 6px 0;
 }
 
-.landing-eio-card__team-row + .landing-eio-card__team-row {
+.landing-eio-card__team-row+.landing-eio-card__team-row {
   border-top: 1px solid #F7F5FA;
 }
 
@@ -1662,6 +1656,7 @@ body:has(.landing-page) {
 /* ── Responsive ─────────────────────────────────────────────── */
 
 @media (max-width: 900px) {
+
   /* Deliberate tablet adjustment: full-width stacked cards keep the
      illustrations roomy instead of cramming three narrow columns. */
   .landing-eio__cards {
@@ -1679,22 +1674,14 @@ body:has(.landing-page) {
   }
 }
 
+
 @media (max-width: 600px) {
-  .landing-eio {
-    padding-top: clamp(56px, 9vh, 92px);
+  .landing-eio__headline {
+    padding-bottom: 56px;
   }
 
-  .landing-eio__break {
-    display: none;
-  }
-
-  .landing-eio__lede {
-    font-size: 15px;
-  }
-
-  /* Fragments move to free corners without widening the layout. */
   .landing-eio__fragments {
-    top: -24px;
+    top: 0;
     bottom: 0;
   }
 
@@ -1703,9 +1690,6 @@ body:has(.landing-page) {
     width: clamp(58px, 16vw, 72px);
   }
 
-  /* The monogram chip drops below the copy into a reserved band so it
-     never collides with the lede, and sizes to its wordmark so
-     "Alturay" is never cropped. */
   .landing-eio__frag--chip {
     right: 2px;
     top: auto;
@@ -1721,12 +1705,11 @@ body:has(.landing-page) {
     font-size: 21px;
   }
 
-  .landing-eio__intro {
-    padding-bottom: 64px;
-  }
+  /* the old `.landing-eio__intro { padding-bottom: 64px }` is no longer
+     needed — delete it */
 
   .landing-eio__cards {
-    margin-top: 14px;
+    margin-top: 48px;
   }
 }
 
@@ -1764,25 +1747,17 @@ body:has(.landing-page) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   "MULTI-BUSINESS" — other sections
-   Reference film: plain document flow throughout (nothing pinned, nothing
-   scrubbed). A large two-line statement resolves through a reading-order
-   cascade of its words (rise + fade per word, inline chip scale-popping
-   after its slot), then three stat rows ride in on the scroll — each with
-   an illustration card scaling up from ~30%, a giant number counting up
-   once during the row's entry, a rotated chip popping over the number as
-   the count settles, and a caption that fades in alongside. Rows observe
-   their own entries so counts run independently. The entrance states are
-   one-shot; the flow motion itself reverses with the scroll exactly like
-   the reference film.
+   "MULTI-BUSINESS" — simple paragraph
+   REPLACES the entire old Multi-Business block in landing.css (from the
+   `"MULTI-BUSINESS" — other sections` header comment down to, but not
+   including, the `"FAQ"` header comment). Also delete the separate
+   `.landing-page.is-mb-under-nav .landing-nav { … }` rule higher up.
    ═══════════════════════════════════════════════════════════════════════ */
 
 .landing-mb {
   position: relative;
   padding:
-    clamp(72px, 10vh, 130px)
-    clamp(20px, 5.5vw, 72px)
-    clamp(88px, 12.5vh, 158px);
+    clamp(120px, 24vh, 260px) clamp(20px, 5.5vw, 72px) clamp(96px, 16vh, 200px);
   scroll-margin-top: calc(var(--landing-nav-height) + 16px);
   background: var(--landing-paper);
 }
@@ -1797,429 +1772,106 @@ body:has(.landing-page) {
   white-space: nowrap;
 }
 
-/* ── Statement band ───────────────────────────────────────────────────── */
-
-.landing-mb__intro {
-  position: relative;
-  max-width: 1180px;
+.landing-mb__statement {
+  max-width: 1320px;
   margin: 0 auto;
   text-align: center;
-}
-
-.landing-mb__eyebrow {
-  margin: 0;
-  color: var(--landing-ink-muted);
-  font-size: clamp(11px, 0.95vw, 13px);
-  font-weight: 650;
-  line-height: 1;
-  letter-spacing: 0.17em;
-  text-transform: uppercase;
-}
-
-.landing-mb__statement {
-  margin: clamp(14px, 1.9vw, 24px) auto 0;
-  max-width: 820px;
   color: var(--landing-ink);
-  font-size: clamp(30px, 5vw, 55px);
-  font-weight: 540;
+  font-size: clamp(30px, 5.1vw, 84px);
+  font-weight: 470;
   line-height: 1.16;
-  letter-spacing: -0.028em;
+  letter-spacing: -0.03em;
+  text-wrap: balance;
 }
 
-.landing-mb__statement-line {
-  display: block;
-  white-space: nowrap;
+/* ── Words: each word is its own tiny mask. All words on a line share the
+   same box, so the clip edge looks like one mask per line (as in the
+   reference) and still works at any wrapping. vertical-align: top avoids the
+   inline-block baseline shift that overflow:hidden causes. ─────────────── */
+
+.landing-mb__w {
+  display: inline-block;
+  vertical-align: top;
+  overflow: hidden;
+  padding: 0.06em 0.04em 0.16em;
+  margin: -0.06em -0.04em -0.16em;
 }
 
-.landing-mb__word {
+.landing-mb__w-in {
   display: inline-block;
   transform: translateY(0);
-  transition:
-    opacity 300ms var(--landing-ease),
-    transform 380ms var(--landing-ease);
+  transition: transform 760ms var(--landing-ease);
 }
 
-/* Inline violet chip echoing the section film's mid-text fragment: it pops
-   from its own center right after the neighbouring word settles. */
-.landing-mb__chip {
+/* ── Inline icons ──────────────────────────────────────────────────────── */
+
+.landing-mb__icon {
+  position: relative;
   display: inline-block;
-  width: 0.76em;
-  height: 0.74em;
-  margin-left: 0.24em;
-  border-radius: 0.17em;
-  background: var(--landing-violet);
-  vertical-align: -0.03em;
-  transform: rotate(-7deg) scale(1);
-  transition:
-    opacity 220ms var(--landing-ease),
-    transform 340ms cubic-bezier(0.33, 1, 0.68, 1);
+  vertical-align: top;
+  width: 0.8em;
+  height: 0.8em;
+  margin: 0.17em 0.06em 0;
+  transition: transform 380ms cubic-bezier(0.33, 1, 0.68, 1);
 }
 
-.landing-mb__chip-doc {
+.landing-mb__icon--doc {
+  border-radius: 0.2em;
+  background: var(--landing-violet);
+  transform: rotate(-7deg) scale(1);
+}
+
+.landing-mb__icon--doc::before {
+  content: '';
   position: absolute;
   left: 24%;
   top: 18%;
   width: 52%;
   height: 64%;
-  border-radius: 22%;
+  border-radius: 0.1em;
   background: var(--landing-paper);
 }
 
-.landing-mb__chip-doc::after {
+.landing-mb__icon--doc::after {
   content: '';
   position: absolute;
-  left: 18%;
-  top: -8%;
-  width: 26%;
-  height: 18%;
-  border-radius: 30% 30% 0 0;
-  background: inherit;
-  opacity: 0.55;
-}
-
-.landing-mb__chip-doc::before {
-  content: '';
-  position: absolute;
-  inset: 18% 18% 26% 18%;
+  left: 34%;
+  right: 34%;
+  top: 38%;
+  height: 0.07em;
   border-radius: 1px;
   background: var(--landing-violet);
-  opacity: 0.32;
+  opacity: 0.4;
+  box-shadow: 0 0.12em 0 rgba(90, 44, 216, 0.4);
 }
 
-.landing-mb__lede {
-  max-width: 660px;
-  margin: clamp(18px, 2.4vw, 28px) auto 0;
-  color: var(--landing-ink-muted);
-  font-size: clamp(15px, 1.3vw, 17px);
-  font-weight: 460;
-  line-height: 1.6;
-  letter-spacing: -0.012em;
-  text-wrap: pretty;
-}
-
-/* ── Entrance cascade (armed → revealed once, on first view) ── */
-/* Hiding is instant (arming lands before first paint); all movement lives
-   in the revealed transition. Delays live inline per word/chip. */
-
-.landing-mb--armed:not(.landing-mb--revealed) .landing-mb__word {
-  opacity: 0;
-  transform: translateY(0.46em);
-}
-
-.landing-mb--armed:not(.landing-mb--revealed) .landing-mb__chip {
-  opacity: 0;
-  transform: rotate(-7deg) scale(0.24);
-}
-
-.landing-mb--armed:not(.landing-mb--revealed) .landing-mb__eyebrow,
-.landing-mb--armed:not(.landing-mb--revealed) .landing-mb__lede {
-  opacity: 0;
-}
-
-.landing-mb__eyebrow,
-.landing-mb__lede {
-  transition: opacity 260ms var(--landing-ease);
-  will-change: opacity;
-}
-
-.landing-mb--revealed .landing-mb__lede {
-  transition-delay: 620ms;
-}
-
-/* ── Stat rows ────────────────────────────────────────────────────────── */
-
-.landing-mb__stats {
-  max-width: 1180px;
-  margin: clamp(48px, 7.2vh, 100px) auto 0;
-  list-style: none;
-  padding: 0;
-}
-
-.landing-mb-row {
-  display: grid;
-  grid-template-columns:
-    clamp(112px, 15vw, 200px)
-    minmax(0, 1fr)
-    clamp(230px, 24.5vw, 310px);
-  gap: clamp(20px, 3.4vw, 48px);
-  align-items: center;
-  padding-block: clamp(28px, 4.4vw, 62px);
-}
-
-.landing-mb-row + .landing-mb-row {
-  border-top: 1px solid var(--landing-line);
-}
-
-.landing-mb-row__figure {
-  justify-self: start;
-}
-
-.landing-mb-row__figure-box {
-  position: relative;
-  display: inline-block;
-}
-
-.landing-mb-row__num {
-  display: inline-block;
-  color: var(--landing-ink);
-  font-size: clamp(64px, 10.6vw, 128px);
-  font-weight: 500;
-  line-height: 0.96;
-  letter-spacing: -0.045em;
-  font-variant-numeric: tabular-nums;
-}
-
-.landing-mb-row__chip {
-  position: absolute;
-  left: 9%;
-  top: -24%;
-  z-index: 2;
-  padding: 0.55em 1.1em;
-  border-radius: 999px;
-  white-space: nowrap;
-  font-size: clamp(10.5px, 0.95vw, 13px);
-  font-weight: 680;
-  letter-spacing: 0.015em;
-  transform: rotate(-8deg) scale(1);
-  transition:
-    opacity 220ms var(--landing-ease),
-    transform 330ms cubic-bezier(0.33, 1, 0.68, 1);
-  transition-delay: var(--mb-chip-delay, 0ms);
-}
-
-.landing-mb-row__chip--yellow {
-  background: var(--landing-yellow);
-  color: var(--landing-ink);
-}
-
-.landing-mb-row__chip--violet {
-  background: var(--landing-violet);
-  color: #FFFFFF;
-}
-
-.landing-mb-row__chip--rose {
-  background: var(--landing-pink);
-  color: var(--landing-ink);
-}
-
-/* Illustration cards: flat brand-toned compositions (aria-hidden), scaled
-   in from ~30% while the row arrives — the film's card pops during entry. */
-.landing-mb-row__art {
-  position: relative;
-  display: block;
-  width: 100%;
-  aspect-ratio: 1;
-  border-radius: clamp(18px, 2vw, 26px);
-  overflow: hidden;
+.landing-mb__icon--orb {
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 34% 28%, #FFE9A8 0%, var(--landing-yellow) 22%, var(--landing-pink) 52%, var(--landing-violet) 100%);
   transform: scale(1);
-  transition: transform 620ms cubic-bezier(0.34, 1, 0.36, 1);
 }
 
-.landing-mb-row__art[data-art='violet'],
-.landing-mb-row__art[data-art='rose'],
-.landing-mb-row__art[data-art='gold'] {
-  box-shadow: 0 10px 22px -14px rgba(20, 7, 72, 0.35);
+/* ── Entrance (armed → revealed once). Hidden state applies before first
+   paint; all movement lives in the revealed transition. ────────────────── */
+
+.landing-mb--armed:not(.landing-mb--revealed) .landing-mb__w-in {
+  transform: translateY(108%);
 }
 
-.landing-mb-row__art[data-art='violet'] {
-  background: var(--landing-violet);
+.landing-mb--armed:not(.landing-mb--revealed) .landing-mb__icon--doc {
+  transform: rotate(-7deg) scale(0.2);
 }
 
-.landing-mb-row__art[data-art='violet']::before {
-  content: '';
-  position: absolute;
-  left: 22%;
-  top: 20%;
-  width: 56%;
-  height: 46%;
-  border-radius: 18% 42% 16% 40%;
-  background: var(--landing-paper);
-  opacity: 0.92;
-  transform: rotate(-7deg);
+.landing-mb--armed:not(.landing-mb--revealed) .landing-mb__icon--orb {
+  transform: scale(0.2);
 }
-
-.landing-mb-row__art[data-art='violet']::after {
-  content: '';
-  position: absolute;
-  left: 62%;
-  bottom: 16%;
-  width: 18%;
-  height: 18%;
-  border-radius: 50%;
-  background: var(--landing-yellow);
-}
-
-.landing-mb-row__art[data-art='rose'] {
-  background: var(--landing-pink);
-}
-
-.landing-mb-row__art[data-art='rose']::before {
-  content: '';
-  position: absolute;
-  left: 24%;
-  top: 22%;
-  width: 52%;
-  height: 52%;
-  border-radius: 50%;
-  border: clamp(8px, 0.9vw, 12px) solid var(--landing-violet);
-}
-
-.landing-mb-row__art[data-art='rose']::after {
-  content: '';
-  position: absolute;
-  right: 16%;
-  bottom: 14%;
-  width: 20%;
-  height: 20%;
-  border-radius: 50%;
-  background: var(--landing-yellow);
-}
-
-.landing-mb-row__art[data-art='gold'] {
-  background: var(--landing-yellow);
-}
-
-.landing-mb-row__art[data-art='gold']::before {
-  content: '';
-  position: absolute;
-  left: 20%;
-  top: 30%;
-  width: 52%;
-  height: 30%;
-  border-radius: 999px;
-  background: var(--landing-violet);
-  transform: rotate(-12deg);
-}
-
-.landing-mb-row__art[data-art='gold']::after {
-  content: '';
-  position: absolute;
-  right: 18%;
-  bottom: 20%;
-  width: 22%;
-  height: 22%;
-  border-radius: 46% 54% 50% 50%;
-  background: var(--landing-pink);
-}
-
-.landing-mb-row__caption {
-  margin: 0;
-  color: var(--landing-ink-muted);
-  font-size: clamp(13px, 1.05vw, 14.5px);
-  font-weight: 470;
-  line-height: 1.58;
-  letter-spacing: -0.008em;
-  text-wrap: pretty;
-}
-
-/* ── Stat row entrance (per-row, one-shot on entry) ── */
-
-.landing-mb--stats-armed .landing-mb-row:not(.landing-mb-row--in) .landing-mb-row__art {
-  transform: scale(0.3);
-}
-
-.landing-mb--stats-armed
-  .landing-mb-row:not(.landing-mb-row--in)
-  .landing-mb-row__chip {
-  opacity: 0;
-  transform: rotate(-8deg) scale(0.2);
-}
-
-.landing-mb--stats-armed
-  .landing-mb-row:not(.landing-mb-row--in)
-  .landing-mb-row__caption {
-  opacity: 0;
-}
-
-.landing-mb-row + .landing-mb-row {
-  padding-top: clamp(30px, 4.8vw, 68px);
-}
-
-.landing-mb-row {
-  padding-bottom: clamp(30px, 4.8vw, 68px);
-}
-
-/* ── Responsive ────────────────────────────────────────────────────────── */
-
-@media (max-width: 880px) {
-  .landing-mb-row {
-    grid-template-columns: clamp(92px, 19vw, 132px) minmax(0, 1fr);
-    grid-template-areas:
-      'art figure'
-      'caption caption';
-    row-gap: clamp(12px, 2.4vw, 18px);
-    align-items: center;
-    padding-left: clamp(6px, 2vw, 18px);
-    padding-right: clamp(6px, 2vw, 18px);
-  }
-
-  .landing-mb-row__art {
-    grid-area: art;
-    width: 100%;
-  }
-
-  .landing-mb-row__figure {
-    grid-area: figure;
-  }
-
-  .landing-mb-row__caption {
-    grid-area: caption;
-    max-width: 560px;
-  }
-
-  .landing-mb-row__num {
-    font-size: clamp(56px, 13vw, 96px);
-  }
-}
-
-@media (max-width: 480px) {
-  .landing-mb-row {
-    grid-template-columns: clamp(72px, 24vw, 92px) minmax(0, 1fr);
-  }
-
-  .landing-mb-row__num {
-    font-size: clamp(52px, 15vw, 76px);
-  }
-
-  .landing-mb__statement-line {
-    white-space: normal;
-  }
-}
-
-/* ── Reduced motion: everything renders in its final state ─────────────── */
 
 @media (prefers-reduced-motion: reduce) {
-  .landing-mb__word,
-  .landing-mb__chip,
-  .landing-mb__eyebrow,
-  .landing-mb__lede,
-  .landing-mb-row__art,
-  .landing-mb-row__chip,
-  .landing-mb-row__caption {
+
+  .landing-mb__w-in,
+  .landing-mb__icon {
     transition: none;
-  }
-
-  .landing-mb--armed:not(.landing-mb--revealed) .landing-mb__word,
-  .landing-mb--armed:not(.landing-mb--revealed) .landing-mb__eyebrow,
-  .landing-mb--armed:not(.landing-mb--revealed) .landing-mb__lede,
-  .landing-mb--stats-armed .landing-mb-row:not(.landing-mb-row--in)
-    .landing-mb-row__caption {
-    opacity: 1;
-    transform: none;
-  }
-
-  .landing-mb--armed:not(.landing-mb--revealed) .landing-mb__chip {
-    opacity: 1;
-    transform: rotate(-7deg);
-  }
-
-  .landing-mb--stats-armed .landing-mb-row:not(.landing-mb-row--in) .landing-mb-row__art {
-    transform: none;
-  }
-
-  .landing-mb--stats-armed .landing-mb-row:not(.landing-mb-row--in) .landing-mb-row__chip {
-    opacity: 1;
-    transform: rotate(-8deg);
   }
 }
 
@@ -2241,9 +1893,7 @@ body:has(.landing-page) {
 .landing-faq {
   position: relative;
   padding:
-    clamp(88px, 13vh, 168px)
-    clamp(20px, 4.6vw, 64px)
-    clamp(108px, 15.5vh, 196px);
+    clamp(88px, 13vh, 168px) clamp(20px, 4.6vw, 64px) clamp(108px, 15.5vh, 196px);
   scroll-margin-top: calc(var(--landing-nav-height) + 16px);
   background: var(--landing-paper);
 }
@@ -2285,10 +1935,21 @@ body:has(.landing-page) {
 
 /* the list rises with the heading; each row carries its proportional trailing
    bias (deep rows trail slightly more — the film's in-block bias ≈ +1 row) */
-.landing-faq__item:nth-child(2) { transition-delay: 60ms; }
-.landing-faq__item:nth-child(3) { transition-delay: 120ms; }
-.landing-faq__item:nth-child(4) { transition-delay: 180ms; }
-.landing-faq__item:nth-child(5) { transition-delay: 240ms; }
+.landing-faq__item:nth-child(2) {
+  transition-delay: 60ms;
+}
+
+.landing-faq__item:nth-child(3) {
+  transition-delay: 120ms;
+}
+
+.landing-faq__item:nth-child(4) {
+  transition-delay: 180ms;
+}
+
+.landing-faq__item:nth-child(5) {
+  transition-delay: 240ms;
+}
 
 .landing-faq--armed:not(.landing-faq--revealed) .landing-faq__title {
   opacity: 0;
@@ -2430,6 +2091,7 @@ body:has(.landing-page) {
 /* ── Reduced motion: everything renders motionless ────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
+
   .landing-faq__title,
   .landing-faq__item,
   .landing-faq__chev,
@@ -2437,12 +2099,14 @@ body:has(.landing-page) {
   .landing-faq__panel-inner {
     transition: none;
   }
+
   .landing-faq--armed:not(.landing-faq--revealed) .landing-faq__title,
   .landing-faq--armed:not(.landing-faq--revealed) .landing-faq__item {
     opacity: 1;
     transform: none;
   }
 }
+
 /* ═══════════════════════════════════════════════════════════════════════
    "FINAL CTA"
    Reference film: periwinkle rounded panel in the white field, plain flow
@@ -2720,6 +2384,7 @@ body:has(.landing-page) {
 /* ── Reduced motion ───────────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
+
   .landing-cta__panel,
   .landing-cta__swatch {
     transition: none;
@@ -2735,6 +2400,7 @@ body:has(.landing-page) {
     transform: none;
   }
 }
+
 /* ═══════════════════════════════════════════════════════════════════════
    "FOOTER"
    Reference (footer-reference.png + films): a solid #000 sheet with rounded
@@ -2762,9 +2428,7 @@ body:has(.landing-page) {
   border-radius: clamp(20px, 1.9vw, 30px) clamp(20px, 1.9vw, 30px) 0 0;
   color: #FFFFFF;
   padding:
-    clamp(48px, 5vw, 72px)
-    clamp(24px, 2.6vw, 40px)
-    clamp(30px, 3vw, 44px);
+    clamp(48px, 5vw, 72px) clamp(24px, 2.6vw, 40px) clamp(30px, 3vw, 44px);
 }
 
 /* ── Top row: pitch (left) + newsletter (right) ───────────────────────── */
@@ -3000,6 +2664,7 @@ body:has(.landing-page) {
 /* ── Reduced motion ───────────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
+
   .landing-footer__collab,
   .landing-footer__word,
   .landing-footer__glyph {
