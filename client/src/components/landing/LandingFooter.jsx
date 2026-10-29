@@ -1,15 +1,14 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import useFooterScrollTransition from '../../pages/Landing/useFooterScrollTransition';
 
 /*
  * "Footer" landing section.
  *
- * Reference composition (footer-reference.png): a solid black sheet with
- * rounded top corners arriving as the page's final normal-flow block (the
- * entrance film shows a plain flow scroll — no pin, no overlay reveal, so
- * nothing animates independently here). A white notch (the page above it,
- * ended just before the sheet) peeks above the rounded corners.
+ * The footer is a stationary sticky layer (position: sticky; bottom: 0)
+ * revealed by the page stack lifting off it as the user scrolls. Two
+ * colored bands between the stack's bottom edge and the footer create a
+ * brief curtain-reveal transition controlled entirely by CSS classes
+ * toggled in useFooterReveal.
  *
  * Content mapping to Alturay (tracking the reference structure):
  * - top-left: two-line display heading + a pill action that routes to
@@ -34,10 +33,6 @@ const WORDMARK = 'ALTURAY'.split('');
 
 export default function LandingFooter() {
   const wordRef = useRef(null);
-  const sheetRef = useRef(null);
-  const innerRef = useRef(null);
-
-  useFooterScrollTransition({ sheetRef, innerRef });
 
   /*
    * Wordmark hover (per the hover film): letters near the pointer deform
@@ -126,17 +121,13 @@ export default function LandingFooter() {
 
   return (
     <footer className="landing-footer" id="footer">
-      <div className="landing-footer__transition" aria-hidden="true">
-        <span className="landing-footer__transition-blue" />
-        <span className="landing-footer__transition-yellow" />
-      </div>
-      <div className="landing-footer__sheet" ref={sheetRef}>
-        <div className="landing-footer__inner" ref={innerRef}>
+      <div className="landing-footer__sheet">
+        <div className="landing-footer__inner">
           <div className="landing-footer__top">
             <div className="landing-footer__pitch">
               <h2 className="landing-footer__title">
-                <span className="landing-footer__title-line">Let’s explore</span>
-                <span className="landing-footer__title-line">what’s next</span>
+                <span className="landing-footer__title-line">Let's explore</span>
+                <span className="landing-footer__title-line">what's next</span>
               </h2>
               <Link className="landing-footer__collab" to="/register">
                 Get started
@@ -160,7 +151,7 @@ export default function LandingFooter() {
                 </button>
               </div>
               <p className="landing-footer__news-note">
-                Subscriptions aren’t wired up in this preview build yet.
+                Subscriptions aren't wired up in this preview build yet.
               </p>
             </div>
           </div>

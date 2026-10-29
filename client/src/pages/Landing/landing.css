@@ -313,44 +313,44 @@ body:has(.landing-page) {
 
 /* Scoped to the landing page and active only while the violet panel is
    actually behind the header. The CTA keeps its approved black treatment. */
-.landing-page.is-hero-art-under-nav .landing-nav__brand,
-.landing-page.is-hero-art-under-nav .landing-nav__brand:hover {
+.landing-page:is(.is-hero-art-under-nav, .is-footer-under-nav) .landing-nav__brand,
+.landing-page:is(.is-hero-art-under-nav, .is-footer-under-nav) .landing-nav__brand:hover {
   color: #FFFFFF;
 }
 
-.landing-page.is-hero-art-under-nav .landing-nav__mark {
+.landing-page:is(.is-hero-art-under-nav, .is-footer-under-nav) .landing-nav__mark {
   filter: brightness(0) invert(1);
 }
 
-.landing-page.is-hero-art-under-nav .landing-nav__links {
+.landing-page:is(.is-hero-art-under-nav, .is-footer-under-nav) .landing-nav__links {
   border-color: rgba(255, 255, 255, 0.16);
   background: rgba(255, 255, 255, 0.1);
 }
 
-.landing-page.is-hero-art-under-nav .landing-nav__link {
+.landing-page:is(.is-hero-art-under-nav, .is-footer-under-nav) .landing-nav__link {
   color: rgba(255, 255, 255, 0.84);
 }
 
-.landing-page.is-hero-art-under-nav .landing-nav__link:hover {
+.landing-page:is(.is-hero-art-under-nav, .is-footer-under-nav) .landing-nav__link:hover {
   background: rgba(255, 255, 255, 0.14);
   color: #FFFFFF;
 }
 
-.landing-page.is-hero-art-under-nav .landing-nav__login {
+.landing-page:is(.is-hero-art-under-nav, .is-footer-under-nav) .landing-nav__login {
   color: rgba(255, 255, 255, 0.84);
 }
 
-.landing-page.is-hero-art-under-nav .landing-nav__login:hover {
+.landing-page:is(.is-hero-art-under-nav, .is-footer-under-nav) .landing-nav__login:hover {
   color: #FFFFFF;
 }
 
-.landing-page.is-hero-art-under-nav .landing-nav__toggle {
+.landing-page:is(.is-hero-art-under-nav, .is-footer-under-nav) .landing-nav__toggle {
   border-color: rgba(255, 255, 255, 0.24);
   background: rgba(255, 255, 255, 0.12);
   color: #FFFFFF;
 }
 
-.landing-page.is-hero-art-under-nav .landing-nav__toggle:hover {
+.landing-page:is(.is-hero-art-under-nav, .is-footer-under-nav) .landing-nav__toggle:hover {
   border-color: rgba(255, 255, 255, 0.34);
   background: rgba(255, 255, 255, 0.18);
 }
@@ -2184,6 +2184,7 @@ body:has(.landing-page) {
   padding: clamp(8px, 1.2vw, 20px) clamp(20px, 4.6vw, 64px) clamp(56px, 7vw, 100px);
   scroll-margin-top: calc(var(--landing-nav-height) + 16px);
   background: var(--landing-paper);
+  border-radius: 0 0 15px 15px;
 }
 
 .landing-cta__panel {
@@ -2201,11 +2202,6 @@ body:has(.landing-page) {
      panel's final top edge (its grain continues off the panel edge), so the
      swatch must be paintable outside this box. All panel children stay
      inside the padding area by construction. */
-}
-
-.landing-cta__drop {
-  display: none;
-  height: 0;
 }
 
 /* ── Entrance: plain-flow rise + fade; the swatch rides its own clip ──── */
@@ -2463,92 +2459,103 @@ body:has(.landing-page) {
    "FOOTER"
    ═══════════════════════════════════════════════════════════════════════ */
 
-/* ═══════════════════════════════════════════════════════════════════════
-   FOOTER TRANSITION — layered blue and yellow strips
-   ═══════════════════════════════════════════════════════════════════════ */
+.landing-page {
+  --sheet-radius: clamp(10px, 0.75vw, 18px);
+  --band-step: calc(clamp(24px, 3.35vw, 64px) - 2px);
+  --band-one: #7183F5;
+  --band-two: #F5D65E;
+}
 
-.landing-footer {
-  --footer-transition-blue: #7183F5;
-  --footer-transition-yellow: #F5D65E;
-  --footer-strip-step: clamp(20px, 1.9vw, 28px);
-  --footer-radius: clamp(20px, 1.9vw, 30px);
-  --footer-side-inset: clamp(8px, 0.7vw, 12px);
-
+.landing-stack {
   position: relative;
-  padding: calc(2 * var(--footer-strip-step)) var(--footer-side-inset) 0;
-  margin-top: 0;
-  background: var(--landing-paper);
-  scroll-margin-top: calc(var(--landing-nav-height) + 16px);
-  overflow: visible;
-}
-
-/* Scroll-linked footer transition strips wrapper */
-.landing-footer__transition {
-  position: absolute;
-  top: 0;
-  left: var(--footer-side-inset);
-  right: var(--footer-side-inset);
-  height: calc(2 * var(--footer-strip-step));
-  pointer-events: none;
-}
-
-/* Blue strip (bottom layer: z-index 1, enters first) */
-.landing-footer__transition-blue {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: clamp(80px, 8vw, 120px);
-  display: block;
-  border-radius: var(--footer-radius) var(--footer-radius) 0 0;
-  background: var(--footer-transition-blue);
-  z-index: 1;
-}
-
-/* Yellow strip (middle layer: z-index 2, enters 28px behind blue) */
-.landing-footer__transition-yellow {
-  position: absolute;
-  top: var(--footer-strip-step);
-  left: 0;
-  right: 0;
-  height: clamp(80px, 8vw, 120px);
-  display: block;
-  border-radius: var(--footer-radius) var(--footer-radius) 0 0;
-  background: var(--footer-transition-yellow);
   z-index: 2;
 }
 
-/* Black sheet (top layer: z-index 3, enters 28px behind yellow) */
-.landing-footer__sheet {
+.landing-stack__sheet {
   position: relative;
   z-index: 3;
-  margin-top: 0;
-  background: #000000;
-  border-radius: var(--footer-radius) var(--footer-radius) 0 0;
-  color: #FFFFFF;
-  min-height: 100vh;
-  min-height: 100dvh;
-  overflow: hidden;
-  box-shadow: 0 -12px 32px -16px rgba(0, 0, 0, 0.45);
+  background: var(--landing-paper);
+  border-radius: 0 0 var(--sheet-radius) var(--sheet-radius);
 }
 
-/* Pinned inner content: stays pinned at the viewport bottom during sheet entrance */
+.landing-stack__band {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(var(--band-step) + var(--sheet-radius) * 2);
+  border-radius: 0 0 var(--sheet-radius) var(--sheet-radius);
+  pointer-events: none;
+  --band-p: 0;
+  transform: translate3d(0, calc(var(--band-step) * var(--band-p)), 0);
+  opacity: clamp(0, calc(var(--band-p) * 30), 1);
+  will-change: transform, opacity;
+}
+
+.landing-stack__band--one {
+  z-index: 2;
+  background: var(--band-one);
+}
+
+.landing-stack__band--two {
+  z-index: 1;
+  background: var(--band-two);
+}
+
+.landing-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  min-height: 50vh;
+  min-height: 50dvh;
+  margin: 0;
+  padding: 0;
+  background: #000;
+  color: #FFF;
+  scroll-margin-top: calc(var(--landing-nav-height) + 16px);
+}
+
+.landing-footer__sheet {
+  background: none;
+  border-radius: 0;
+  box-shadow: none;
+  min-height: 50vh;
+  min-height: 50dvh;
+  position: relative;
+  overflow: hidden;
+}
+
 .landing-footer__inner {
-  min-height: 100vh;
-  min-height: 100dvh;
+  min-height: 50vh;
+  min-height: 50dvh;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: clamp(48px, 5vw, 72px) clamp(24px, 2.6vw, 40px) clamp(30px, 3vw, 44px);
-  will-change: transform;
+  padding: clamp(20px, 3.4vh, 36px) clamp(24px, 2.6vw, 40px) clamp(18px, 2.8vh, 32px);
 }
 
-/* Respect reduced-motion preferences. */
+.landing-page.is-footer-static .landing-footer {
+  position: relative;
+}
+
+.landing-page.is-footer-static .landing-stack__band {
+  display: none;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .landing-footer__inner {
-    transform: none !important;
+  .landing-footer {
+    position: relative;
   }
+
+  .landing-stack__band {
+    display: none;
+  }
+}
+
+.landing-page.is-footer-under-nav .landing-nav__cta {
+  background: #FFFFFF;
+  color: var(--landing-ink);
 }
 
 /* ── Top row: pitch (left) + newsletter (right) ───────────────────────── */
@@ -2563,7 +2570,7 @@ body:has(.landing-page) {
 .landing-footer__title {
   margin: 0;
   color: #FFFFFF;
-  font-size: clamp(46px, calc(4.8vw + 10px), 78px);
+  font-size: clamp(30px, min(5.8vh, 8vw), 64px);
   font-weight: 480;
   line-height: 1.08;
   letter-spacing: -0.03em;
@@ -2577,7 +2584,7 @@ body:has(.landing-page) {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  margin-top: clamp(26px, 3vw, 42px);
+  margin-top: clamp(14px, 2.4vh, 28px);
   padding: 15px 26px;
   border-radius: 999px;
   background: #FFFFFF;
@@ -2671,7 +2678,7 @@ body:has(.landing-page) {
   align-items: flex-end;
   justify-content: space-between;
   gap: 26px;
-  margin-top: clamp(64px, 11vw, 168px);
+  margin-top: clamp(16px, 3vh, 40px);
 }
 
 .landing-footer__legal {
@@ -2694,7 +2701,7 @@ body:has(.landing-page) {
 .landing-footer__word {
   display: block;
   color: #FFFFFF;
-  font-size: clamp(58px, 10.4vw, 150px);
+  font-size: clamp(44px, min(10.4vw, 12.5vh), 150px);
   font-weight: 500;
   line-height: 0.96;
   letter-spacing: -0.042em;
