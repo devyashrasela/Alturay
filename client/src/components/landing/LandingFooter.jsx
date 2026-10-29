@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
+import { ArrowRight } from 'lucide-react';
 
 /*
  * "Footer" landing section.
@@ -13,8 +14,7 @@ import { Link } from 'react-router-dom';
  * Content mapping to Alturay (tracking the reference structure):
  * - top-left: two-line display heading + a pill action that routes to
  *   /register (the reference's collaborate pill).
- * - top-right: the reference's newsletter block, kept as a disabled,
- *   honestly-labelled control (no fabricated delivery behavior / backend).
+ * - top-right: an Explore list of real in-page anchors and the login route (no newsletter: there is no delivery backend).
  * - bottom: the giant wordmark (ALTURAY). The hover film shows letters
  *   deforming in a small radius around the pointer (stair-step/liquid melt)
  *   and resetting cleanly when the pointer leaves — reproduced with a
@@ -30,6 +30,13 @@ const REDUCED_MOTION =
   typeof window !== 'undefined' && window.matchMedia(REDUCED_MOTION_QUERY).matches;
 
 const WORDMARK = 'ALTURAY'.split('');
+
+const FOOTER_LINKS = [
+  { label: 'Features', href: '#everything-in-one-place' },
+  { label: 'Businesses', href: '#multi-business' },
+  { label: 'FAQ', href: '#faq' },
+  { label: 'Log in', to: '/login' },
+];
 
 export default function LandingFooter() {
   const wordRef = useRef(null);
@@ -134,26 +141,26 @@ export default function LandingFooter() {
               </Link>
             </div>
 
-            <div className="landing-footer__news">
-              <span className="landing-footer__news-label">Join our newsletter</span>
-              <div className="landing-footer__news-row">
-                <input
-                  className="landing-footer__input"
-                  type="email"
-                  name="email"
-                  placeholder="Email address"
-                  aria-label="Email address"
-                  autoComplete="off"
-                  disabled
-                />
-                <button type="button" className="landing-footer__subscribe" disabled tabIndex={-1}>
-                  Subscribe
-                </button>
-              </div>
-              <p className="landing-footer__news-note">
-                Subscriptions aren't wired up in this preview build yet.
-              </p>
-            </div>
+            <nav className="landing-footer__news" aria-labelledby="landing-footer-explore">
+              <span className="landing-footer__news-label" id="landing-footer-explore">Explore</span>
+              <ul className="landing-footer__links">
+                {FOOTER_LINKS.map((item) => (
+                  <li key={item.label}>
+                    {item.to ? (
+                      <Link className="landing-footer__link" to={item.to}>
+                        <span>{item.label}</span>
+                        <ArrowRight className="landing-footer__link-arrow" size={15} strokeWidth={2.2} aria-hidden="true" />
+                      </Link>
+                    ) : (
+                      <a className="landing-footer__link" href={item.href}>
+                        <span>{item.label}</span>
+                        <ArrowRight className="landing-footer__link-arrow" size={15} strokeWidth={2.2} aria-hidden="true" />
+                      </a>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </nav>
           </div>
 
           <div className="landing-footer__bottom">

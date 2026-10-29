@@ -2508,7 +2508,7 @@ body:has(.landing-page) {
   z-index: 1;
   min-height: 50vh;
   min-height: 50dvh;
-  margin: 0;
+  margin-top: -1vh;
   padding: 0;
   background: #000;
   color: #FFF;
@@ -2624,52 +2624,23 @@ body:has(.landing-page) {
   text-transform: uppercase;
 }
 
-.landing-footer__news-row {
-  display: flex;
-  margin-top: 14px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.07);
-  padding: 4px;
+.landing-footer__links { list-style: none; margin: 12px 0 0; padding: 0; }
+.landing-footer__links li + li { border-top: 1px solid rgba(255, 255, 255, 0.14); }
+.landing-footer__link {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: clamp(7px, 1.2vh, 12px) 2px;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: clamp(14px, 1.15vw, 17px);
+  font-weight: 480; letter-spacing: -0.01em; text-decoration: none;
+  transition: color 200ms var(--landing-ease);
 }
-
-.landing-footer__input {
-  flex: 1;
-  min-width: 0;
-  border: 0;
-  background: transparent;
-  padding: 13px 14px;
-  color: rgba(255, 255, 255, 0.85);
-  font-family: inherit;
-  font-size: 13.5px;
-  letter-spacing: 0.01em;
+.landing-footer__link-arrow {
+  flex: 0 0 auto; opacity: 0.55;
+  transition: transform 240ms var(--landing-ease), opacity 240ms var(--landing-ease);
 }
-
-.landing-footer__input::placeholder {
-  color: rgba(255, 255, 255, 0.38);
-}
-
-.landing-footer__subscribe {
-  flex: 0 0 auto;
-  border: 0;
-  border-radius: 6px;
-  background: rgba(255, 255, 255, 0.85);
-  color: #141414;
-  padding: 11px 18px;
-  font-size: 10.5px;
-  font-weight: 680;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  cursor: not-allowed;
-}
-
-.landing-footer__news-note {
-  margin: 10px 2px 0;
-  color: rgba(255, 255, 255, 0.42);
-  font-size: clamp(10.5px, 0.83vw, 11px);
-  font-weight: 460;
-  line-height: 1.5;
-  letter-spacing: 0.005em;
-}
+.landing-footer__link:hover { color: #FFFFFF; }
+.landing-footer__link:hover .landing-footer__link-arrow { transform: translateX(4px); opacity: 1; }
+.landing-footer__link:focus-visible { outline: 2px solid #FFFFFF; outline-offset: 3px; }
 
 /* ── Bottom band: legal (left) + wordmark (right) ─────────────────────── */
 
@@ -2794,7 +2765,9 @@ body:has(.landing-page) {
 
   .landing-footer__collab,
   .landing-footer__word,
-  .landing-footer__glyph {
+  .landing-footer__glyph,
+  .landing-footer__link,
+  .landing-footer__link-arrow {
     transition: none;
   }
 }

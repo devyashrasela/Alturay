@@ -28,7 +28,7 @@ export default function LandingPage() {
       <main className="landing-page__content">
         <div className="landing-stack">
           <div className="landing-stack__sheet">
-            <div className="landing-hero-sequence" ref={sequenceRef}>
+            <div className="landing-hero-sequence" id="home" ref={sequenceRef}>
               <div className="landing-hero-stage" ref={stageRef}>
                 <LandingHero />
               </div>

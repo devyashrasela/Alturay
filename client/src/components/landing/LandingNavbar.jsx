@@ -3,9 +3,10 @@ import { Link } from 'react-router-dom';
 import { Menu, X } from 'lucide-react';
 
 const NAV_LINKS = [
-  { label: 'Everything in One Place', href: '#everything-in-one-place' },
-  { label: 'Multi-Business', href: '#multi-business' },
-  { label: 'Developer', href: '#developer' },
+  { label: 'Home', href: '#home' },
+  { label: 'Features', href: '#everything-in-one-place' },
+  { label: 'Businesses', href: '#multi-business' },
+  { label: 'FAQ', href: '#faq' },
 ];
 
 export default function LandingNavbar() {
