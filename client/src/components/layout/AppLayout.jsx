@@ -1,36 +1,49 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Outlet, useLocation } from 'react-router-dom';
-import Sidebar from './Sidebar';
-import Header from './Header';
+import TopNav from './TopNav';
+import SecondarySidebar from './SecondarySidebar';
 import Toast from '../ui/Toast/Toast';
+import { getActiveSection } from './navConfig';
 import { useGetMeQuery } from '../../store/api/authApi';
 import { setUser } from '../../store/slices/authSlice';
 import { setBusinesses, setActiveBusiness } from '../../store/slices/businessSlice';
-import { setSidebarOpen } from '../../store/slices/uiSlice';
+import './appShell.css';
+
+const COLLAPSE_KEY = 'alturay_secnav_collapsed';
+
+const readCollapsed = () => {
+  try {
+    return localStorage.getItem(COLLAPSE_KEY) === '1';
+  } catch {
+    return false;
+  }
+};
 
 export default function AppLayout() {
   const dispatch = useDispatch();
   const location = useLocation();
-  const { sidebarOpen } = useSelector((state) => state.ui);
   const { isAuthenticated } = useSelector((state) => state.auth);
   const { activeBusinessId } = useSelector((state) => state.business);
 
-  const { data: meData } = useGetMeQuery(undefined, {
-    skip: !isAuthenticated,
-  });
+  const [collapsed, setCollapsed] = useState(readCollapsed);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
+  const section = getActiveSection(location.pathname);
+  const hasSidebar = Boolean(section?.sidebar);
+
+  const { data: meData } = useGetMeQuery(undefined, { skip: !isAuthenticated });
+
+  // Identity + business restore: unchanged from the previous layout.
   useEffect(() => {
     if (meData?.data?.user) {
       const user = meData.data.user;
       dispatch(setUser(user));
       if (user.businesses?.length) {
         dispatch(setBusinesses(user.businesses));
-        // Restore active business or default to first
         if (activeBusinessId) {
           const found = user.businesses.find((b) => b.id === activeBusinessId);
-          if (found) dispatch(setActiveBusiness(found));
-          else dispatch(setActiveBusiness(user.businesses[0]));
+          dispatch(setActiveBusiness(found || user.businesses[0]));
         } else {
           dispatch(setActiveBusiness(user.businesses[0]));
         }
@@ -38,28 +51,46 @@ export default function AppLayout() {
     }
   }, [meData, dispatch, activeBusinessId]);
 
-  // Close the mobile drawer after navigating
-  useEffect(() => {
-    if (window.matchMedia('(max-width: 768px)').matches) {
-      dispatch(setSidebarOpen(false));
-    }
-  }, [location.pathname, dispatch]);
+  // Close the mobile drawer whenever the route changes.
+  const [lastPath, setLastPath] = useState(location.pathname);
+  if (location.pathname !== lastPath) {
+    setLastPath(location.pathname);
+    setDrawerOpen(false);
+  }
+
+  const toggleCollapsed = useCallback(() => {
+    setCollapsed((value) => {
+      const next = !value;
+      try {
+        localStorage.setItem(COLLAPSE_KEY, next ? '1' : '0');
+      } catch {
+        /* storage unavailable: preference just won't persist */
+      }
+      return next;
+    });
+  }, []);
+
+  const closeDrawer = useCallback(() => setDrawerOpen(false), []);
 
   return (
-    <div className="app-layout">
-      <Sidebar />
-      <button
-        type="button"
-        aria-label="Close navigation"
-        onClick={() => dispatch(setSidebarOpen(false))}
-        className={`app-layout__overlay ${sidebarOpen ? 'app-layout__overlay--visible' : ''}`}
-      />
-      <div className={`app-layout__main ${!sidebarOpen ? 'app-layout__main--sidebar-collapsed' : ''}`}>
-        <Header />
-        <main className="app-layout__content">
-          <Outlet />
+    <div className="shell">
+      <TopNav drawerOpen={drawerOpen} onOpenDrawer={() => setDrawerOpen(true)} />
+
+      <div className="shell__body">
+        <SecondarySidebar
+          section={section}
+          collapsed={hasSidebar && collapsed}
+          onToggleCollapse={toggleCollapsed}
+          drawerOpen={drawerOpen}
+          onCloseDrawer={closeDrawer}
+        />
+        <main className="shell__content">
+          <div className="shell__content-inner">
+            <Outlet />
+          </div>
         </main>
       </div>
+
       <Toast />
     </div>
   );

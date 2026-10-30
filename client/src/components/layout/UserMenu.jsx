@@ -20,26 +20,28 @@ const getInitials = (name) => (
     : 'U'
 );
 
-export default function UserMenu({ collapsed }) {
+/*
+ * placement="sidebar" (default): full account row, menu opens upward.
+ * placement="topbar":            avatar only, menu opens downward, right-aligned.
+ */
+export default function UserMenu({ collapsed = false, placement = 'sidebar' }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const { user } = useSelector((state) => state.auth);
+  const topbar = placement === 'topbar';
 
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState(null);
   const triggerRef = useRef(null);
   const menuRef = useRef(null);
 
-  // Close on navigation without an extra render pass.
   const [lastPath, setLastPath] = useState(location.pathname);
   if (location.pathname !== lastPath) {
     setLastPath(location.pathname);
     setOpen(false);
   }
 
-  // The trigger moves when the sidebar changes state; close rather than
-  // leaving the fixed menu detached from its anchor.
   const [lastCollapsed, setLastCollapsed] = useState(collapsed);
   if (collapsed !== lastCollapsed) {
     setLastCollapsed(collapsed);
@@ -75,7 +77,6 @@ export default function UserMenu({ collapsed }) {
     };
   }, [open]);
 
-  // Move focus into the menu for keyboard users; visual focus stays subtle.
   useEffect(() => {
     if (!open) return undefined;
     const frame = requestAnimationFrame(() => {
@@ -93,14 +94,24 @@ export default function UserMenu({ collapsed }) {
     if (!rect) return;
 
     const width = Math.min(MENU_WIDTH, window.innerWidth - 16);
-    const left = Math.min(Math.max(8, rect.left), window.innerWidth - width - 8);
 
-    setPosition({
-      left,
-      bottom: window.innerHeight - rect.top + 8,
-      width,
-      maxHeight: Math.max(200, rect.top - 16),
-    });
+    if (topbar) {
+      const left = Math.min(Math.max(8, rect.right - width), window.innerWidth - width - 8);
+      setPosition({
+        left,
+        top: rect.bottom + 8,
+        width,
+        maxHeight: Math.max(200, window.innerHeight - rect.bottom - 16),
+      });
+    } else {
+      const left = Math.min(Math.max(8, rect.left), window.innerWidth - width - 8);
+      setPosition({
+        left,
+        bottom: window.innerHeight - rect.top + 8,
+        width,
+        maxHeight: Math.max(200, rect.top - 16),
+      });
+    }
     setOpen(true);
   };
 
@@ -136,21 +147,32 @@ export default function UserMenu({ collapsed }) {
     items[next].focus();
   };
 
+  const menuStyle = position && {
+    left: position.left,
+    width: position.width,
+    maxHeight: position.maxHeight,
+    ...(position.top !== undefined ? { top: position.top } : { bottom: position.bottom }),
+  };
+
   return (
     <>
       <button
         ref={triggerRef}
         type="button"
-        className={`sidebar__account ${collapsed ? 'sidebar__account--collapsed' : ''}`}
+        className={
+          topbar
+            ? 'topnav__avatar-btn'
+            : `sidebar__account ${collapsed ? 'sidebar__account--collapsed' : ''}`
+        }
         onClick={toggle}
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls="account-menu"
         aria-label={`Account menu for ${name}`}
-        title={collapsed ? name : undefined}
+        title={topbar || collapsed ? name : undefined}
       >
         <span className="sidebar__account-avatar">{initials}</span>
-        {!collapsed && (
+        {!topbar && !collapsed && (
           <>
             <span className="sidebar__account-info">
               <span className="sidebar__account-name">{name}</span>
@@ -168,12 +190,7 @@ export default function UserMenu({ collapsed }) {
           className="user-menu"
           role="menu"
           aria-label="Account menu"
-          style={{
-            left: position.left,
-            bottom: position.bottom,
-            width: position.width,
-            maxHeight: position.maxHeight,
-          }}
+          style={menuStyle}
           onKeyDown={handleMenuKeyDown}
         >
           <div className="user-menu__identity">
@@ -187,32 +204,16 @@ export default function UserMenu({ collapsed }) {
           <div className="user-menu__divider" />
 
           <div className="user-menu__group">
-            <button
-              type="button"
-              role="menuitem"
-              className="user-menu__item"
-              onClick={() => goTo('/settings/personalization')}
-            >
+            <button type="button" role="menuitem" className="user-menu__item" onClick={() => goTo('/settings/personalization')}>
               <Palette size={16} aria-hidden="true" />
               <span>Personalization</span>
             </button>
-            <button
-              type="button"
-              role="menuitem"
-              className="user-menu__item"
-              disabled
-              title="Available in a later update"
-            >
+            <button type="button" role="menuitem" className="user-menu__item" disabled title="Available in a later update">
               <UserRound size={16} aria-hidden="true" />
               <span>Profile</span>
               <span className="user-menu__soon">Soon</span>
             </button>
-            <button
-              type="button"
-              role="menuitem"
-              className="user-menu__item"
-              onClick={() => goTo('/settings')}
-            >
+            <button type="button" role="menuitem" className="user-menu__item" onClick={() => goTo('/settings')}>
               <Settings size={16} aria-hidden="true" />
               <span>Settings</span>
             </button>
@@ -221,23 +222,12 @@ export default function UserMenu({ collapsed }) {
           <div className="user-menu__divider" />
 
           <div className="user-menu__group">
-            <button
-              type="button"
-              role="menuitem"
-              className="user-menu__item"
-              disabled
-              title="Available in a later update"
-            >
+            <button type="button" role="menuitem" className="user-menu__item" disabled title="Available in a later update">
               <CircleHelp size={16} aria-hidden="true" />
               <span>Help</span>
               <span className="user-menu__soon">Soon</span>
             </button>
-            <button
-              type="button"
-              role="menuitem"
-              className="user-menu__item user-menu__item--danger"
-              onClick={handleLogout}
-            >
+            <button type="button" role="menuitem" className="user-menu__item user-menu__item--danger" onClick={handleLogout}>
               <LogOut size={16} aria-hidden="true" />
               <span>Logout</span>
             </button>

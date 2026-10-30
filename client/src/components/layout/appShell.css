@@ -1,0 +1,471 @@
+/* ═══════════════════════════════════════════════════════════
+   APP SHELL — top bar + secondary sidebar
+   Uses the existing semantic tokens only, so Light/Dark follow
+   the theme with no overrides. The top bar's boxed link group
+   mirrors the landing navbar; the active state mirrors the
+   settings sidebar (muted fill, primary text).
+   ═══════════════════════════════════════════════════════════ */
+
+:root {
+  --topnav-height: 64px;
+  --secnav-width: 248px;
+  --secnav-collapsed-width: 56px;
+}
+
+.shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg-main);
+}
+
+.shell__body {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  min-width: 0;
+}
+
+.shell__content {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-8);
+}
+
+.shell__content-inner {
+  width: 100%;
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+}
+
+.shell__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  display: none;
+  padding: 0;
+  border: none;
+  background: var(--color-overlay-soft);
+  animation: fade-in 150ms ease;
+}
+
+/* ── Top bar ──────────────────────────────────────────────── */
+
+.topnav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  height: var(--topnav-height);
+  background: var(--color-bg-main);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.topnav__inner {
+  height: 100%;
+  padding: 0 var(--space-6);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.topnav__start {
+  justify-self: start;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.topnav__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-text-primary);
+  text-decoration: none;
+}
+
+.topnav__brand:hover {
+  color: var(--color-text-primary);
+}
+
+.topnav__mark {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  flex: 0 0 auto;
+}
+
+.topnav__wordmark {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+
+.topnav__menu-btn {
+  display: none;
+}
+
+/* Boxed link group, same construction as .landing-nav__links */
+.topnav__links {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 44px;
+  padding: 0 5px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-bg-card);
+}
+
+.topnav__link {
+  display: inline-flex;
+  align-items: center;
+  height: 34px;
+  padding: 0 16px;
+  border-radius: 10px;
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -0.005em;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.topnav__link:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+/* Active state = settings sidebar's active item */
+.topnav__link--active,
+.topnav__link--active:hover {
+  background: var(--color-bg-muted);
+  color: var(--color-text-primary);
+  box-shadow: inset 0 0 0 1px var(--color-border);
+}
+
+.topnav__end {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.topnav__avatar-btn {
+  display: inline-flex;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  background: none;
+  cursor: pointer;
+}
+
+.topnav__avatar-btn .sidebar__account-avatar {
+  transition: border-color var(--transition-fast);
+}
+
+.topnav__avatar-btn:hover .sidebar__account-avatar,
+.topnav__avatar-btn[aria-expanded='true'] .sidebar__account-avatar {
+  border-color: var(--color-border-strong);
+}
+
+.topnav__new {
+  flex: 0 0 auto;
+  gap: 6px;
+  padding: 0 12px 0 10px;
+}
+
+.topnav__new-chev {
+  opacity: 0.75;
+}
+
+.topnav__quick {
+  min-width: 232px;
+}
+
+.header__menu-item:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ── Secondary sidebar ────────────────────────────────────── */
+
+.sec-nav {
+  position: sticky;
+  top: var(--topnav-height);
+  flex: 0 0 var(--secnav-width);
+  width: var(--secnav-width);
+  height: calc(100vh - var(--topnav-height));
+  height: calc(100dvh - var(--topnav-height));
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
+  overflow: hidden;
+  transition: flex-basis var(--transition-slow), width var(--transition-slow);
+}
+
+.sec-nav__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  height: 40px;
+  padding: 0 2px 0 10px;
+  margin-bottom: 4px;
+  flex-shrink: 0;
+}
+
+.sec-nav__title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--sidebar-text-strong);
+  white-space: nowrap;
+}
+
+.sec-nav__close {
+  display: none;
+}
+
+.sec-nav__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sec-nav__group {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sec-nav__group-label {
+  padding: 14px 10px 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--sidebar-text-muted);
+}
+
+.sec-nav__group:first-child .sec-nav__group-label {
+  padding-top: 6px;
+}
+
+.sec-nav__item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 8px;
+  background: none;
+  color: var(--sidebar-text);
+  font-family: var(--font-family);
+  font-size: 13.5px;
+  font-weight: 500;
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.sec-nav__item svg {
+  flex-shrink: 0;
+  color: var(--sidebar-text-muted);
+  transition: color var(--transition-fast);
+}
+
+.sec-nav__label {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sec-nav__item:hover:not(:disabled):not(.sec-nav__item--active) {
+  background: var(--sidebar-hover-bg);
+  color: var(--sidebar-text-strong);
+}
+
+.sec-nav__item:hover:not(:disabled) svg {
+  color: currentColor;
+}
+
+/* Active state = .settings-sidebar__item--active */
+.sec-nav__item--active,
+.sec-nav__item--active:hover {
+  background: var(--color-bg-muted);
+  color: var(--color-text-primary);
+}
+
+.sec-nav__item--active svg {
+  color: var(--color-text-primary);
+}
+
+.sec-nav__item:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.sec-nav__soon {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--sidebar-text-muted);
+}
+
+/* ── Desktop ──────────────────────────────────────────────── */
+
+@media (min-width: 1025px) {
+  /* Sections without a sidebar (Dashboard, Customers) get full width. */
+  .sec-nav--drawer-only,
+  .sec-nav__group--main {
+    display: none;
+  }
+
+  .sec-nav--collapsed {
+    flex-basis: var(--secnav-collapsed-width);
+    width: var(--secnav-collapsed-width);
+    padding: 12px 8px;
+  }
+
+  .sec-nav--collapsed .sec-nav__head {
+    justify-content: center;
+    padding: 0;
+  }
+
+  .sec-nav--collapsed .sec-nav__title,
+  .sec-nav--collapsed .sec-nav__label,
+  .sec-nav--collapsed .sec-nav__soon,
+  .sec-nav--collapsed .sec-nav__group-label {
+    display: none;
+  }
+
+  .sec-nav--collapsed .sec-nav__group + .sec-nav__group {
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px solid var(--sidebar-border);
+  }
+
+  .sec-nav--collapsed .sec-nav__item {
+    justify-content: center;
+    height: 40px;
+    padding: 0;
+  }
+}
+
+/* Roomier labels get tight before the drawer breakpoint */
+@media (max-width: 1280px) {
+  .topnav__new-label,
+  .topnav__new-chev {
+    display: none;
+  }
+
+  .topnav__new {
+    width: 40px;
+    padding: 0;
+  }
+
+  .topnav .biz-switcher__role {
+    display: none;
+  }
+
+  .topnav__link {
+    padding: 0 12px;
+  }
+}
+
+/* ── Tablet & mobile: nav moves into a drawer ─────────────── */
+
+@media (max-width: 1024px) {
+  .topnav__inner {
+    grid-template-columns: auto minmax(0, 1fr);
+    padding: 0 var(--space-4);
+  }
+
+  .topnav__links {
+    display: none;
+  }
+
+  .topnav__menu-btn {
+    display: flex;
+  }
+
+  .shell__content {
+    padding: var(--space-6);
+  }
+
+  .shell__overlay--visible {
+    display: block;
+  }
+
+  .sec-nav {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 56;
+    width: 300px;
+    max-width: 86vw;
+    height: 100vh;
+    height: 100dvh;
+    transform: translateX(-100%);
+    visibility: hidden;
+    box-shadow: var(--shadow-xl);
+    transition: transform var(--transition-normal), visibility 0s linear var(--transition-normal);
+  }
+
+  .sec-nav--open {
+    transform: translateX(0);
+    visibility: visible;
+    transition: transform var(--transition-normal), visibility 0s;
+  }
+
+  .sec-nav__collapse {
+    display: none;
+  }
+
+  .sec-nav__close {
+    display: flex;
+  }
+
+  .sec-nav__item {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 640px) {
+  .shell__content {
+    padding: var(--space-4);
+  }
+
+  .topnav__wordmark {
+    display: none;
+  }
+
+  .topnav__inner {
+    gap: var(--space-2);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sec-nav,
+  .topnav__link,
+  .sec-nav__item {
+    transition: none;
+  }
+}
