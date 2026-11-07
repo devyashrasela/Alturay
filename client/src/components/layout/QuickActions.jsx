@@ -1,80 +1,74 @@
 import { useEffect, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { ChevronDown, Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import Icon from '../ui/Icon';
 import { QUICK_ACTIONS } from './navConfig';
 
 export default function QuickActions() {
   const navigate = useNavigate();
-  const location = useLocation();
   const [open, setOpen] = useState(false);
-  const anchorRef = useRef(null);
-  const triggerRef = useRef(null);
-
-  const [lastPath, setLastPath] = useState(location.pathname);
-  if (location.pathname !== lastPath) {
-    setLastPath(location.pathname);
-    setOpen(false);
-  }
+  const containerRef = useRef(null);
 
   useEffect(() => {
     if (!open) return undefined;
-    const onPointer = (e) => {
-      if (anchorRef.current && !anchorRef.current.contains(e.target)) setOpen(false);
-    };
-    const onKey = (e) => {
-      if (e.key === 'Escape') {
+
+    const handlePointer = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
         setOpen(false);
-        triggerRef.current?.focus();
       }
     };
-    document.addEventListener('mousedown', onPointer);
-    document.addEventListener('keydown', onKey);
+    const handleKey = (e) => {
+      if (e.key === 'Escape') {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handlePointer);
+    document.addEventListener('keydown', handleKey);
     return () => {
-      document.removeEventListener('mousedown', onPointer);
-      document.removeEventListener('keydown', onKey);
+      document.removeEventListener('mousedown', handlePointer);
+      document.removeEventListener('keydown', handleKey);
     };
   }, [open]);
 
+  const handleAction = (action) => {
+    if (action.soon) return;
+    setOpen(false);
+    navigate(action.path);
+  };
+
   return (
-    <div className="header__menu-anchor" ref={anchorRef}>
+    <div ref={containerRef}>
       <button
-        ref={triggerRef}
+        className="fab"
+        id="fab"
         type="button"
-        className="btn btn--primary btn--md topnav__new"
-        onClick={() => setOpen((v) => !v)}
+        aria-label="Quick actions"
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label="Quick actions"
+        aria-controls="qa"
+        onClick={() => setOpen((prev) => !prev)}
       >
-        <Plus size={16} aria-hidden="true" />
-        <span className="topnav__new-label">New</span>
-        <ChevronDown size={14} aria-hidden="true" className="topnav__new-chev" />
+        <Icon name="plus" size={18} strokeWidth={2.2} />
       </button>
 
       {open && (
-        <div className="header__menu topnav__quick" role="menu" aria-label="Quick actions">
-          <div className="header__menu-list">
-            {QUICK_ACTIONS.map((action) => {
-              const Icon = action.icon;
-              return (
-                <button
-                  key={action.label}
-                  type="button"
-                  role="menuitem"
-                  className="header__menu-item"
-                  disabled={action.soon}
-                  title={action.soon ? 'Available in a later update' : undefined}
-                  onClick={() => { setOpen(false); navigate(action.path); }}
-                >
-                  <span className="icon-tile icon-tile--blue" style={{ width: 28, height: 28 }}>
-                    <Icon size={15} aria-hidden="true" />
-                  </span>
-                  <span style={{ flex: 1, fontWeight: 500, fontSize: 13.5 }}>{action.label}</span>
-                  {action.soon && <span className="user-menu__soon">Soon</span>}
-                </button>
-              );
-            })}
-          </div>
+        <div className="pop qa" id="qa" role="menu" aria-label="Quick actions">
+          <div className="pop__label">Create</div>
+          {QUICK_ACTIONS.map((action) => (
+            <button
+              key={action.label}
+              type="button"
+              role="menuitem"
+              className="pop__item"
+              disabled={action.soon}
+              title={action.soon ? 'Available in a later update' : undefined}
+              onClick={() => handleAction(action)}
+            >
+              <Icon name={action.icon} size={16} />
+              <span>{action.label}</span>
+              {action.soon && <span className="soon">Soon</span>}
+            </button>
+          ))}
         </div>
       )}
     </div>

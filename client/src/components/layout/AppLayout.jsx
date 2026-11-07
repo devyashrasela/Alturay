@@ -3,6 +3,8 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Outlet, useLocation } from 'react-router-dom';
 import TopNav from './TopNav';
 import SecondarySidebar from './SecondarySidebar';
+import QuickActions from './QuickActions';
+import UserSettingsModal from './UserSettingsModal';
 import Toast from '../ui/Toast/Toast';
 import { getActiveSection } from './navConfig';
 import { useGetMeQuery } from '../../store/api/authApi';
@@ -27,14 +29,25 @@ export default function AppLayout() {
   const { activeBusinessId } = useSelector((state) => state.business);
 
   const [collapsed, setCollapsed] = useState(readCollapsed);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [userSettingsOpen, setUserSettingsOpen] = useState(false);
+  const [userSettingsTab, setUserSettingsTab] = useState('profile');
 
   const section = getActiveSection(location.pathname);
   const hasSidebar = Boolean(section?.sidebar);
 
   const { data: meData } = useGetMeQuery(undefined, { skip: !isAuthenticated });
 
-  // Identity + business restore: unchanged from the previous layout.
+  // Body classes to coordinate layout margin transitions
+  useEffect(() => {
+    document.body.classList.toggle('has-sb', Boolean(hasSidebar && !collapsed));
+    document.body.classList.toggle('has-rail', Boolean(hasSidebar && collapsed));
+
+    return () => {
+      document.body.classList.remove('has-sb', 'has-rail');
+    };
+  }, [hasSidebar, collapsed]);
+
+  // Identity + business restore
   useEffect(() => {
     if (meData?.data?.user) {
       const user = meData.data.user;
@@ -51,47 +64,53 @@ export default function AppLayout() {
     }
   }, [meData, dispatch, activeBusinessId]);
 
-  // Close the mobile drawer whenever the route changes.
-  const [lastPath, setLastPath] = useState(location.pathname);
-  if (location.pathname !== lastPath) {
-    setLastPath(location.pathname);
-    setDrawerOpen(false);
-  }
-
   const toggleCollapsed = useCallback(() => {
     setCollapsed((value) => {
       const next = !value;
       try {
         localStorage.setItem(COLLAPSE_KEY, next ? '1' : '0');
       } catch {
-        /* storage unavailable: preference just won't persist */
+        /* storage unavailable */
       }
       return next;
     });
   }, []);
 
-  const closeDrawer = useCallback(() => setDrawerOpen(false), []);
+  const handleOpenUserSettings = useCallback((tab = 'profile') => {
+    setUserSettingsTab(tab);
+    setUserSettingsOpen(true);
+  }, []);
+
+  const handleCloseUserSettings = useCallback(() => {
+    setUserSettingsOpen(false);
+  }, []);
 
   return (
-    <div className="shell">
-      <TopNav drawerOpen={drawerOpen} onOpenDrawer={() => setDrawerOpen(true)} />
+    <>
+      <TopNav onOpenUserSettings={handleOpenUserSettings} />
 
-      <div className="shell__body">
-        <SecondarySidebar
-          section={section}
-          collapsed={hasSidebar && collapsed}
-          onToggleCollapse={toggleCollapsed}
-          drawerOpen={drawerOpen}
-          onCloseDrawer={closeDrawer}
+      <SecondarySidebar
+        section={section}
+        collapsed={hasSidebar && collapsed}
+        onToggleCollapse={toggleCollapsed}
+      />
+
+      <main className="main" id="main">
+        <Outlet />
+      </main>
+
+      <QuickActions />
+
+      {userSettingsOpen && (
+        <UserSettingsModal
+          key={userSettingsTab}
+          isOpen={userSettingsOpen}
+          initialTab={userSettingsTab}
+          onClose={handleCloseUserSettings}
         />
-        <main className="shell__content">
-          <div className="shell__content-inner">
-            <Outlet />
-          </div>
-        </main>
-      </div>
+      )}
 
       <Toast />
-    </div>
+    </>
   );
 }

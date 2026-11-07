@@ -1,32 +1,6 @@
-import {
-  Building2,
-  ClipboardList,
-  FilePlus2,
-  Gauge,
-  Layers,
-  LayoutDashboard,
-  LayoutTemplate,
-  Package,
-  PackagePlus,
-  Receipt,
-  Settings,
-  Sparkles,
-  Truck,
-  UserCog,
-  UserPlus,
-  Users,
-  Warehouse,
-  FileText,
-} from 'lucide-react';
-
 /*
  * Single source of truth for the app shell navigation.
- *
- *  - NAV_SECTIONS  → the top bar links. A section with a `sidebar` also gets
- *                    the secondary sidebar; one without it gets full width.
- *  - `soon: true`  → the screen does not exist yet. The item renders disabled
- *                    with a "Soon" tag. Remove the flag when the route ships.
- *  - `isActive`    → optional override when exact/prefix matching is not enough.
+ * Sampled and matched directly with alturay-shell-reference (1).html
  */
 
 const startsWith = (...prefixes) => (pathname) =>
@@ -37,43 +11,54 @@ export const NAV_SECTIONS = [
     id: 'dashboard',
     label: 'Dashboard',
     path: '/dashboard',
-    icon: LayoutDashboard,
+    icon: 'chart',
     match: startsWith('/dashboard'),
   },
   {
     id: 'inventory',
     label: 'Inventory',
     path: '/products',
-    icon: Package,
+    icon: 'pkg',
     match: startsWith('/inventory', '/products'),
     sidebar: {
       title: 'Inventory',
+      tile: 'I',
+      icon: 'clipboardlist',
+      cta: 'Add product',
+      ctaIcon: 'plus',
+      ctaPath: '/products?add=1',
+      pill: {
+        id: 'products',
+        label: 'All products',
+        icon: 'pkg',
+        path: '/products',
+        isActive: (p) => p === '/products' || p.startsWith('/products/'),
+      },
       groups: [
         {
           label: 'Overview',
           items: [
-            { label: 'Inventory dashboard', icon: Gauge, path: '/inventory', soon: true },
-            { label: 'All products', icon: Package, path: '/products' },
+            { id: 'inv-dash', label: 'Inventory dashboard', icon: 'gauge', path: '/inventory', soon: true },
           ],
         },
         {
           label: 'Stock',
           items: [
-            { label: 'Add stock', icon: PackagePlus, path: '/inventory/add-stock', soon: true },
-            { label: 'Shipments', icon: Truck, path: '/inventory/shipments', soon: true },
+            { id: 'add-stock', label: 'Add stock', icon: 'plus', path: '/inventory/add-stock', soon: true },
+            { id: 'ship', label: 'Shipments', icon: 'truck', path: '/inventory/shipments', soon: true },
           ],
         },
         {
           label: 'Locations',
           items: [
-            { label: 'Inventories', icon: Layers, path: '/inventory/inventories', soon: true },
-            { label: 'Warehouses', icon: Warehouse, path: '/inventory/warehouses', soon: true },
+            { id: 'invs', label: 'Inventories', icon: 'layers', path: '/inventory/inventories', soon: true },
+            { id: 'wh', label: 'Warehouses', icon: 'wh', path: '/inventory/warehouses', soon: true },
           ],
         },
         {
           label: 'Reports',
           items: [
-            { label: 'Inventory reports', icon: ClipboardList, path: '/inventory/reports', soon: true },
+            { id: 'inv-rep', label: 'Inventory reports', icon: 'chart', path: '/inventory/reports', soon: true },
           ],
         },
       ],
@@ -83,26 +68,39 @@ export const NAV_SECTIONS = [
     id: 'billing',
     label: 'Billing',
     path: '/invoices',
-    icon: Receipt,
+    icon: 'receipt',
     match: startsWith('/billing', '/invoices'),
     sidebar: {
       title: 'Billing',
+      tile: 'B',
+      icon: 'receipt',
+      cta: 'Create new',
+      ctaIcon: 'plus',
+      ctaPath: '/invoices/new',
+      pill: {
+        id: 'bill-dash',
+        label: 'Billing dashboard',
+        icon: 'gauge',
+        path: '/billing',
+        soon: true,
+      },
       groups: [
-        {
-          label: 'Overview',
-          items: [{ label: 'Billing dashboard', icon: Gauge, path: '/billing', soon: true }],
-        },
         {
           label: 'Documents',
           items: [
             {
+              id: 'invoices',
               label: 'Invoices & bills',
-              icon: FileText,
+              icon: 'file',
               path: '/invoices',
-              // Stay highlighted on /invoices/:id but not on /invoices/new.
               isActive: (p) => p === '/invoices' || /^\/invoices\/(?!new$)[^/]+/.test(p),
             },
-            { label: 'Create new', icon: FilePlus2, path: '/invoices/new' },
+            {
+              id: 'create',
+              label: 'Create new',
+              icon: 'filep',
+              path: '/invoices/new',
+            },
           ],
         },
       ],
@@ -112,35 +110,41 @@ export const NAV_SECTIONS = [
     id: 'customers',
     label: 'Customers',
     path: '/customers',
-    icon: Users,
+    icon: 'users',
     match: startsWith('/customers'),
   },
   {
     id: 'settings',
     label: 'Settings',
     path: '/settings',
-    icon: Settings,
+    icon: 'sliders',
     match: startsWith('/settings'),
     sidebar: {
       title: 'Settings',
+      tile: 'S',
+      icon: 'sliders',
+      cta: '',
+      ctaIcon: '',
+      pill: {
+        id: 'biz',
+        label: 'Business settings',
+        icon: 'bld',
+        path: '/settings',
+        isActive: (p) => p === '/settings',
+      },
       groups: [
         {
           label: 'Business',
           items: [
-            { label: 'Business settings', icon: Building2, path: '/settings', isActive: (p) => p === '/settings' },
-            { label: 'Users & access', icon: UserCog, path: '/settings/users', soon: true },
+            { id: 'users', label: 'Users & access', icon: 'user', path: '/settings/users', soon: true },
           ],
         },
         {
           label: 'PDF templates',
           items: [
-            { label: 'Invoice template', icon: LayoutTemplate, path: '/settings/templates/invoice', soon: true },
-            { label: 'Bill template', icon: Receipt, path: '/settings/templates/bill', soon: true },
+            { id: 'tpl-inv', label: 'Invoice template', icon: 'tpl', path: '/settings/templates/invoice', soon: true },
+            { id: 'tpl-bill', label: 'Bill template', icon: 'tpl', path: '/settings/templates/bill', soon: true },
           ],
-        },
-        {
-          label: 'Account',
-          items: [{ label: 'Personalization', icon: Sparkles, path: '/settings/personalization' }],
         },
       ],
     },
@@ -148,11 +152,11 @@ export const NAV_SECTIONS = [
 ];
 
 export const QUICK_ACTIONS = [
-  { label: 'New invoice', icon: FileText, path: '/invoices/new' },
-  { label: 'New bill', icon: Receipt, path: '/invoices/new' },
-  { label: 'Add product', icon: PackagePlus, path: '/products' },
-  { label: 'Add customer', icon: UserPlus, path: '/customers', soon: true },
-  { label: 'Receive stock', icon: Truck, path: '/inventory/add-stock', soon: true },
+  { label: 'New invoice', icon: 'file', path: '/invoices/new' },
+  { label: 'New bill', icon: 'receipt', path: '/invoices/new?type=bill' },
+  { label: 'Add product', icon: 'pkg', path: '/products?add=1' },
+  { label: 'Add customer', icon: 'userp', path: '/customers', soon: true },
+  { label: 'Receive stock', icon: 'truck', path: '/inventory/add-stock', soon: true },
 ];
 
 export const getActiveSection = (pathname) =>

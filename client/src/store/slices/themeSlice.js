@@ -12,7 +12,7 @@ export const applyTheme = (value) => {
 
   const themeColor = document.querySelector('meta[name="theme-color"]');
   if (themeColor) {
-    themeColor.setAttribute('content', theme === 'light' ? '#F7F7F8' : '#121212');
+    themeColor.setAttribute('content', theme === 'light' ? '#F7F7F8' : '#191919');
   }
 
   return theme;

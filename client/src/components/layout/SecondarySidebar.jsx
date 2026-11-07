@@ -1,150 +1,275 @@
-import { useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { PanelLeftClose, PanelLeftOpen, X } from 'lucide-react';
-import { NAV_SECTIONS, getActiveSection, isItemActive } from './navConfig';
+import { Fragment, useEffect, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import Icon from '../ui/Icon';
+import { isItemActive } from './navConfig';
 
-function SidebarItem({ item, pathname, collapsed, onNavigate }) {
-  const Icon = item.icon;
-
-  if (item.soon) {
-    return (
-      <button
-        type="button"
-        className="sec-nav__item"
-        disabled
-        title="Available in a later update"
-      >
-        <Icon size={17} aria-hidden="true" />
-        <span className="sec-nav__label">{item.label}</span>
-        <span className="sec-nav__soon">Soon</span>
-      </button>
-    );
-  }
-
-  const active = isItemActive(item, pathname);
-  return (
-    <Link
-      to={item.path}
-      className={`sec-nav__item${active ? ' sec-nav__item--active' : ''}`}
-      aria-current={active ? 'page' : undefined}
-      title={collapsed ? item.label : undefined}
-      onClick={onNavigate}
-    >
-      <Icon size={17} aria-hidden="true" />
-      <span className="sec-nav__label">{item.label}</span>
-    </Link>
-  );
-}
-
-/*
- * Secondary navigation.
- *  - Desktop: shown only for sections that define a `sidebar`; collapsible
- *    to an icon rail.
- *  - Mobile (<1024px): becomes the slide-over drawer for the whole app, so it
- *    also lists the main sections.
- */
 export default function SecondarySidebar({
   section,
   collapsed,
   onToggleCollapse,
-  drawerOpen,
-  onCloseDrawer,
 }) {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const sidebar = section?.sidebar;
 
-  useEffect(() => {
-    if (!drawerOpen) return undefined;
-    const onKey = (e) => {
-      if (e.key === 'Escape') onCloseDrawer();
-    };
-    document.addEventListener('keydown', onKey);
-    return () => document.removeEventListener('keydown', onKey);
-  }, [drawerOpen, onCloseDrawer]);
+  // Tooltip state
+  const [tipState, setTipState] = useState({
+    visible: false,
+    text: '',
+    kbd: '',
+    soon: false,
+    left: 0,
+    top: 0,
+  });
 
-  const className = [
-    'sec-nav',
-    collapsed && 'sec-nav--collapsed',
-    drawerOpen && 'sec-nav--open',
-    !sidebar && 'sec-nav--drawer-only',
-  ].filter(Boolean).join(' ');
+  // Cached sidebar for unmount transition
+  const [cachedSidebar, setCachedSidebar] = useState(sidebar);
+  const [mounted, setMounted] = useState(Boolean(sidebar));
+  const [isOut, setIsOut] = useState(false);
+  const unmountTimerRef = useRef(null);
+
+  useEffect(() => {
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    clearTimeout(unmountTimerRef.current);
+
+    if (sidebar) {
+      setCachedSidebar(sidebar);
+      setMounted(true);
+      setIsOut(false);
+    } else {
+      setIsOut(true);
+      unmountTimerRef.current = setTimeout(
+        () => {
+          setMounted(false);
+        },
+        prefersReducedMotion ? 0 : 240
+      );
+    }
+
+    return () => clearTimeout(unmountTimerRef.current);
+  }, [sidebar]);
+
+  const showTip = (target) => {
+    if (!target) return;
+    const t = target.getAttribute('data-tip');
+    if (!t) return;
+    const k = target.getAttribute('data-kbd') || '';
+    const soon = target.hasAttribute('data-soon');
+    const r = target.getBoundingClientRect();
+    setTipState({
+      visible: true,
+      text: t,
+      kbd: k,
+      soon,
+      left: r.right + 10,
+      top: r.top + r.height / 2,
+    });
+  };
+
+  const hideTip = () => {
+    setTipState((prev) => (prev.visible ? { ...prev, visible: false } : prev));
+  };
+
+  const handlePointerOver = (e) => {
+    const target = e.target.closest('[data-tip]');
+    if (target) showTip(target);
+    else hideTip();
+  };
+
+  const handleFocusIn = (e) => {
+    const target = e.target.closest('[data-tip]');
+    if (target) showTip(target);
+  };
+
+  const handleNavigate = (path) => {
+    hideTip();
+    navigate(path);
+  };
+
+  const activeSidebar = sidebar || cachedSidebar;
+  if (!mounted || !activeSidebar) return null;
+
+  const pillActive = activeSidebar.pill && isItemActive(activeSidebar.pill, pathname);
 
   return (
     <>
-      <button
-        type="button"
-        className={`shell__overlay${drawerOpen ? ' shell__overlay--visible' : ''}`}
-        onClick={onCloseDrawer}
-        aria-label="Close navigation"
-        tabIndex={drawerOpen ? 0 : -1}
-      />
-
       <aside
-        id="secondary-navigation"
-        className={className}
-        aria-label={sidebar ? `${sidebar.title} navigation` : 'Navigation'}
+        id="sb"
+        className={`sb ${collapsed ? 'sb--rail' : ''} ${isOut ? 'sb--out' : ''}`.trim()}
+        aria-label={`${activeSidebar.title} navigation`}
+        inert={isOut ? '' : undefined}
+        onMouseOver={handlePointerOver}
+        onMouseLeave={hideTip}
+        onFocusCapture={handleFocusIn}
+        onBlurCapture={hideTip}
+        onScrollCapture={hideTip}
       >
-        <div className="sec-nav__head">
-          <span className="sec-nav__title">{sidebar?.title ?? 'Menu'}</span>
+        {collapsed ? (
+          <>
+            <button
+              type="button"
+              className="rl rl-toggle"
+              id="sbOpen"
+              data-tip="Expand sidebar"
+              aria-label="Expand sidebar"
+              onClick={onToggleCollapse}
+            >
+              <span className="rl__sec">
+                <Icon name={activeSidebar.icon} size={18} />
+              </span>
+              <span className="rl__exp">
+                <Icon name="dchev" size={18} />
+              </span>
+            </button>
 
-          <button
-            type="button"
-            className="sidebar__collapse sec-nav__collapse"
-            onClick={onToggleCollapse}
-            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            aria-pressed={collapsed}
-            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          >
-            {collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
-          </button>
-          <button
-            type="button"
-            className="sidebar__collapse sec-nav__close"
-            onClick={onCloseDrawer}
-            aria-label="Close navigation"
-          >
-            <X size={18} />
-          </button>
-        </div>
+            {activeSidebar.pill && (
+              <button
+                type="button"
+                className={`rl ${activeSidebar.pill.soon ? 'is-soon' : ''}`}
+                data-tip={activeSidebar.pill.label}
+                aria-label={activeSidebar.pill.label}
+                aria-current={pillActive ? 'page' : undefined}
+                data-soon={activeSidebar.pill.soon ? '1' : undefined}
+                aria-disabled={activeSidebar.pill.soon ? 'true' : undefined}
+                onClick={() => !activeSidebar.pill.soon && handleNavigate(activeSidebar.pill.path)}
+              >
+                <Icon name={activeSidebar.pill.icon} size={18} />
+              </button>
+            )}
 
-        <nav className="sec-nav__scroll">
-          {/* Main sections: drawer only. On desktop they live in the top bar. */}
-          <div className="sec-nav__group sec-nav__group--main">
-            <div className="sec-nav__group-label">Main</div>
-            {NAV_SECTIONS.map((s) => {
-              const active = getActiveSection(pathname)?.id === s.id;
-              const Icon = s.icon;
-              return (
-                <Link
-                  key={s.id}
-                  to={s.path}
-                  className={`sec-nav__item${active ? ' sec-nav__item--active' : ''}`}
-                  aria-current={active ? 'page' : undefined}
-                  onClick={onCloseDrawer}
-                >
-                  <Icon size={17} aria-hidden="true" />
-                  <span className="sec-nav__label">{s.label}</span>
-                </Link>
-              );
-            })}
-          </div>
-
-          {sidebar?.groups.map((group) => (
-            <div className="sec-nav__group" key={group.label}>
-              <div className="sec-nav__group-label">{group.label}</div>
-              {group.items.map((item) => (
-                <SidebarItem
-                  key={item.label}
-                  item={item}
-                  pathname={pathname}
-                  collapsed={collapsed}
-                  onNavigate={onCloseDrawer}
-                />
+            <div className="sb__scroll">
+              {activeSidebar.groups.map((group) => (
+                <Fragment key={group.label}>
+                  <div className="rl-sep" role="separator" />
+                  {group.items.map((item) => {
+                    const active = isItemActive(item, pathname);
+                    return (
+                      <button
+                        key={item.id || item.label}
+                        type="button"
+                        className={`rl ${item.soon ? 'is-soon' : ''}`}
+                        data-tip={item.label}
+                        aria-label={item.label}
+                        data-soon={item.soon ? '1' : undefined}
+                        aria-disabled={item.soon ? 'true' : undefined}
+                        aria-current={active ? 'page' : undefined}
+                        onClick={() => !item.soon && handleNavigate(item.path)}
+                      >
+                        <Icon name={item.icon} size={18} />
+                      </button>
+                    );
+                  })}
+                </Fragment>
               ))}
             </div>
-          ))}
-        </nav>
+
+            {activeSidebar.cta ? (
+              <div className="rl-foot">
+                <button
+                  type="button"
+                  className="rl rl-cta"
+                  data-tip={activeSidebar.cta}
+                  aria-label={activeSidebar.cta}
+                  onClick={() => activeSidebar.ctaPath && handleNavigate(activeSidebar.ctaPath)}
+                >
+                  <Icon name={activeSidebar.ctaIcon || 'plus'} size={18} />
+                </button>
+              </div>
+            ) : null}
+          </>
+        ) : (
+          <>
+            <div className="sb__head">
+              <span className="tile">{activeSidebar.tile}</span>
+              <span className="sb__title">{activeSidebar.title}</span>
+              <button
+                type="button"
+                className="sb__collapse"
+                id="sbClose"
+                aria-label="Collapse sidebar"
+                onClick={onToggleCollapse}
+              >
+                <Icon name="dchev" size={18} />
+              </button>
+            </div>
+
+            {activeSidebar.pill && (
+              <div className="sb__quick">
+                <button
+                  type="button"
+                  className="sb__pill"
+                  aria-current={pillActive ? 'page' : undefined}
+                  disabled={activeSidebar.pill.soon}
+                  title={activeSidebar.pill.soon ? 'Available in a later update' : undefined}
+                  onClick={() => !activeSidebar.pill.soon && handleNavigate(activeSidebar.pill.path)}
+                >
+                  <Icon name={activeSidebar.pill.icon} size={16} />
+                  <span>{activeSidebar.pill.label}</span>
+                  {activeSidebar.pill.soon && <span className="soon">Soon</span>}
+                </button>
+              </div>
+            )}
+
+            <div className="sb__scroll">
+              {activeSidebar.groups.map((group) => (
+                <div className="sb__group" key={group.label}>
+                  <div className="sb__label">{group.label}</div>
+                  {group.items.map((item) => {
+                    const active = isItemActive(item, pathname);
+                    return (
+                      <button
+                        key={item.id || item.label}
+                        type="button"
+                        className="sb__item"
+                        aria-current={active ? 'page' : undefined}
+                        disabled={item.soon}
+                        title={item.soon ? 'Available in a later update' : undefined}
+                        onClick={() => !item.soon && handleNavigate(item.path)}
+                      >
+                        <Icon name={item.icon} size={16} />
+                        <span>{item.label}</span>
+                        {item.soon && <span className="soon">Soon</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              ))}
+            </div>
+
+            {activeSidebar.cta ? (
+              <div className="sb__foot">
+                <button
+                  type="button"
+                  className="sb__cta"
+                  onClick={() => activeSidebar.ctaPath && handleNavigate(activeSidebar.ctaPath)}
+                >
+                  <Icon name={activeSidebar.ctaIcon || 'plus'} size={16} />
+                  <span>{activeSidebar.cta}</span>
+                </button>
+              </div>
+            ) : (
+              <div className="sb__foot" />
+            )}
+          </>
+        )}
       </aside>
+
+      {/* Shared fixed rail tooltip */}
+      {tipState.visible && (
+        <div
+          className={`tip ${tipState.kbd || tipState.soon ? 'tip--chip' : ''}`.trim()}
+          id="tip"
+          role="tooltip"
+          style={{
+            left: `${tipState.left}px`,
+            top: `${tipState.top}px`,
+          }}
+        >
+          <span>{tipState.text}</span>
+          {tipState.kbd && <kbd>{tipState.kbd}</kbd>}
+          {tipState.soon && <span className="soon">Soon</span>}
+        </div>
+      )}
     </>
   );
 }

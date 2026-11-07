@@ -1,73 +1,41 @@
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { Check, ChevronDown, Plus } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { setActiveBusiness } from '../../store/slices/businessSlice';
-import { businessAccent } from '../../utils/businessAccent';
+import Icon from '../ui/Icon';
 
-export default function WorkspaceSwitcher({ onOpen }) {
+export default function WorkspaceSwitcher() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const location = useLocation();
   const { activeBusiness, businesses } = useSelector((state) => state.business);
   const [open, setOpen] = useState(false);
-  const triggerRef = useRef(null);
-  const menuRef = useRef(null);
-
-  // Close when the route changes. Adjusting state during render mirrors the
-  // existing header menu pattern and avoids an extra effect pass.
-  const [lastPath, setLastPath] = useState(location.pathname);
-  if (location.pathname !== lastPath) {
-    setLastPath(location.pathname);
-    setOpen(false);
-  }
+  const containerRef = useRef(null);
 
   useEffect(() => {
     if (!open) return undefined;
 
     const handlePointer = (e) => {
-      const inTrigger = triggerRef.current?.contains(e.target);
-      const inMenu = menuRef.current?.contains(e.target);
-      if (!inTrigger && !inMenu) setOpen(false);
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setOpen(false);
+      }
     };
     const handleKey = (e) => {
       if (e.key === 'Escape') {
         setOpen(false);
-        triggerRef.current?.focus();
       }
     };
-    const closeOnViewportChange = () => setOpen(false);
 
     document.addEventListener('mousedown', handlePointer);
     document.addEventListener('keydown', handleKey);
-    document.addEventListener('scroll', closeOnViewportChange, true);
-    window.addEventListener('resize', closeOnViewportChange);
-
     return () => {
       document.removeEventListener('mousedown', handlePointer);
       document.removeEventListener('keydown', handleKey);
-      document.removeEventListener('scroll', closeOnViewportChange, true);
-      window.removeEventListener('resize', closeOnViewportChange);
     };
   }, [open]);
 
   if (!activeBusiness) return null;
 
-  const toggle = (event) => {
-    if (open) {
-      setOpen(false);
-      return;
-    }
-    setOpen(true);
-    onOpen?.();
-
-    // Keyboard activation (detail === 0) moves focus into the menu.
-    if (event.detail === 0) {
-      requestAnimationFrame(() => {
-        menuRef.current?.querySelector('button')?.focus();
-      });
-    }
-  };
+  const activeInitial = activeBusiness.name?.charAt(0)?.toUpperCase() || 'A';
 
   const handleSwitch = (biz) => {
     setOpen(false);
@@ -75,89 +43,59 @@ export default function WorkspaceSwitcher({ onOpen }) {
     navigate('/dashboard');
   };
 
-  const handleMenuKeyDown = (e) => {
-    if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(e.key)) return;
-    const items = [...(menuRef.current?.querySelectorAll('button') || [])];
-    if (!items.length) return;
-
-    e.preventDefault();
-    const current = items.indexOf(document.activeElement);
-    let next = 0;
-
-    if (e.key === 'End') next = items.length - 1;
-    else if (e.key === 'ArrowDown') next = current < 0 ? 0 : (current + 1) % items.length;
-    else if (e.key === 'ArrowUp') next = current < 0 ? items.length - 1 : (current - 1 + items.length) % items.length;
-
-    items[next].focus();
+  const handleAddBusiness = () => {
+    setOpen(false);
+    navigate('/businesses');
   };
 
-  const activeInitial = activeBusiness.name?.charAt(0)?.toUpperCase() || 'A';
-
   return (
-    <div className="biz-switcher biz-switcher--header">
+    <div className="ws" ref={containerRef}>
       <button
-        ref={triggerRef}
+        className="ws__btn"
+        id="wsBtn"
         type="button"
-        className="biz-switcher__trigger"
-        onClick={toggle}
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-controls="workspace-menu"
-        aria-label={`Switch workspace. Current workspace: ${activeBusiness.name}`}
+        aria-controls="wsMenu"
+        onClick={() => setOpen((prev) => !prev)}
       >
-        <span className={`biz-switcher__icon ${businessAccent(activeBusiness.name)}`}>
-          {activeInitial}
-        </span>
-        <span className="biz-switcher__info">
-          <span className="biz-switcher__name">{activeBusiness.name}</span>
-          <span className="biz-switcher__role">{activeBusiness.role || 'Owner'}</span>
-        </span>
-        <ChevronDown size={15} className="biz-switcher__chevron" aria-hidden="true" />
+        <span className="tile">{activeInitial}</span>
+        <span>{activeBusiness.name}</span>
+        <Icon name="chev" size={14} />
       </button>
 
       {open && (
-        <div
-          ref={menuRef}
-          id="workspace-menu"
-          className="biz-switcher__dropdown"
-          role="menu"
-          aria-label="Workspaces"
-          onKeyDown={handleMenuKeyDown}
-        >
-          {businesses.map((biz) => {
-            const isActive = biz.id === activeBusiness.id;
+        <div className="pop" id="wsMenu" role="menu" aria-label="Workspaces">
+          <div className="pop__label">Workspaces</div>
+          {businesses?.map((b) => {
+            const isCurrent = b.id === activeBusiness.id;
+            const initial = b.name?.charAt(0)?.toUpperCase() || 'B';
             return (
               <button
-                type="button"
+                key={b.id}
+                className="pop__item"
                 role="menuitemradio"
-                aria-checked={isActive}
-                key={biz.id}
-                className={`biz-switcher__option ${isActive ? 'biz-switcher__option--active' : ''}`}
-                onClick={() => handleSwitch(biz)}
+                aria-checked={isCurrent}
+                type="button"
+                onClick={() => handleSwitch(b)}
               >
-                <span className={`biz-switcher__icon ${businessAccent(biz.name)}`}>
-                  {biz.name?.charAt(0)?.toUpperCase() || 'A'}
-                </span>
-                <span className="biz-switcher__info">
-                  <span className="biz-switcher__name">{biz.name}</span>
-                  <span className="biz-switcher__role">{biz.role || 'Owner'}</span>
-                </span>
-                {isActive && <Check size={16} className="biz-switcher__check" aria-hidden="true" />}
+                <span className="tile">{initial}</span>
+                <span>{b.name}</span>
+                {isCurrent && (
+                  <Icon name="check" size={14} style={{ marginLeft: 'auto' }} />
+                )}
               </button>
             );
           })}
-
+          <div className="pop__sep" />
           <button
-            type="button"
+            className="pop__item"
             role="menuitem"
-            className="biz-switcher__add"
-            onClick={() => {
-              setOpen(false);
-              navigate('/businesses');
-            }}
+            type="button"
+            onClick={handleAddBusiness}
           >
-            <Plus size={16} aria-hidden="true" />
-            <span>Add Business</span>
+            <Icon name="plus" size={16} />
+            <span>Add business</span>
           </button>
         </div>
       )}
