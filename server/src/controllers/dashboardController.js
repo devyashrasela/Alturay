@@ -14,80 +14,133 @@ const todayISO = () => new Date().toISOString().slice(0, 10);
 exports.getStats = async (req, res, next) => {
   try {
     const businessId = req.businessId;
+    const requestedMonth = req.query.month;
 
-    const [totalProducts, totalInvoices, totalBills, revenueResult, monthlyRows, statusRows, balanceRows, overdueCount, topProducts] =
-      await Promise.all([
-        Product.count({ where: { business_id: businessId } }),
-        Invoice.count({ where: { business_id: businessId, type: 'invoice' } }),
-        Invoice.count({ where: { business_id: businessId, type: 'bill' } }),
-        Invoice.findOne({
-          where: {
-            business_id: businessId,
-            type: 'invoice',
-            status: { [Op.in]: ['issued', 'paid'] },
+    const now = new Date();
+    const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const targetMonth = requestedMonth && /^\d{4}-\d{2}$/.test(requestedMonth)
+      ? requestedMonth
+      : currentMonthKey;
+
+    const [yearStr, monthStr] = targetMonth.split('-');
+    const year = parseInt(yearStr, 10);
+    const month = parseInt(monthStr, 10);
+    const daysInMonth = new Date(year, month, 0).getDate();
+    const monthStart = `${targetMonth}-01`;
+    const monthEnd = `${targetMonth}-${String(daysInMonth).padStart(2, '0')}`;
+
+    const [
+      totalProducts,
+      totalInvoices,
+      totalBills,
+      revenueResult,
+      monthlyRows,
+      dailyRows,
+      statusRows,
+      balanceRows,
+      overdueCount,
+      topProducts,
+    ] = await Promise.all([
+      Product.count({ where: { business_id: businessId } }),
+      Invoice.count({ where: { business_id: businessId, type: 'invoice' } }),
+      Invoice.count({ where: { business_id: businessId, type: 'bill' } }),
+      Invoice.findOne({
+        where: {
+          business_id: businessId,
+          type: 'invoice',
+          status: { [Op.in]: ['issued', 'paid'] },
+        },
+        attributes: [[fn('COALESCE', fn('SUM', col('total_amount')), 0), 'total_revenue']],
+        raw: true,
+      }),
+      // Monthly revenue series over the last 6 months (invoices, issued + paid)
+      Invoice.findAll({
+        where: {
+          business_id: businessId,
+          type: 'invoice',
+          status: { [Op.in]: ['issued', 'paid'] },
+          issue_date: { [Op.gte]: isoMonthsBack(5) },
+        },
+        attributes: [
+          [fn('DATE_FORMAT', col('issue_date'), '%Y-%m'), 'month'],
+          [fn('COALESCE', fn('SUM', col('total_amount')), 0), 'revenue'],
+          [fn('COUNT', col('id')), 'invoices'],
+        ],
+        group: ['month'],
+        raw: true,
+      }),
+      // Daily revenue series for the target month (invoices, issued + paid)
+      Invoice.findAll({
+        where: {
+          business_id: businessId,
+          type: 'invoice',
+          status: { [Op.in]: ['issued', 'paid'] },
+          issue_date: {
+            [Op.gte]: monthStart,
+            [Op.lte]: monthEnd,
           },
-          attributes: [[fn('COALESCE', fn('SUM', col('total_amount')), 0), 'total_revenue']],
-          raw: true,
-        }),
-        // Monthly revenue series over the last 6 months (invoices, issued + paid)
-        Invoice.findAll({
-          where: {
-            business_id: businessId,
-            type: 'invoice',
-            status: { [Op.in]: ['issued', 'paid'] },
-            issue_date: { [Op.gte]: isoMonthsBack(5) },
+        },
+        attributes: [
+          [fn('DATE_FORMAT', col('issue_date'), '%Y-%m-%d'), 'date'],
+          [fn('COALESCE', fn('SUM', col('total_amount')), 0), 'revenue'],
+          [fn('COUNT', col('id')), 'invoices'],
+        ],
+        group: ['date'],
+        raw: true,
+      }),
+      // Invoice counts by status
+      Invoice.findAll({
+        where: { business_id: businessId, type: 'invoice' },
+        attributes: ['status', [fn('COUNT', col('id')), 'count']],
+        group: ['status'],
+        raw: true,
+      }),
+      // Outstanding balances (issued, unpaid) split by invoice vs bill
+      Invoice.findAll({
+        where: { business_id: businessId, status: 'issued' },
+        attributes: [
+          'type',
+          [fn('COALESCE', fn('SUM', col('total_amount')), 0), 'amount'],
+          [fn('COUNT', col('id')), 'count'],
+        ],
+        group: ['type'],
+        raw: true,
+      }),
+      // Invoices past their due date
+      Invoice.count({
+        where: {
+          business_id: businessId,
+          type: 'invoice',
+          status: 'issued',
+          due_date: { [Op.lt]: todayISO() },
+        },
+      }),
+      // Top products by revenue across all active invoices for this business (exclude cancelled)
+      InvoiceItem.findAll({
+        attributes: [
+          'item_name',
+          [fn('COALESCE', fn('SUM', col('line_total')), 0), 'revenue'],
+          [fn('COALESCE', fn('SUM', col('quantity')), 0), 'units'],
+        ],
+        include: [
+          {
+            model: Invoice,
+            as: 'invoice',
+            attributes: [],
+            where: {
+              business_id: businessId,
+              type: 'invoice',
+              status: { [Op.in]: ['issued', 'paid'] },
+            },
+            required: true,
           },
-          attributes: [
-            [fn('DATE_FORMAT', col('issue_date'), '%Y-%m'), 'month'],
-            [fn('COALESCE', fn('SUM', col('total_amount')), 0), 'revenue'],
-            [fn('COUNT', col('id')), 'invoices'],
-          ],
-          group: ['month'],
-          raw: true,
-        }),
-        // Invoice counts by status
-        Invoice.findAll({
-          where: { business_id: businessId, type: 'invoice' },
-          attributes: ['status', [fn('COUNT', col('id')), 'count']],
-          group: ['status'],
-          raw: true,
-        }),
-        // Outstanding balances (issued, unpaid) split by invoice vs bill
-        Invoice.findAll({
-          where: { business_id: businessId, status: 'issued' },
-          attributes: [
-            'type',
-            [fn('COALESCE', fn('SUM', col('total_amount')), 0), 'amount'],
-            [fn('COUNT', col('id')), 'count'],
-          ],
-          group: ['type'],
-          raw: true,
-        }),
-        // Invoices past their due date
-        Invoice.count({
-          where: {
-            business_id: businessId,
-            type: 'invoice',
-            status: 'issued',
-            due_date: { [Op.lt]: todayISO() },
-          },
-        }),
-        // Top products by revenue across all invoices for this business
-        InvoiceItem.findAll({
-          attributes: [
-            'item_name',
-            [fn('COALESCE', fn('SUM', col('line_total')), 0), 'revenue'],
-            [fn('COALESCE', fn('SUM', col('quantity')), 0), 'units'],
-          ],
-          include: [
-            { model: Invoice, as: 'invoice', attributes: [], where: { business_id: businessId, type: 'invoice' }, required: true },
-          ],
-          group: ['item_name'],
-          order: [literal('revenue DESC')],
-          limit: 5,
-          raw: true,
-        }),
-      ]);
+        ],
+        group: ['item_name'],
+        order: [literal('revenue DESC')],
+        limit: 5,
+        raw: true,
+      }),
+    ]);
 
     // Fill a continuous 6-month series so the chart never skips a month
     const revenueByMonth = new Map(monthlyRows.map((r) => [r.month, r]));
@@ -101,6 +154,20 @@ exports.getStats = async (req, res, next) => {
       monthly_series.push({
         month: key,
         label: new Intl.DateTimeFormat('en-IN', { month: 'short' }).format(d),
+        revenue: parseFloat(row?.revenue || 0),
+        invoices: parseInt(row?.invoices, 10) || 0,
+      });
+    }
+
+    // Fill continuous daily series for the selected month
+    const dailyByDate = new Map(dailyRows.map((r) => [r.date, r]));
+    const daily_series = [];
+    for (let day = 1; day <= daysInMonth; day += 1) {
+      const dateKey = `${targetMonth}-${String(day).padStart(2, '0')}`;
+      const row = dailyByDate.get(dateKey);
+      daily_series.push({
+        date: dateKey,
+        day,
         revenue: parseFloat(row?.revenue || 0),
         invoices: parseInt(row?.invoices, 10) || 0,
       });
@@ -125,6 +192,8 @@ exports.getStats = async (req, res, next) => {
           total_bills: totalBills,
           total_revenue: parseFloat(revenueResult?.total_revenue || 0),
           monthly_series,
+          daily_series,
+          selected_month: targetMonth,
           status_counts,
           outstanding_receivable,
           outstanding_payable,

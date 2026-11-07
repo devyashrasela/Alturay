@@ -1,0 +1,206 @@
+.template-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg-surface, #ffffff);
+  border: 2px solid var(--color-border-subtle, #e5e7eb);
+  border-radius: var(--radius-lg, 12px);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: left;
+  user-select: none;
+  outline: none;
+}
+
+.template-card:hover {
+  border-color: var(--color-border-hover, #cbd5e1);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.08);
+}
+
+.template-card:focus-visible {
+  outline: none;
+  border-color: var(--color-primary, #f45b2a);
+  box-shadow: 0 0 0 3px var(--color-primary-subtle, rgba(244, 91, 42, 0.2));
+}
+
+.template-card--selected {
+  border-color: var(--color-primary, #f45b2a);
+  box-shadow: 0 0 0 2px var(--color-primary, #f45b2a), 0 8px 24px -4px rgba(244, 91, 42, 0.15);
+}
+
+.template-card--selected:hover {
+  border-color: var(--color-primary, #f45b2a);
+}
+
+/* Preview Area */
+.template-card__preview-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 11;
+  background: var(--color-bg-muted, #f8fafc);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 16px;
+  border-bottom: 1px solid var(--color-border-subtle, #e5e7eb);
+}
+
+.template-card__image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease;
+}
+
+.template-card:hover .template-card__image {
+  transform: scale(1.02);
+}
+
+/* CSS Thermal Receipt Mock */
+.template-card__receipt-mock {
+  width: 130px;
+  background: #ffffff;
+  color: #1f2937;
+  border-radius: 2px;
+  padding: 10px 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.receipt-mock__header {
+  text-align: center;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.receipt-mock__sub {
+  text-align: center;
+  font-size: 6px;
+  color: #6b7280;
+}
+
+.receipt-mock__divider {
+  border-top: 1px dashed #9ca3af;
+  margin: 2px 0;
+}
+
+.receipt-mock__row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 6.5px;
+  color: #374151;
+}
+
+.receipt-mock__row--bold {
+  font-weight: 700;
+  font-size: 7.5px;
+  color: #111827;
+}
+
+.receipt-mock__footer {
+  text-align: center;
+  font-size: 5.5px;
+  color: #9ca3af;
+  margin-top: 2px;
+}
+
+/* Body Info */
+.template-card__body {
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  flex: 1;
+}
+
+.template-card__header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.template-card__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text-main, #111827);
+  margin: 0;
+}
+
+.template-card__badges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.template-card__badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+
+.template-card__badge--active {
+  background: var(--color-primary-subtle, rgba(244, 91, 42, 0.12));
+  color: var(--color-primary, #f45b2a);
+}
+
+.template-card__badge--default {
+  background: var(--color-bg-muted, #f1f5f9);
+  color: var(--color-text-secondary, #64748b);
+}
+
+.template-card__desc {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--color-text-secondary, #64748b);
+  margin: 0;
+  flex: 1;
+}
+
+/* Selection Radio Indicator */
+.template-card__radio {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border-hover, #cbd5e1);
+  background: var(--color-bg-surface, #ffffff);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.template-card--selected .template-card__radio {
+  border-color: var(--color-primary, #f45b2a);
+  background: var(--color-primary, #f45b2a);
+}
+
+.template-card__radio-inner {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ffffff;
+  opacity: 0;
+  transform: scale(0.5);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.template-card--selected .template-card__radio-inner {
+  opacity: 1;
+  transform: scale(1);
+}

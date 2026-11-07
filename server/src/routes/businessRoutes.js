@@ -7,6 +7,7 @@ const { createBusinessSchema, updateBusinessSchema } = require('../validators/bu
 router.get('/', businessController.list);
 router.post('/', validate(createBusinessSchema), businessController.create);
 router.get('/:businessId', tenantMiddleware, businessController.getById);
+router.get('/:businessId/templates/preview', tenantMiddleware, businessController.previewTemplate);
 router.put('/:businessId', tenantMiddleware, validate(updateBusinessSchema), businessController.update);
 
 module.exports = router;

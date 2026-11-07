@@ -765,6 +765,11 @@ textarea {
   color: var(--danger);
 }
 
+.sc-overdue {
+  background: color-mix(in srgb, var(--danger) 18%, transparent);
+  color: var(--danger);
+}
+
 /* ── Database table (Products / Invoices) ── */
 .db-bar {
   display: flex;

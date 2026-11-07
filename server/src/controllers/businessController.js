@@ -1,4 +1,7 @@
 const { Business, BusinessMember } = require('../models');
+const { TEMPLATE_POOLS, DEFAULT_TEMPLATE, PAPER_WIDTHS } = require('../constants/templates');
+const { generateInvoicePDF } = require('../services/pdfGeneratorService');
+const sampleInvoice = require('../services/pdfTemplates/sample');
 
 exports.list = async (req, res, next) => {
   try {
@@ -7,7 +10,18 @@ exports.list = async (req, res, next) => {
       include: [{
         model: Business,
         as: 'business',
-        attributes: ['id', 'name', 'email', 'phone', 'currency', 'logo_url', 'created_at'],
+        attributes: [
+          'id',
+          'name',
+          'email',
+          'phone',
+          'currency',
+          'logo_url',
+          'invoice_template_id',
+          'bill_template_id',
+          'receipt_paper_width',
+          'created_at',
+        ],
       }],
       attributes: ['role', 'created_at'],
     });
@@ -65,6 +79,18 @@ exports.update = async (req, res, next) => {
       success: true,
       data: { business: req.business },
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.previewTemplate = async (req, res, next) => {
+  try {
+    const type = req.query.type === 'bill' ? 'bill' : 'invoice';
+    const templateId = TEMPLATE_POOLS[type].includes(req.query.template) ? req.query.template : DEFAULT_TEMPLATE[type];
+    const width = Number(req.query.width);
+    const paperWidth = PAPER_WIDTHS.includes(width) ? width : undefined;
+    await generateInvoicePDF(sampleInvoice(type), req.business, res, { templateId, paperWidth });
   } catch (error) {
     next(error);
   }

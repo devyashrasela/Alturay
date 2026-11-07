@@ -83,7 +83,7 @@ exports.getMe = async (req, res, next) => {
         model: Business,
         as: 'businesses',
         through: { attributes: ['role'] },
-        attributes: ['id', 'name', 'currency', 'logo_url'],
+        attributes: ['id', 'name', 'currency', 'logo_url', 'invoice_template_id', 'bill_template_id', 'receipt_paper_width'],
       }],
     });
 

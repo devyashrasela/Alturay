@@ -12,6 +12,7 @@ import { PageLoader } from '../../components/ui/Loader/Spinner';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatDate } from '../../utils/formatDate';
 import { effectiveStatus } from '../../utils/invoiceStatus';
+import { openPdf } from '../../utils/openPdf';
 
 export default function InvoiceDetailPage() {
   const { id } = useParams();
@@ -34,8 +35,11 @@ export default function InvoiceDetailPage() {
   };
 
   const handleDownloadPdf = () => {
-    window.open(`/api/businesses/${activeBusinessId}/invoices/${id}/pdf`, '_blank');
+    openPdf(`/businesses/${activeBusinessId}/invoices/${id}/pdf`)
+      .catch(() => dispatch(addToast({ type: 'error', message: 'Could not load PDF.' })));
   };
+
+  const isReceipt = invoice?.type === 'bill' && activeBusiness?.bill_template_id === 'receipt';
 
   if (isLoading) return <PageLoader />;
   if (!invoice) return <div className="invoice-detail__not-found">Invoice not found.</div>;
@@ -64,7 +68,7 @@ export default function InvoiceDetailPage() {
             </Button>
           )}
           <Button variant="primary" size="md" id="download-pdf-btn" onClick={handleDownloadPdf}>
-            <Download size={15} /> Download PDF
+            <Download size={15} /> {isReceipt ? 'Print receipt' : 'Download PDF'}
           </Button>
         </div>
       </div>
@@ -138,9 +142,18 @@ export default function InvoiceDetailPage() {
         <div className="invoice-detail__totals">
           <div className="invoice-detail__totals-inner">
             {[
-              { label: 'Subtotal', value: invoice.subtotal },
+              {
+                label: 'Subtotal',
+                value: Math.max(0, parseFloat(invoice.subtotal || 0) - parseFloat(invoice.tax_total || 0)),
+              },
               { label: 'Tax', value: invoice.tax_total },
-              { label: 'Discount', value: parseFloat(invoice.discount_amount) + parseFloat(invoice.subtotal) * parseFloat(invoice.discount_percent) / 100, negative: true },
+              {
+                label: 'Discount',
+                value:
+                  parseFloat(invoice.discount_amount || 0) +
+                  (parseFloat(invoice.subtotal || 0) * parseFloat(invoice.discount_percent || 0)) / 100,
+                negative: true,
+              },
             ].map(({ label, value, negative }) =>
               parseFloat(value) > 0 ? (
                 <div className="summary-row" style={{ padding: '8px 0', borderBottom: '1px solid var(--color-border-subtle)' }} key={label}>

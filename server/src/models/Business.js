@@ -46,6 +46,21 @@ module.exports = (sequelize) => {
       allowNull: false,
       defaultValue: 1,
     },
+    invoice_template_id: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+      defaultValue: 'classic',
+    },
+    bill_template_id: {
+      type: DataTypes.STRING(50),
+      allowNull: false,
+      defaultValue: 'receipt',
+    },
+    receipt_paper_width: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      defaultValue: 80,
+    },
   }, {
     tableName: 'businesses',
     timestamps: true,

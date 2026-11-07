@@ -30,7 +30,7 @@ export const invoiceApi = baseApi.injectEndpoints({
         method: 'PUT',
         body,
       }),
-      invalidatesTags: ['Invoice'],
+      invalidatesTags: ['Invoice', 'Dashboard'],
     }),
     updateInvoiceStatus: builder.mutation({
       query: ({ businessId, invoiceId, status }) => ({

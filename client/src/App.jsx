@@ -18,6 +18,8 @@ const InvoicesPage = lazy(() => import('./pages/Invoices/InvoicesPage'));
 const CreateInvoicePage = lazy(() => import('./pages/Invoices/CreateInvoicePage'));
 const InvoiceDetailPage = lazy(() => import('./pages/Invoices/InvoiceDetailPage'));
 const BusinessSettingsPage = lazy(() => import('./pages/Settings/BusinessSettingsPage'));
+const InvoiceTemplatePage = lazy(() => import('./pages/Settings/InvoiceTemplatePage'));
+const BillTemplatePage = lazy(() => import('./pages/Settings/BillTemplatePage'));
 const PersonalizationPage = lazy(() => import('./pages/Settings/PersonalizationPage'));
 const UserSettingsLayout = lazy(() => import('./components/settings/UserSettingsLayout'));
 
@@ -51,6 +53,8 @@ function App() {
                 <Route path="/invoices/new" element={<CreateInvoicePage />} />
                 <Route path="/invoices/:id" element={<InvoiceDetailPage />} />
                 <Route path="/settings" element={<BusinessSettingsPage />} />
+                <Route path="/settings/templates/invoice" element={<InvoiceTemplatePage />} />
+                <Route path="/settings/templates/bill" element={<BillTemplatePage />} />
                 <Route
                   path="/customers"
                   element={<ComingSoonPage title="Customers" description="Keep customer details, balances and history in one place." />}

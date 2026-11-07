@@ -1,4 +1,5 @@
 const Joi = require('joi');
+const { TEMPLATE_POOLS, PAPER_WIDTHS } = require('../constants/templates');
 
 const createBusinessSchema = Joi.object({
   name: Joi.string().trim().min(2).max(200).required(),
@@ -17,6 +18,9 @@ const updateBusinessSchema = Joi.object({
   address: Joi.string().trim().max(500).allow('', null),
   currency: Joi.string().trim().max(10),
   logo_url: Joi.string().trim().uri().max(500).allow('', null),
+  invoice_template_id: Joi.string().valid(...TEMPLATE_POOLS.invoice),
+  bill_template_id: Joi.string().valid(...TEMPLATE_POOLS.bill),
+  receipt_paper_width: Joi.number().valid(...PAPER_WIDTHS),
 }).min(1);
 
 module.exports = { createBusinessSchema, updateBusinessSchema };

@@ -21,7 +21,7 @@ export const productApi = baseApi.injectEndpoints({
         method: 'PUT',
         body,
       }),
-      invalidatesTags: ['Product'],
+      invalidatesTags: ['Product', 'Dashboard'],
     }),
     deleteProduct: builder.mutation({
       query: ({ businessId, productId }) => ({

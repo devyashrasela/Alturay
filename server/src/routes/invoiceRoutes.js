@@ -1,9 +1,14 @@
 const router = require('express').Router({ mergeParams: true });
 const invoiceController = require('../controllers/invoiceController');
-const { Invoice, InvoiceItem, Business } = require('../models');
+const { Invoice, InvoiceItem } = require('../models');
 const { generateInvoicePDF } = require('../services/pdfGeneratorService');
+const { TEMPLATE_POOLS, PAPER_WIDTHS } = require('../constants/templates');
 const validate = require('../middlewares/validate');
-const { createInvoiceSchema, updateInvoiceSchema, updateStatusSchema } = require('../validators/invoiceValidator');
+const {
+  createInvoiceSchema,
+  updateInvoiceSchema,
+  updateStatusSchema,
+} = require('../validators/invoiceValidator');
 
 router.get('/', invoiceController.list);
 router.post('/', validate(createInvoiceSchema), invoiceController.create);
@@ -11,7 +16,7 @@ router.get('/:invoiceId', invoiceController.getById);
 router.put('/:invoiceId', validate(updateInvoiceSchema), invoiceController.update);
 router.patch('/:invoiceId/status', validate(updateStatusSchema), invoiceController.updateStatus);
 
-// PDF download
+// PDF download / stream
 router.get('/:invoiceId/pdf', async (req, res, next) => {
   try {
     const invoice = await Invoice.findOne({
@@ -26,7 +31,13 @@ router.get('/:invoiceId/pdf', async (req, res, next) => {
       });
     }
 
-    generateInvoicePDF(invoice, req.business, res);
+    const templateId = TEMPLATE_POOLS[invoice.type]?.includes(req.query.template)
+      ? req.query.template
+      : undefined;
+    const width = Number(req.query.width);
+    const paperWidth = PAPER_WIDTHS.includes(width) ? width : undefined;
+
+    await generateInvoicePDF(invoice, req.business, res, { templateId, paperWidth });
   } catch (error) {
     next(error);
   }

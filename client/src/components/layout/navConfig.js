@@ -142,8 +142,8 @@ export const NAV_SECTIONS = [
         {
           label: 'PDF templates',
           items: [
-            { id: 'tpl-inv', label: 'Invoice template', icon: 'tpl', path: '/settings/templates/invoice', soon: true },
-            { id: 'tpl-bill', label: 'Bill template', icon: 'tpl', path: '/settings/templates/bill', soon: true },
+            { id: 'tpl-inv', label: 'Invoice template', icon: 'tpl', path: '/settings/templates/invoice' },
+            { id: 'tpl-bill', label: 'Bill template', icon: 'tpl', path: '/settings/templates/bill' },
           ],
         },
       ],
