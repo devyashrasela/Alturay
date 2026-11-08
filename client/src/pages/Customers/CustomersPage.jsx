@@ -134,7 +134,7 @@ export default function CustomersPage() {
       key: 'created_at',
       header: 'Added',
       width: '10%',
-      render: (c) => <span className="tax">{formatDate(c.created_at)}</span>,
+      render: (c) => <span className="tax">{formatDate(c.createdAt || c.created_at)}</span>,
     },
     {
       key: 'actions',
