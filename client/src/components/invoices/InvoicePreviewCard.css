@@ -1,0 +1,239 @@
+.inv-card {
+  width: 100%;
+  background: var(--color-bg-card, #16161a);
+  border: 1px solid var(--color-border, #2a2a2e);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 16px 36px -12px rgba(0, 0, 0, 0.5);
+  font-family: inherit;
+}
+
+/* Header Banner with Mesh Gradient (Reference Image 2) */
+.inv-card__banner {
+  background: linear-gradient(135deg, #2b2774 0%, #1a1846 55%, #13122c 100%);
+  padding: 24px;
+  color: #ffffff;
+  position: relative;
+  overflow: hidden;
+}
+
+.inv-card__banner::after {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.25) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.inv-card__banner-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+/* 4-circle logo mark from Image 2 */
+.inv-card__logo-mark {
+  display: grid;
+  grid-template-columns: repeat(2, 8px);
+  gap: 3px;
+  padding: 4px 0;
+}
+
+.inv-card__logo-mark span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ffffff;
+  display: block;
+}
+
+.inv-card__business-logo {
+  max-height: 36px;
+  max-width: 120px;
+  object-fit: contain;
+  border-radius: 6px;
+}
+
+.inv-card__dates {
+  text-align: right;
+  font-size: 12px;
+  line-height: 1.6;
+  color: #b7b6dd;
+}
+
+.inv-card__date-row span {
+  color: #e5e5f7;
+  font-weight: 500;
+}
+
+.inv-card__number-wrap {
+  margin-bottom: 24px;
+}
+
+.inv-card__number-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.inv-card__number {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0;
+  color: #ffffff;
+}
+
+.inv-card__subtitle {
+  font-size: 13.5px;
+  color: #c4c2ea;
+  margin: 4px 0 0 0;
+}
+
+/* From / Billed to Metadata */
+.inv-card__parties {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.inv-card__party-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.65);
+  margin-bottom: 4px;
+}
+
+.inv-card__party-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.inv-card__party-meta {
+  font-size: 12px;
+  color: #b7b6dd;
+  margin-top: 2px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+/* Body / Line Items */
+.inv-card__body {
+  padding: 24px;
+  background: var(--color-bg-card, #16161a);
+}
+
+.inv-card__table-wrap {
+  overflow-x: auto;
+  margin-bottom: 20px;
+}
+
+.inv-card__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.inv-card__table th {
+  padding: 8px 10px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--color-text-muted, #7c7a76);
+  border-bottom: 1px solid var(--color-border, #2a2a2e);
+  text-align: left;
+}
+
+.inv-card__table th.num,
+.inv-card__table td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.inv-card__table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid var(--color-border-subtle, #232327);
+  color: var(--color-text-secondary, #bcbab6);
+  vertical-align: top;
+}
+
+.inv-card__item-name {
+  font-weight: 600;
+  color: var(--color-text-primary, #f0efed);
+}
+
+.inv-card__item-desc {
+  font-size: 11.5px;
+  color: var(--color-text-muted, #7c7a76);
+  margin-top: 2px;
+}
+
+/* Highlighted Total Pill (Reference Image 2) */
+.inv-card__highlight-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  background: var(--color-bg-muted, rgba(255, 255, 255, 0.04));
+  border: 1px solid var(--color-border, #2a2a2e);
+  border-radius: 10px;
+  margin-top: 16px;
+}
+
+.inv-card__highlight-label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--color-text-primary, #f0efed);
+}
+
+.inv-card__highlight-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-text-primary, #ffffff);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Terms and Conditions / Footer (Reference Image 2) */
+.inv-card__footer {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--color-border, #2a2a2e);
+}
+
+.inv-card__terms-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-primary, #6366f1);
+  margin: 0 0 4px 0;
+}
+
+.inv-card__terms-text {
+  font-size: 12px;
+  color: var(--color-text-muted, #7c7a76);
+  margin: 0;
+  line-height: 1.5;
+}
+
+@media (max-width: 600px) {
+  .inv-card__banner {
+    padding: 16px;
+  }
+  .inv-card__body {
+    padding: 16px;
+  }
+  .inv-card__parties {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}

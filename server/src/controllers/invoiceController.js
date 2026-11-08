@@ -226,7 +226,58 @@ exports.updateStatus = async (req, res, next) => {
       });
     }
 
-    await invoice.update({ status: req.body.status });
+    const currentStatus = invoice.status;
+    const nextStatus = req.body.status;
+
+    if (currentStatus === nextStatus) {
+      return res.json({ success: true, data: { invoice } });
+    }
+
+    // 1. Prohibit any transition from paid
+    if (currentStatus === 'paid') {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_TRANSITION',
+          message: 'Paid invoices cannot be cancelled or modified.',
+        },
+      });
+    }
+
+    // 2. Prohibit any transition from cancelled
+    if (currentStatus === 'cancelled') {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_TRANSITION',
+          message: 'Cancelled invoices cannot be reopened or modified.',
+        },
+      });
+    }
+
+    // 3. Draft can only transition to 'issued' or 'cancelled'
+    if (currentStatus === 'draft' && !['issued', 'cancelled'].includes(nextStatus)) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_TRANSITION',
+          message: `Cannot transition draft invoice to '${nextStatus}'. Please issue the invoice first.`,
+        },
+      });
+    }
+
+    // 4. Issued can only transition to 'paid' or 'cancelled'
+    if (currentStatus === 'issued' && !['paid', 'cancelled'].includes(nextStatus)) {
+      return res.status(400).json({
+        success: false,
+        error: {
+          code: 'INVALID_TRANSITION',
+          message: `Cannot transition issued invoice to '${nextStatus}'.`,
+        },
+      });
+    }
+
+    await invoice.update({ status: nextStatus });
     return res.json({ success: true, data: { invoice } });
   } catch (error) {
     next(error);

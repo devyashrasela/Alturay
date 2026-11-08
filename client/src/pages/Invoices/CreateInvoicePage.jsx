@@ -1,8 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Plus, Trash2 } from 'lucide-react';
-import { useCreateInvoiceMutation } from '../../store/api/invoiceApi';
+import {
+  useCreateInvoiceMutation,
+  useUpdateInvoiceMutation,
+  useGetInvoiceQuery,
+} from '../../store/api/invoiceApi';
 import { useGetProductsQuery } from '../../store/api/productApi';
 import { addToast } from '../../store/slices/uiSlice';
 import Card from '../../components/ui/Card/Card';
@@ -10,6 +14,7 @@ import Button from '../../components/ui/Button/Button';
 import FormField from '../../components/ui/FormField/FormField';
 import InputField from '../../components/ui/Input/InputField';
 import SelectDropdown from '../../components/ui/Select/SelectDropdown';
+import SearchableProductDropdown from '../../components/ui/Select/SearchableProductDropdown';
 import CustomerSelectDropdown from '../../components/customer/CustomerSelectDropdown';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { calculateInvoiceTotals } from '../../utils/calculateInvoiceTotals';
@@ -23,6 +28,8 @@ const localDate = () => {
 };
 
 export default function CreateInvoicePage() {
+  const { id } = useParams();
+  const isEditMode = Boolean(id);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -30,7 +37,16 @@ export default function CreateInvoicePage() {
 
   const defaultType = searchParams.get('type') || 'invoice';
 
-  const [createInvoice, { isLoading }] = useCreateInvoiceMutation();
+  const [createInvoice, { isLoading: creating }] = useCreateInvoiceMutation();
+  const [updateInvoice, { isLoading: updating }] = useUpdateInvoiceMutation();
+
+  const { data: invData, isLoading: loadingInvoice } = useGetInvoiceQuery(
+    { businessId: activeBusinessId, invoiceId: id },
+    { skip: !activeBusinessId || !id }
+  );
+
+  const existingInvoice = invData?.data?.invoice;
+
   const { data: productsData } = useGetProductsQuery({ businessId: activeBusinessId, limit: 200 }, { skip: !activeBusinessId });
   const products = productsData?.data?.products || [];
 
@@ -50,6 +66,52 @@ export default function CreateInvoicePage() {
   });
 
   const [items, setItems] = useState([{ ...EMPTY_ITEM }]);
+
+  // Populate data when editing an existing invoice
+  useEffect(() => {
+    if (existingInvoice && isEditMode) {
+      if (existingInvoice.status !== 'draft') {
+        dispatch(addToast({ type: 'error', message: 'Only draft invoices can be edited.' }));
+        navigate(`/invoices/${existingInvoice.id}`);
+        return;
+      }
+      setForm({
+        type: existingInvoice.type || 'invoice',
+        customer_id: existingInvoice.customer_id || null,
+        customer_name: existingInvoice.customer_name || '',
+        customer_phone: existingInvoice.customer_phone || '',
+        issue_date: existingInvoice.issue_date || localDate(),
+        due_date: existingInvoice.due_date || '',
+        discount_amount: parseFloat(existingInvoice.discount_amount) || 0,
+        discount_percent: parseFloat(existingInvoice.discount_percent) || 0,
+        notes: existingInvoice.notes || '',
+      });
+      if (existingInvoice.customer) {
+        setSelectedCustomer(existingInvoice.customer);
+      } else if (existingInvoice.customer_name) {
+        setSelectedCustomer({
+          id: existingInvoice.customer_id,
+          name: existingInvoice.customer_name,
+          phone: existingInvoice.customer_phone,
+        });
+      }
+      if (Array.isArray(existingInvoice.items) && existingInvoice.items.length > 0) {
+        setItems(
+          existingInvoice.items.map((item) => ({
+            id: item.id,
+            product_id: item.product_id || null,
+            item_name: item.item_name || '',
+            unit_price: item.unit_price,
+            quantity: item.quantity,
+            tax_rate: item.tax_rate || 0,
+            item_discount_amount: item.item_discount_amount || 0,
+            item_discount_percent: item.item_discount_percent || 0,
+          }))
+        );
+      }
+    }
+  }, [existingInvoice, isEditMode, dispatch, navigate]);
+
   const totals = calculateInvoiceTotals(items, { discount_amount: form.discount_amount, discount_percent: form.discount_percent });
 
   const setField = (field) => (e) => setForm(f => ({ ...f, [field]: e.target.value }));
@@ -82,14 +144,43 @@ export default function CreateInvoicePage() {
     });
   };
 
-  const selectProduct = (index, productId) => {
-    const product = products.find(p => p.id === productId);
-    if (!product) return;
-    setItems(prev => {
-      const updated = [...prev];
-      updated[index] = { ...updated[index], product_id: productId, item_name: product.name, unit_price: product.unit_price, tax_rate: product.tax_rate };
-      return updated;
-    });
+  const handleSelectItem = (index, selection) => {
+    if (!selection) {
+      setItems(prev => {
+        const updated = [...prev];
+        updated[index] = {
+          ...updated[index],
+          product_id: null,
+          item_name: '',
+        };
+        return updated;
+      });
+      return;
+    }
+
+    if (selection.id) {
+      setItems(prev => {
+        const updated = [...prev];
+        updated[index] = {
+          ...updated[index],
+          product_id: selection.id,
+          item_name: selection.name,
+          unit_price: selection.unit_price != null ? selection.unit_price : updated[index].unit_price,
+          tax_rate: selection.tax_rate != null ? selection.tax_rate : updated[index].tax_rate,
+        };
+        return updated;
+      });
+    } else {
+      setItems(prev => {
+        const updated = [...prev];
+        updated[index] = {
+          ...updated[index],
+          product_id: null,
+          item_name: selection.name || '',
+        };
+        return updated;
+      });
+    }
   };
 
   const addItem = () => setItems(prev => [...prev, { ...EMPTY_ITEM }]);
@@ -107,26 +198,57 @@ export default function CreateInvoicePage() {
       return;
     }
     try {
-      const payload = { ...form, businessId: activeBusinessId, items: items.map(item => ({ ...item, unit_price: parseFloat(item.unit_price) || 0, quantity: parseInt(item.quantity) || 1 })) };
-      const result = await createInvoice(payload).unwrap();
-      dispatch(addToast({ type: 'success', message: `${form.type === 'invoice' ? 'Invoice' : 'Bill'} ${result.data.invoice.invoice_number} created!` }));
-      navigate(`/invoices/${result.data.invoice.id}`);
+      const payload = {
+        ...form,
+        businessId: activeBusinessId,
+        items: items.map((item) => ({
+          ...item,
+          unit_price: parseFloat(item.unit_price) || 0,
+          quantity: parseInt(item.quantity) || 1,
+        })),
+      };
+
+      if (isEditMode) {
+        await updateInvoice({
+          businessId: activeBusinessId,
+          invoiceId: id,
+          ...payload,
+        }).unwrap();
+        dispatch(addToast({ type: 'success', message: `${typeLabel} updated!` }));
+        navigate(`/invoices/${id}`);
+      } else {
+        const result = await createInvoice(payload).unwrap();
+        dispatch(addToast({ type: 'success', message: `${typeLabel} ${result.data.invoice.invoice_number} created!` }));
+        navigate(`/invoices/${result.data.invoice.id}`);
+      }
     } catch (err) {
-      dispatch(addToast({ type: 'error', message: err?.data?.error?.message || 'Failed to create invoice.' }));
+      dispatch(addToast({ type: 'error', message: err?.data?.error?.message || `Failed to ${isEditMode ? 'update' : 'create'} invoice.` }));
     }
   };
 
   const typeLabel = form.type === 'invoice' ? 'Invoice' : 'Bill';
 
+  if (isEditMode && loadingInvoice) {
+    return (
+      <div style={{ padding: 48, display: 'flex', justifyContent: 'center' }}>
+        <PageLoader />
+      </div>
+    );
+  }
+
   return (
     <div className="create-inv">
       <div className="page-header">
         <div>
-          <h2 className="page-header__title">Create {typeLabel}</h2>
+          <h2 className="page-header__title">
+            {isEditMode ? `Edit ${typeLabel} (${existingInvoice?.invoice_number || ''})` : `Create ${typeLabel}`}
+          </h2>
           <p className="page-header__sub">for {activeBusiness?.name}</p>
         </div>
         <div className="page-header__actions">
-          <Button variant="secondary" size="md" onClick={() => navigate('/invoices')}>Cancel</Button>
+          <Button variant="secondary" size="md" onClick={() => navigate(isEditMode ? `/invoices/${id}` : '/invoices')}>
+            Cancel
+          </Button>
         </div>
       </div>
 
@@ -231,14 +353,15 @@ export default function CreateInvoicePage() {
               const calc = totals.items[i] || {};
               return (
                 <div className="inv-item-grid" key={i}>
-                  {/* Product picker + name */}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    <SelectDropdown aria-label="Select a product" value={item.product_id || ''} onChange={(e) => selectProduct(i, e.target.value)} style={{ height: 32, fontSize: 12, fontWeight: 400 }}>
-                      <option value="">Custom item…</option>
-                      {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
-                    </SelectDropdown>
-                    <InputField aria-label="Item name" placeholder="Item name" value={item.item_name} onChange={setItemField(i, 'item_name')} style={{ height: 32, fontSize: 13 }} />
-                  </div>
+                  {/* Searchable product / item dropdown */}
+                  <SearchableProductDropdown
+                    id={`item-prod-${i}`}
+                    products={products}
+                    currency={activeBusiness?.currency}
+                    productId={item.product_id}
+                    itemName={item.item_name}
+                    onChange={(selection) => handleSelectItem(i, selection)}
+                  />
                   <div className="inv-item-field">
                     <span className="inv-item-field__label">Price</span>
                     <InputField type="number" aria-label="Unit price" placeholder="0" value={item.unit_price} onChange={setItemField(i, 'unit_price')} style={{ height: 36, fontSize: 13 }} />
@@ -308,9 +431,9 @@ export default function CreateInvoicePage() {
         </div>
 
         <div className="create-inv__actions">
-          <Button type="button" variant="secondary" size="lg" onClick={() => navigate('/invoices')}>Cancel</Button>
-          <Button type="submit" variant="primary" size="lg" loading={isLoading} id="submit-invoice-btn">
-            Create {typeLabel}
+          <Button type="button" variant="secondary" size="lg" onClick={() => navigate(isEditMode ? `/invoices/${id}` : '/invoices')}>Cancel</Button>
+          <Button type="submit" variant="primary" size="lg" loading={creating || updating} id="submit-invoice-btn">
+            {isEditMode ? 'Save Changes' : `Create ${typeLabel}`}
           </Button>
         </div>
       </form>
