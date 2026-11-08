@@ -11,6 +11,10 @@ module.exports = (sequelize) => {
       type: DataTypes.UUID,
       allowNull: false,
     },
+    customer_id: {
+      type: DataTypes.UUID,
+      allowNull: true,
+    },
     invoice_number: {
       type: DataTypes.STRING(30),
       allowNull: false,

@@ -9,14 +9,13 @@ import {
 } from '../../store/api/productApi';
 import { addToast } from '../../store/slices/uiSlice';
 import Icon from '../../components/ui/Icon';
+import PageHeader from '../../components/ui/PageHeader/PageHeader';
+import DataTable from '../../components/ui/DataTable';
 import Modal from '../../components/ui/Modal/Modal';
 import ConfirmDialog from '../../components/ui/Modal/ConfirmDialog';
 import FormField from '../../components/ui/FormField/FormField';
 import InputField from '../../components/ui/Input/InputField';
 import Button from '../../components/ui/Button/Button';
-import EmptyState from '../../components/ui/EmptyState/EmptyState';
-import Pagination from '../../components/ui/Pagination/Pagination';
-import { PageLoader } from '../../components/ui/Loader/Spinner';
 import { formatCurrency } from '../../utils/formatCurrency';
 
 const EMPTY_FORM = {
@@ -117,129 +116,120 @@ export default function ProductsPage() {
     }
   };
 
+  const columns = [
+    {
+      key: 'name',
+      header: 'Product',
+      width: '30%',
+      render: (p) => (
+        <div>
+          <div>{p.name}</div>
+          {p.description ? (
+            <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>
+              {p.description.slice(0, 50)}
+              {p.description.length > 50 ? '…' : ''}
+            </div>
+          ) : null}
+        </div>
+      ),
+    },
+    {
+      key: 'sku',
+      header: 'SKU',
+      width: '16%',
+      render: (p) => p.sku || '–',
+    },
+    {
+      key: 'unit',
+      header: 'Unit',
+      width: '12%',
+      render: (p) => p.unit || 'pcs',
+    },
+    {
+      key: 'unit_price',
+      header: 'Price',
+      width: '16%',
+      align: 'right',
+      price: true,
+      render: (p) => formatCurrency(p.unit_price, activeBusiness?.currency),
+    },
+    {
+      key: 'tax_rate',
+      header: 'Tax %',
+      width: '12%',
+      tax: true,
+      render: (p) => `${p.tax_rate}%`,
+    },
+    {
+      key: 'actions',
+      header: 'Actions',
+      width: '14%',
+      align: 'right',
+      render: (p) => (
+        <DataTable.RowActions>
+          <DataTable.ActionButton
+            icon="edit"
+            label={`Edit ${p.name}`}
+            onClick={() => openEdit(p)}
+          />
+          <DataTable.ActionButton
+            icon="trash"
+            variant="danger"
+            label={`Delete ${p.name}`}
+            onClick={() => setDeleteProduct(p)}
+          />
+        </DataTable.RowActions>
+      ),
+    },
+  ];
+
   return (
     <div>
-      <h1 className="page-title">Products</h1>
-      <p className="page-sub">
-        Manage your product catalog for {activeBusiness?.name || 'your business'}
-      </p>
+      <PageHeader
+        title="Products"
+        description={`Manage your product catalog for ${activeBusiness?.name || 'your business'}`}
+      />
 
-      <div className="db-bar">
-        <label className="db-search">
-          <Icon name="search" size={16} />
-          <input
-            type="search"
+      <DataTable>
+        <DataTable.Toolbar>
+          <DataTable.Search
             placeholder="Search products…"
-            aria-label="Search products"
+            ariaLabel="Search products"
             value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
+            onChange={(val) => {
+              setSearch(val);
               setPage(1);
             }}
           />
-        </label>
-        <div className="db-end">
-          <button type="button" className="db-icon" aria-label="Filter and sort">
-            <Icon name="funnel" size={18} />
-          </button>
-          <button type="button" className="db-new" onClick={openCreate}>
-            Add product
-          </button>
-        </div>
-      </div>
+          <DataTable.Actions>
+            <DataTable.FilterButton ariaLabel="Filter and sort products" />
+            <DataTable.NewButton onClick={openCreate}>
+              Add product
+            </DataTable.NewButton>
+          </DataTable.Actions>
+        </DataTable.Toolbar>
 
-      {isLoading ? (
-        <div style={{ marginTop: 24 }}>
-          <PageLoader />
-        </div>
-      ) : products.length === 0 ? (
-        <div style={{ marginTop: 20 }}>
-          <EmptyState
-            icon={<Icon name="pkg" size={28} />}
-            title="No products yet"
-            description="Add your first product to start creating invoices and bills."
-            actionLabel="Add Product"
-            onAction={openCreate}
-          />
-        </div>
-      ) : (
-        <>
-          <div className="db-wrap">
-            <table className="db">
-              <colgroup>
-                <col style={{ width: '30%' }} />
-                <col style={{ width: '16%' }} />
-                <col style={{ width: '12%' }} />
-                <col style={{ width: '16%' }} />
-                <col style={{ width: '12%' }} />
-                <col style={{ width: '14%' }} />
-              </colgroup>
-              <thead>
-                <tr>
-                  <th scope="col">Product</th>
-                  <th scope="col">SKU</th>
-                  <th scope="col">Unit</th>
-                  <th scope="col" className="num">Price</th>
-                  <th scope="col">Tax %</th>
-                  <th scope="col" className="num">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {products.map((p) => (
-                  <tr key={p.id}>
-                    <td>
-                      <div>{p.name}</div>
-                      {p.description && (
-                        <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>
-                          {p.description.slice(0, 50)}
-                          {p.description.length > 50 ? '…' : ''}
-                        </div>
-                      )}
-                    </td>
-                    <td>{p.sku || '–'}</td>
-                    <td>{p.unit || 'pcs'}</td>
-                    <td className="num price">
-                      {formatCurrency(p.unit_price, activeBusiness?.currency)}
-                    </td>
-                    <td className="tax">{p.tax_rate}%</td>
-                    <td>
-                      <div className="act">
-                        <button
-                          type="button"
-                          aria-label={`Edit ${p.name}`}
-                          onClick={() => openEdit(p)}
-                        >
-                          <Icon name="edit" size={16} />
-                        </button>
-                        <button
-                          type="button"
-                          className="del"
-                          aria-label={`Delete ${p.name}`}
-                          onClick={() => setDeleteProduct(p)}
-                        >
-                          <Icon name="trash" size={16} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+        <DataTable.Content
+          isLoading={isLoading}
+          isEmpty={products.length === 0}
+          emptyState={{
+            icon: <Icon name="pkg" size={28} />,
+            title: 'No products yet',
+            description: 'Add your first product to start creating invoices and bills.',
+            actionLabel: 'Add Product',
+            onAction: openCreate,
+          }}
+          columns={columns}
+          data={products}
+        />
 
-          {meta.totalPages > 1 && (
-            <div style={{ marginTop: 16 }}>
-              <Pagination
-                page={page}
-                totalPages={meta.totalPages}
-                total={meta.total}
-                limit={20}
-                onPageChange={setPage}
-              />
-            </div>
-          )}
-        </>
-      )}
+        <DataTable.Pagination
+          page={page}
+          meta={meta}
+          onPageChange={setPage}
+          limit={20}
+        />
+      </DataTable>
 
       {/* Create / Edit Modal */}
       <Modal

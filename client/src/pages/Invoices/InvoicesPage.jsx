@@ -3,9 +3,8 @@ import { useSelector } from 'react-redux';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useGetInvoicesQuery } from '../../store/api/invoiceApi';
 import Icon from '../../components/ui/Icon';
-import EmptyState from '../../components/ui/EmptyState/EmptyState';
-import Pagination from '../../components/ui/Pagination/Pagination';
-import { PageLoader } from '../../components/ui/Loader/Spinner';
+import PageHeader from '../../components/ui/PageHeader/PageHeader';
+import DataTable from '../../components/ui/DataTable';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { formatDate } from '../../utils/formatDate';
 import { effectiveStatus } from '../../utils/invoiceStatus';
@@ -39,152 +38,125 @@ export default function InvoicesPage() {
   const invoices = data?.data?.invoices || [];
   const meta = data?.meta || {};
 
+  const columns = [
+    {
+      key: 'invoice_number',
+      header: 'Document',
+      width: '15%',
+      render: (inv) => inv.invoice_number,
+    },
+    {
+      key: 'type',
+      header: 'Type',
+      width: '12%',
+      render: (inv) => <span style={{ textTransform: 'capitalize' }}>{inv.type}</span>,
+    },
+    {
+      key: 'customer_name',
+      header: 'Customer / Vendor',
+      width: '25%',
+      render: (inv) => inv.customer_name || '—',
+    },
+    {
+      key: 'issue_date',
+      header: 'Issue Date',
+      width: '14%',
+      tax: true,
+      render: (inv) => formatDate(inv.issue_date),
+    },
+    {
+      key: 'due_date',
+      header: 'Due Date',
+      width: '14%',
+      tax: true,
+      render: (inv) => formatDate(inv.due_date),
+    },
+    {
+      key: 'total_amount',
+      header: 'Amount',
+      width: '12%',
+      align: 'right',
+      price: true,
+      render: (inv) => formatCurrency(inv.total_amount, activeBusiness?.currency),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      width: '8%',
+      render: (inv) => {
+        const status = effectiveStatus(inv);
+        const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
+        return <span className={`sc sc-${status.toLowerCase()}`}>{statusLabel}</span>;
+      },
+    },
+  ];
+
   return (
     <div>
-      <h1 className="page-title">Invoices & Bills</h1>
-      <p className="page-sub">
-        Track and manage all your billing for {activeBusiness?.name || 'your business'}
-      </p>
+      <PageHeader
+        title="Invoices & Bills"
+        description={`Track and manage all your billing for ${activeBusiness?.name || 'your business'}`}
+      />
 
-      <div className="db-bar">
-        <label className="db-search">
-          <Icon name="search" size={16} />
-          <input
-            type="search"
+      <DataTable>
+        <DataTable.Toolbar>
+          <DataTable.Search
             placeholder="Search invoices…"
-            aria-label="Search invoices"
+            ariaLabel="Search invoices"
             value={search}
-            onChange={(e) => {
-              setSearch(e.target.value);
+            onChange={(val) => {
+              setSearch(val);
               setPage(1);
             }}
           />
-        </label>
 
-        <div className="db-pills" role="tablist" aria-label="Filter documents by type">
-          {TABS.map((tab) => {
-            const isSelected = typeFilter === tab.value;
-            return (
-              <button
-                key={tab.value}
-                type="button"
-                role="tab"
-                className="db-pill"
-                aria-selected={isSelected}
-                onClick={() => {
-                  setTypeFilter(tab.value);
-                  setPage(1);
-                }}
-              >
-                {tab.label}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="db-end">
-          <button type="button" className="db-icon" aria-label="Filter and sort">
-            <Icon name="funnel" size={18} />
-          </button>
-          <button
-            type="button"
-            className="dash-btn"
-            onClick={() => navigate('/invoices/new?type=bill')}
-          >
-            <Icon name="receipt" size={16} />
-            <span>New bill</span>
-          </button>
-          <button
-            type="button"
-            className="db-new"
-            onClick={() => navigate('/invoices/new?type=invoice')}
-          >
-            New invoice
-          </button>
-        </div>
-      </div>
-
-      {isLoading ? (
-        <div style={{ marginTop: 24 }}>
-          <PageLoader />
-        </div>
-      ) : invoices.length === 0 ? (
-        <div style={{ marginTop: 20 }}>
-          <EmptyState
-            icon={<Icon name="file" size={28} />}
-            title="No invoices found"
-            description="Create your first invoice or bill to get started."
-            actionLabel="New Invoice"
-            onAction={() => navigate('/invoices/new?type=invoice')}
+          <DataTable.Tabs
+            tabs={TABS}
+            activeTab={typeFilter}
+            onTabChange={(tabVal) => {
+              setTypeFilter(tabVal);
+              setPage(1);
+            }}
           />
-        </div>
-      ) : (
-        <>
-          <div className="db-wrap">
-            <table className="db">
-              <colgroup>
-                <col style={{ width: '15%' }} />
-                <col style={{ width: '12%' }} />
-                <col style={{ width: '25%' }} />
-                <col style={{ width: '14%' }} />
-                <col style={{ width: '14%' }} />
-                <col style={{ width: '12%' }} />
-                <col style={{ width: '8%' }} />
-              </colgroup>
-              <thead>
-                <tr>
-                  <th scope="col">Document</th>
-                  <th scope="col">Type</th>
-                  <th scope="col">Customer / Vendor</th>
-                  <th scope="col">Issue Date</th>
-                  <th scope="col">Due Date</th>
-                  <th scope="col" className="num">Amount</th>
-                  <th scope="col">Status</th>
-                </tr>
-              </thead>
-              <tbody>
-                {invoices.map((inv) => {
-                  const status = effectiveStatus(inv);
-                  const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
-                  return (
-                    <tr
-                      key={inv.id}
-                      style={{ cursor: 'pointer' }}
-                      onClick={() => navigate(`/invoices/${inv.id}`)}
-                    >
-                      <td>{inv.invoice_number}</td>
-                      <td style={{ textTransform: 'capitalize' }}>{inv.type}</td>
-                      <td>{inv.customer_name || '—'}</td>
-                      <td className="tax">{formatDate(inv.issue_date)}</td>
-                      <td className="tax">{formatDate(inv.due_date)}</td>
-                      <td className="num price">
-                        {formatCurrency(inv.total_amount, activeBusiness?.currency)}
-                      </td>
-                      <td>
-                        <span className={`sc sc-${status.toLowerCase()}`}>
-                          {statusLabel}
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
 
-          {meta.totalPages > 1 && (
-            <div style={{ marginTop: 16 }}>
-              <Pagination
-                page={page}
-                totalPages={meta.totalPages}
-                total={meta.total}
-                limit={20}
-                onPageChange={setPage}
-              />
-            </div>
-          )}
-        </>
-      )}
+          <DataTable.Actions>
+            <DataTable.FilterButton ariaLabel="Filter and sort documents" />
+            <button
+              type="button"
+              className="dash-btn"
+              onClick={() => navigate('/invoices/new?type=bill')}
+            >
+              <Icon name="receipt" size={16} />
+              <span>New bill</span>
+            </button>
+            <DataTable.NewButton onClick={() => navigate('/invoices/new?type=invoice')}>
+              New invoice
+            </DataTable.NewButton>
+          </DataTable.Actions>
+        </DataTable.Toolbar>
+
+        <DataTable.Content
+          isLoading={isLoading}
+          isEmpty={invoices.length === 0}
+          emptyState={{
+            icon: <Icon name="file" size={28} />,
+            title: 'No invoices found',
+            description: 'Create your first invoice or bill to get started.',
+            actionLabel: 'New Invoice',
+            onAction: () => navigate('/invoices/new?type=invoice'),
+          }}
+          columns={columns}
+          data={invoices}
+          onRowClick={(inv) => navigate(`/invoices/${inv.id}`)}
+        />
+
+        <DataTable.Pagination
+          page={page}
+          meta={meta}
+          onPageChange={setPage}
+          limit={20}
+        />
+      </DataTable>
     </div>
   );
 }

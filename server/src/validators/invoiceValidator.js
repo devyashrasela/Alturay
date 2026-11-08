@@ -12,6 +12,7 @@ const invoiceItemSchema = Joi.object({
 
 const createInvoiceSchema = Joi.object({
   type: Joi.string().valid('invoice', 'bill').required(),
+  customer_id: Joi.string().uuid().allow(null, ''),
   customer_name: Joi.string().trim().min(1).max(200).required(),
   customer_phone: Joi.string().trim().max(20).allow('', null),
   issue_date: Joi.date().iso().required(),
@@ -24,6 +25,7 @@ const createInvoiceSchema = Joi.object({
 });
 
 const updateInvoiceSchema = Joi.object({
+  customer_id: Joi.string().uuid().allow(null, ''),
   customer_name: Joi.string().trim().min(1).max(200),
   customer_phone: Joi.string().trim().max(20).allow('', null),
   issue_date: Joi.date().iso(),

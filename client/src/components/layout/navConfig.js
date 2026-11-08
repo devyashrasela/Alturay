@@ -38,7 +38,7 @@ export const NAV_SECTIONS = [
         {
           label: 'Overview',
           items: [
-            { id: 'inv-dash', label: 'Inventory dashboard', icon: 'gauge', path: '/inventory', soon: true },
+            { id: 'inv-dash', label: 'Overview', icon: 'gauge', path: '/inventory', soon: true },
           ],
         },
         {
@@ -155,7 +155,7 @@ export const QUICK_ACTIONS = [
   { label: 'New invoice', icon: 'file', path: '/invoices/new' },
   { label: 'New bill', icon: 'receipt', path: '/invoices/new?type=bill' },
   { label: 'Add product', icon: 'pkg', path: '/products?add=1' },
-  { label: 'Add customer', icon: 'userp', path: '/customers', soon: true },
+  { label: 'Add customer', icon: 'userp', path: '/customers?add=1' },
   { label: 'Receive stock', icon: 'truck', path: '/inventory/add-stock', soon: true },
 ];
 

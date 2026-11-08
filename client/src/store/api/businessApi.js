@@ -14,7 +14,23 @@ export const businessApi = baseApi.injectEndpoints({
       query: ({ id, ...body }) => ({ url: `/businesses/${id}`, method: 'PUT', body }),
       invalidatesTags: ['Business'],
     }),
+    uploadImage: builder.mutation({
+      query: (formData) => ({
+        url: '/upload/image',
+        method: 'POST',
+        body: formData,
+      }),
+    }),
+    checkQrPrefix: builder.query({
+      query: (prefix) => `/businesses/check-qr-prefix?prefix=${encodeURIComponent(prefix)}`,
+    }),
   }),
 });
 
-export const { useGetBusinessesQuery, useCreateBusinessMutation, useUpdateBusinessMutation } = businessApi;
+export const {
+  useGetBusinessesQuery,
+  useCreateBusinessMutation,
+  useUpdateBusinessMutation,
+  useUploadImageMutation,
+  useLazyCheckQrPrefixQuery,
+} = businessApi;

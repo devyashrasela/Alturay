@@ -26,6 +26,7 @@ const User = require('./User')(sequelize);
 const Business = require('./Business')(sequelize);
 const BusinessMember = require('./BusinessMember')(sequelize);
 const Product = require('./Product')(sequelize);
+const Customer = require('./Customer')(sequelize);
 const Invoice = require('./Invoice')(sequelize);
 const InvoiceItem = require('./InvoiceItem')(sequelize);
 
@@ -44,9 +45,17 @@ BusinessMember.belongsTo(Business, { foreignKey: 'business_id', as: 'business' }
 Business.hasMany(Product, { foreignKey: 'business_id', as: 'products' });
 Product.belongsTo(Business, { foreignKey: 'business_id', as: 'business' });
 
+// Business -> Customers
+Business.hasMany(Customer, { foreignKey: 'business_id', as: 'customers' });
+Customer.belongsTo(Business, { foreignKey: 'business_id', as: 'business' });
+
 // Business -> Invoices
 Business.hasMany(Invoice, { foreignKey: 'business_id', as: 'invoices' });
 Invoice.belongsTo(Business, { foreignKey: 'business_id', as: 'business' });
+
+// Customer -> Invoices
+Customer.hasMany(Invoice, { foreignKey: 'customer_id', as: 'invoices' });
+Invoice.belongsTo(Customer, { foreignKey: 'customer_id', as: 'customer' });
 
 // Invoice -> InvoiceItems
 Invoice.hasMany(InvoiceItem, { foreignKey: 'invoice_id', as: 'items' });
@@ -63,6 +72,7 @@ module.exports = {
   Business,
   BusinessMember,
   Product,
+  Customer,
   Invoice,
   InvoiceItem,
 };

@@ -11,7 +11,7 @@ const startServer = async () => {
 
     // Sync models in development (use migrations in production)
     if (config.nodeEnv === 'development') {
-      await sequelize.sync({ alter: true });
+      await sequelize.sync();
       logger.info('✅ Database models synced');
     }
 

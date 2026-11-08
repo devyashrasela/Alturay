@@ -11,6 +11,15 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING(200),
       allowNull: false,
     },
+    qr_prefix: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+      unique: true,
+    },
+    contact_details: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
     email: {
       type: DataTypes.STRING(255),
       allowNull: true,
@@ -25,6 +34,26 @@ module.exports = (sequelize) => {
     },
     address: {
       type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    address_line1: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
+    address_line2: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
+    city: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+    },
+    state: {
+      type: DataTypes.STRING(100),
+      allowNull: true,
+    },
+    pincode: {
+      type: DataTypes.STRING(20),
       allowNull: true,
     },
     currency: {

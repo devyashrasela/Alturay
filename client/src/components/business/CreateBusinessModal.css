@@ -1,0 +1,169 @@
+.create-biz-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  max-height: 75vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Section Grouping */
+.create-biz-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--color-border, var(--border));
+}
+
+.create-biz-section:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.create-biz-section__title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-secondary, var(--text-2));
+  margin: 0 0 2px 0;
+}
+
+/* Logo Upload Area */
+.logo-upload-wrap {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px;
+  background: var(--color-bg-muted, var(--hover));
+  border: 1px dashed var(--color-border, var(--border));
+  border-radius: var(--radius-md, 8px);
+  transition: border-color 0.15s ease;
+}
+
+.logo-upload-wrap:hover {
+  border-color: var(--color-primary, var(--accent));
+}
+
+.logo-preview-box {
+  width: 64px;
+  height: 64px;
+  border-radius: 8px;
+  background: var(--color-bg-card, var(--panel));
+  border: 1px solid var(--color-border, var(--border));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  position: relative;
+}
+
+.logo-preview-box__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.logo-preview-box__placeholder {
+  color: var(--color-text-muted, var(--muted));
+}
+
+.logo-upload-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.logo-upload-content__label {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--color-text-primary, var(--text));
+  margin: 0;
+}
+
+.logo-upload-content__sub {
+  font-size: 12px;
+  color: var(--color-text-secondary, var(--text-2));
+  margin: 0;
+}
+
+.logo-upload-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+/* QR Prefix Input with prefix addon */
+.qr-prefix-input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.qr-prefix-addon {
+  position: absolute;
+  left: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-secondary, var(--text-2));
+  pointer-events: none;
+  user-select: none;
+}
+
+.qr-prefix-input {
+  padding-left: 28px !important;
+}
+
+.qr-prefix-status {
+  position: absolute;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.qr-prefix-status--available {
+  color: #10b981;
+}
+
+.qr-prefix-status--taken {
+  color: #ef4444;
+}
+
+/* Grids */
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.form-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 640px) {
+  .form-grid-2,
+  .form-grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field-error-msg {
+  font-size: 12px;
+  color: var(--color-danger, #ef4444);
+  margin-top: 4px;
+}
+
+.field-hint-text {
+  font-size: 11.5px;
+  color: var(--color-text-secondary, var(--text-2));
+  margin-top: 3px;
+}

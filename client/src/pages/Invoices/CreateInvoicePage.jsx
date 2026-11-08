@@ -10,6 +10,7 @@ import Button from '../../components/ui/Button/Button';
 import FormField from '../../components/ui/FormField/FormField';
 import InputField from '../../components/ui/Input/InputField';
 import SelectDropdown from '../../components/ui/Select/SelectDropdown';
+import CustomerSelectDropdown from '../../components/customer/CustomerSelectDropdown';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { calculateInvoiceTotals } from '../../utils/calculateInvoiceTotals';
 
@@ -33,8 +34,12 @@ export default function CreateInvoicePage() {
   const { data: productsData } = useGetProductsQuery({ businessId: activeBusinessId, limit: 200 }, { skip: !activeBusinessId });
   const products = productsData?.data?.products || [];
 
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [customerError, setCustomerError] = useState('');
+
   const [form, setForm] = useState({
     type: defaultType,
+    customer_id: null,
     customer_name: '',
     customer_phone: '',
     issue_date: localDate(),
@@ -48,6 +53,26 @@ export default function CreateInvoicePage() {
   const totals = calculateInvoiceTotals(items, { discount_amount: form.discount_amount, discount_percent: form.discount_percent });
 
   const setField = (field) => (e) => setForm(f => ({ ...f, [field]: e.target.value }));
+
+  const handleCustomerSelect = (customer) => {
+    setSelectedCustomer(customer);
+    setCustomerError('');
+    if (customer) {
+      setForm((f) => ({
+        ...f,
+        customer_id: customer.id,
+        customer_name: customer.name,
+        customer_phone: customer.phone || '',
+      }));
+    } else {
+      setForm((f) => ({
+        ...f,
+        customer_id: null,
+        customer_name: '',
+        customer_phone: '',
+      }));
+    }
+  };
 
   const setItemField = (index, field) => (e) => {
     setItems(prev => {
@@ -72,6 +97,11 @@ export default function CreateInvoicePage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (form.type === 'invoice' && !form.customer_name?.trim()) {
+      setCustomerError('Please select or add a customer for this invoice.');
+      dispatch(addToast({ type: 'error', message: 'Please select a customer for this invoice.' }));
+      return;
+    }
     if (items.some(item => !item.item_name || !item.unit_price)) {
       dispatch(addToast({ type: 'error', message: 'Please fill in all item names and prices.' }));
       return;
@@ -126,14 +156,56 @@ export default function CreateInvoicePage() {
 
           {/* Right: Customer */}
           <Card>
-            <h3 className="form-section__title">Customer Details</h3>
+            <h3 className="form-section__title">
+              {form.type === 'invoice' ? 'Customer Details *' : 'Customer / Vendor Details'}
+            </h3>
             <div className="form-stack">
-              <FormField label="Customer name" required>
-                <InputField id="cust-name" placeholder="Full name" value={form.customer_name} onChange={setField('customer_name')} />
+              <FormField
+                label="Customer"
+                required={form.type === 'invoice'}
+                error={customerError}
+              >
+                <CustomerSelectDropdown
+                  businessId={activeBusinessId}
+                  value={selectedCustomer}
+                  onChange={handleCustomerSelect}
+                  error={customerError}
+                  placeholder={
+                    form.type === 'invoice'
+                      ? 'Select or add customer (required)…'
+                      : 'Search existing customer or enter below…'
+                  }
+                />
               </FormField>
-              <FormField label="Phone number">
-                <InputField id="cust-phone" type="tel" placeholder="+91 98765 43210" value={form.customer_phone} onChange={setField('customer_phone')} />
-              </FormField>
+
+              {form.type === 'bill' && !selectedCustomer && (
+                <>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '4px 0' }}>
+                    <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+                    <span style={{ fontSize: 11, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      or walk-in entry
+                    </span>
+                    <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+                  </div>
+                  <FormField label="Customer / Vendor name" required>
+                    <InputField
+                      id="cust-name"
+                      placeholder="e.g. Cash Customer / Walk-in Vendor"
+                      value={form.customer_name}
+                      onChange={setField('customer_name')}
+                    />
+                  </FormField>
+                  <FormField label="Phone number">
+                    <InputField
+                      id="cust-phone"
+                      type="tel"
+                      placeholder="+91 98765 43210"
+                      value={form.customer_phone}
+                      onChange={setField('customer_phone')}
+                    />
+                  </FormField>
+                </>
+              )}
             </div>
           </Card>
         </div>

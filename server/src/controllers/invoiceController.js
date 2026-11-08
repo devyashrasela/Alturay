@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { sequelize, Invoice, InvoiceItem, Business, Product } = require('../models');
+const { sequelize, Invoice, InvoiceItem, Business, Product, Customer } = require('../models');
 const { calculateInvoiceTotals } = require('../services/invoiceCalculator');
 
 exports.list = async (req, res, next) => {
@@ -46,7 +46,7 @@ exports.list = async (req, res, next) => {
 exports.create = async (req, res, next) => {
   const t = await sequelize.transaction();
   try {
-    const { type, customer_name, customer_phone, issue_date, due_date, discount_amount, discount_percent, notes, items } = req.body;
+    const { type, customer_id, customer_name, customer_phone, issue_date, due_date, discount_amount, discount_percent, notes, items } = req.body;
 
     // Atomic sequence numbering with row-level lock
     const business = await Business.findByPk(req.businessId, { lock: true, transaction: t });
@@ -62,6 +62,7 @@ exports.create = async (req, res, next) => {
       business_id: req.businessId,
       invoice_number: invoiceNumber,
       type,
+      customer_id: customer_id || null,
       customer_name,
       customer_phone,
       issue_date,
@@ -115,11 +116,18 @@ exports.getById = async (req, res, next) => {
   try {
     const invoice = await Invoice.findOne({
       where: { id: req.params.invoiceId, business_id: req.businessId },
-      include: [{
-        model: InvoiceItem,
-        as: 'items',
-        include: [{ model: Product, as: 'product', attributes: ['id', 'name', 'sku'] }],
-      }],
+      include: [
+        {
+          model: InvoiceItem,
+          as: 'items',
+          include: [{ model: Product, as: 'product', attributes: ['id', 'name', 'sku'] }],
+        },
+        {
+          model: Customer,
+          as: 'customer',
+          attributes: ['id', 'name', 'phone', 'email', 'address_line1', 'address_line2', 'city', 'state', 'pincode'],
+        },
+      ],
     });
 
     if (!invoice) {

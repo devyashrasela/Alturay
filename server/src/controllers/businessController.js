@@ -3,6 +3,28 @@ const { TEMPLATE_POOLS, DEFAULT_TEMPLATE, PAPER_WIDTHS } = require('../constants
 const { generateInvoicePDF } = require('../services/pdfGeneratorService');
 const sampleInvoice = require('../services/pdfTemplates/sample');
 
+const BUSINESS_ATTRIBUTES = [
+  'id',
+  'name',
+  'qr_prefix',
+  'contact_details',
+  'email',
+  'phone',
+  'tax_id',
+  'address',
+  'address_line1',
+  'address_line2',
+  'city',
+  'state',
+  'pincode',
+  'currency',
+  'logo_url',
+  'invoice_template_id',
+  'bill_template_id',
+  'receipt_paper_width',
+  'created_at',
+];
+
 exports.list = async (req, res, next) => {
   try {
     const memberships = await BusinessMember.findAll({
@@ -10,18 +32,7 @@ exports.list = async (req, res, next) => {
       include: [{
         model: Business,
         as: 'business',
-        attributes: [
-          'id',
-          'name',
-          'email',
-          'phone',
-          'currency',
-          'logo_url',
-          'invoice_template_id',
-          'bill_template_id',
-          'receipt_paper_width',
-          'created_at',
-        ],
+        attributes: BUSINESS_ATTRIBUTES,
       }],
       attributes: ['role', 'created_at'],
     });
@@ -40,11 +51,65 @@ exports.list = async (req, res, next) => {
 
 exports.create = async (req, res, next) => {
   try {
-    const { name, email, phone, tax_id, address, currency } = req.body;
+    const {
+      name,
+      qr_prefix,
+      contact_details,
+      tax_id,
+      address_line1,
+      address_line2,
+      city,
+      state,
+      pincode,
+      email,
+      phone,
+      currency,
+      logo_url,
+    } = req.body;
 
-    const business = await Business.create({ name, email, phone, tax_id, address, currency });
+    const normalizedPrefix = (qr_prefix || '').trim().toLowerCase();
 
-    // Automatically add the creator as the owner
+    // Check unique QR prefix
+    const existing = await Business.findOne({
+      where: { qr_prefix: normalizedPrefix },
+      attributes: ['id'],
+    });
+
+    if (existing) {
+      return res.status(409).json({
+        success: false,
+        error: {
+          code: 'QR_PREFIX_TAKEN',
+          message: `The QR prefix "${normalizedPrefix}" is already in use by another business. Please choose another prefix.`,
+        },
+      });
+    }
+
+    // Compose backward-compatible full address string for invoices and PDFs
+    const compositeAddress = [
+      address_line1,
+      address_line2,
+      `${city}, ${state} - ${pincode}`,
+    ].filter(Boolean).join(', ');
+
+    const business = await Business.create({
+      name,
+      qr_prefix: normalizedPrefix,
+      contact_details,
+      tax_id,
+      address_line1,
+      address_line2,
+      city,
+      state,
+      pincode,
+      address: compositeAddress,
+      email,
+      phone,
+      currency: currency || 'INR',
+      logo_url: logo_url || null,
+    });
+
+    // Automatically add creator as owner
     await BusinessMember.create({
       user_id: req.user.id,
       business_id: business.id,
@@ -54,6 +119,37 @@ exports.create = async (req, res, next) => {
     return res.status(201).json({
       success: true,
       data: { business },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+exports.checkQrPrefix = async (req, res, next) => {
+  try {
+    const prefix = (req.query.prefix || '').trim().toLowerCase();
+    if (!prefix || prefix.length < 3) {
+      return res.json({
+        success: true,
+        data: {
+          prefix,
+          available: false,
+          reason: 'Prefix must be at least 3 characters.',
+        },
+      });
+    }
+
+    const existing = await Business.findOne({
+      where: { qr_prefix: prefix },
+      attributes: ['id'],
+    });
+
+    return res.json({
+      success: true,
+      data: {
+        prefix,
+        available: !existing,
+      },
     });
   } catch (error) {
     next(error);
@@ -73,7 +169,35 @@ exports.getById = async (req, res, next) => {
 
 exports.update = async (req, res, next) => {
   try {
-    await req.business.update(req.body);
+    // If structured address fields are updated, update composite address too
+    const updates = { ...req.body };
+    if (updates.qr_prefix) {
+      updates.qr_prefix = updates.qr_prefix.trim().toLowerCase();
+      const existing = await Business.findOne({
+        where: { qr_prefix: updates.qr_prefix },
+        attributes: ['id'],
+      });
+      if (existing && existing.id !== req.business.id) {
+        return res.status(409).json({
+          success: false,
+          error: {
+            code: 'QR_PREFIX_TAKEN',
+            message: `The QR prefix "${updates.qr_prefix}" is already in use.`,
+          },
+        });
+      }
+    }
+
+    if (updates.address_line1 || updates.city || updates.state || updates.pincode) {
+      const line1 = updates.address_line1 || req.business.address_line1;
+      const line2 = updates.address_line2 || req.business.address_line2;
+      const city = updates.city || req.business.city;
+      const state = updates.state || req.business.state;
+      const pincode = updates.pincode || req.business.pincode;
+      updates.address = [line1, line2, `${city}, ${state} - ${pincode}`].filter(Boolean).join(', ');
+    }
+
+    await req.business.update(updates);
 
     return res.json({
       success: true,
