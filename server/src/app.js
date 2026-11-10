@@ -1,4 +1,3 @@
-const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -44,9 +43,6 @@ const authLimiter = rateLimit({
   },
 });
 app.use('/api/auth', authLimiter);
-
-// Static file serving for uploads (e.g. logos)
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // API routes
 app.use('/api', routes);
