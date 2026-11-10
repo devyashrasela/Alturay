@@ -1,15 +1,22 @@
 const { Op, fn, col, literal } = require('sequelize');
 const { Invoice, Product, InvoiceItem } = require('../models');
 
-// ISO date string (YYYY-MM-DD) N months back, so DATEONLY comparisons stay lexical
+// Local date string (YYYY-MM-DD) formatted without UTC timezone drift
+const formatLocalDate = (d) => {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 const isoMonthsBack = (monthsBack) => {
   const d = new Date();
   d.setDate(1);
   d.setMonth(d.getMonth() - monthsBack);
-  return d.toISOString().slice(0, 10);
+  return formatLocalDate(d);
 };
 
-const todayISO = () => new Date().toISOString().slice(0, 10);
+const todayISO = () => formatLocalDate(new Date());
 
 exports.getStats = async (req, res, next) => {
   try {
@@ -47,17 +54,15 @@ exports.getStats = async (req, res, next) => {
       Invoice.findOne({
         where: {
           business_id: businessId,
-          type: 'invoice',
           status: { [Op.in]: ['issued', 'paid'] },
         },
         attributes: [[fn('COALESCE', fn('SUM', col('total_amount')), 0), 'total_revenue']],
         raw: true,
       }),
-      // Monthly revenue series over the last 6 months (invoices, issued + paid)
+      // Monthly revenue series over the last 6 months (issued + paid)
       Invoice.findAll({
         where: {
           business_id: businessId,
-          type: 'invoice',
           status: { [Op.in]: ['issued', 'paid'] },
           issue_date: { [Op.gte]: isoMonthsBack(5) },
         },
@@ -69,11 +74,10 @@ exports.getStats = async (req, res, next) => {
         group: ['month'],
         raw: true,
       }),
-      // Daily revenue series for the target month (invoices, issued + paid)
+      // Daily revenue series for the target month (issued + paid)
       Invoice.findAll({
         where: {
           business_id: businessId,
-          type: 'invoice',
           status: { [Op.in]: ['issued', 'paid'] },
           issue_date: {
             [Op.gte]: monthStart,
@@ -88,14 +92,14 @@ exports.getStats = async (req, res, next) => {
         group: ['date'],
         raw: true,
       }),
-      // Invoice counts by status
+      // Document counts by status (invoices and bills)
       Invoice.findAll({
-        where: { business_id: businessId, type: 'invoice' },
+        where: { business_id: businessId },
         attributes: ['status', [fn('COUNT', col('id')), 'count']],
         group: ['status'],
         raw: true,
       }),
-      // Outstanding balances (issued, unpaid) split by invoice vs bill
+      // Outstanding balances (issued, unpaid)
       Invoice.findAll({
         where: { business_id: businessId, status: 'issued' },
         attributes: [
@@ -106,16 +110,15 @@ exports.getStats = async (req, res, next) => {
         group: ['type'],
         raw: true,
       }),
-      // Invoices past their due date
+      // Invoices & bills past their due date
       Invoice.count({
         where: {
           business_id: businessId,
-          type: 'invoice',
           status: 'issued',
           due_date: { [Op.lt]: todayISO() },
         },
       }),
-      // Top products by revenue across all active invoices for this business (exclude cancelled)
+      // Top products by revenue across all active sales for this business (exclude cancelled)
       InvoiceItem.findAll({
         attributes: [
           'item_name',
@@ -129,7 +132,6 @@ exports.getStats = async (req, res, next) => {
             attributes: [],
             where: {
               business_id: businessId,
-              type: 'invoice',
               status: { [Op.in]: ['issued', 'paid'] },
             },
             required: true,
@@ -178,10 +180,13 @@ exports.getStats = async (req, res, next) => {
       status_counts[r.status] = parseInt(r.count, 10) || 0;
     });
 
-    const outstanding_receivable = parseFloat(balanceRows.find((b) => b.type === 'invoice')?.amount || 0);
-    const outstanding_payable = parseFloat(balanceRows.find((b) => b.type === 'bill')?.amount || 0);
-    const receivable_count = parseInt(balanceRows.find((b) => b.type === 'invoice')?.count, 10) || 0;
-    const payable_count = parseInt(balanceRows.find((b) => b.type === 'bill')?.count, 10) || 0;
+    const invoiceReceivable = parseFloat(balanceRows.find((b) => b.type === 'invoice')?.amount || 0);
+    const billReceivable = parseFloat(balanceRows.find((b) => b.type === 'bill')?.amount || 0);
+    const invoiceRecCount = parseInt(balanceRows.find((b) => b.type === 'invoice')?.count, 10) || 0;
+    const billRecCount = parseInt(balanceRows.find((b) => b.type === 'bill')?.count, 10) || 0;
+
+    const outstanding_receivable = invoiceReceivable + billReceivable;
+    const receivable_count = invoiceRecCount + billRecCount;
 
     return res.json({
       success: true,
@@ -190,15 +195,16 @@ exports.getStats = async (req, res, next) => {
           total_products: totalProducts,
           total_invoices: totalInvoices,
           total_bills: totalBills,
+          total_documents: totalInvoices + totalBills,
           total_revenue: parseFloat(revenueResult?.total_revenue || 0),
           monthly_series,
           daily_series,
           selected_month: targetMonth,
           status_counts,
           outstanding_receivable,
-          outstanding_payable,
+          outstanding_payable: 0,
           receivable_count,
-          payable_count,
+          payable_count: 0,
           overdue_invoices: overdueCount,
           top_products: topProducts.map((p) => ({
             item_name: p.item_name,

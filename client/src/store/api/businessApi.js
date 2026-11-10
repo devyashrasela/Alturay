@@ -12,7 +12,7 @@ export const businessApi = baseApi.injectEndpoints({
     }),
     updateBusiness: builder.mutation({
       query: ({ id, ...body }) => ({ url: `/businesses/${id}`, method: 'PUT', body }),
-      invalidatesTags: ['Business'],
+      invalidatesTags: ['Business', 'Dashboard'],
     }),
     uploadImage: builder.mutation({
       query: (formData) => ({

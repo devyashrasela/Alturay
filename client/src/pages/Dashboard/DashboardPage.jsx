@@ -1,4 +1,4 @@
-import { useState, useRef, useId, useEffect } from 'react';
+import { useState, useRef, useId, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useGetDashboardStatsQuery, useGetRecentInvoicesQuery } from '../../store/api/dashboardApi';
@@ -85,15 +85,23 @@ export default function DashboardPage() {
   const [monthMenuOpen, setMonthMenuOpen] = useState(false);
   const monthMenuRef = useRef(null);
 
-  const queryArg = selectedMonth
-    ? { businessId: activeBusinessId, month: selectedMonth }
-    : activeBusinessId;
+  // Reset selected month when switching businesses
+  useEffect(() => {
+    setSelectedMonth(null);
+  }, [activeBusinessId]);
+
+  const queryArg = useMemo(
+    () => (selectedMonth ? { businessId: activeBusinessId, month: selectedMonth } : activeBusinessId),
+    [activeBusinessId, selectedMonth]
+  );
 
   const { data: statsData, isLoading: statsLoading } = useGetDashboardStatsQuery(queryArg, {
     skip: !activeBusinessId,
+    refetchOnMountOrArgChange: true,
   });
   const { data: recentData } = useGetRecentInvoicesQuery(activeBusinessId, {
     skip: !activeBusinessId,
+    refetchOnMountOrArgChange: true,
   });
 
   const stats = statsData?.data?.stats || {};
@@ -134,7 +142,8 @@ export default function DashboardPage() {
   // KPI figures
   const totalRev = formatCurrency(stats.total_revenue ?? 0, activeBusiness?.currency);
   const outstanding = formatCurrency(stats.outstanding_receivable ?? 0, activeBusiness?.currency);
-  const totalInv = String(stats.total_invoices ?? 0);
+  const totalDocsCount = stats.total_documents ?? ((stats.total_invoices ?? 0) + (stats.total_bills ?? 0));
+  const totalInv = String(totalDocsCount);
   const totalProd = String(stats.total_products ?? 0);
 
   // Revenue comparison between current month and previous month in 6-month series
@@ -172,7 +181,9 @@ export default function DashboardPage() {
   const invDelta = currentMonthInvoices > 0 ? `+${currentMonthInvoices}` : `${paidCount} paid`;
   const invSub = currentMonthInvoices > 0
     ? `issued this month (${paidCount} paid)`
-    : `${draftCount} draft${draftCount !== 1 ? 's' : ''} · ${issuedCount} issued`;
+    : (stats.total_bills > 0
+        ? `${stats.total_invoices ?? 0} invoices · ${stats.total_bills ?? 0} bills`
+        : `${draftCount} draft${draftCount !== 1 ? 's' : ''} · ${issuedCount} issued`);
 
   // Product delta / sub
   const topProductsCount = stats.top_products?.length ?? 0;
