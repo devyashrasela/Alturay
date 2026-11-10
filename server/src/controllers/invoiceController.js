@@ -75,18 +75,18 @@ exports.create = async (req, res, next) => {
     // Calculate totals
     const totals = calculateInvoiceTotals(items, { discount_amount, discount_percent });
 
-    // Fall back to business defaults if omitted
-    const resolvedPaymentTerms = (payment_terms !== undefined && payment_terms !== null && payment_terms !== '')
-      ? payment_terms
-      : (business.default_payment_terms || null);
+    // Use user-provided values; if field was omitted completely in API payload, fall back to business defaults
+    const resolvedPaymentTerms = payment_terms !== undefined
+      ? (payment_terms && payment_terms.trim() ? payment_terms.trim() : null)
+      : (type === 'invoice' ? (business.default_payment_terms || null) : null);
 
-    const resolvedPaymentMethods = (accepted_payment_methods && Array.isArray(accepted_payment_methods) && accepted_payment_methods.length > 0)
-      ? accepted_payment_methods
+    const resolvedPaymentMethods = accepted_payment_methods !== undefined
+      ? (Array.isArray(accepted_payment_methods) && accepted_payment_methods.length > 0 ? accepted_payment_methods : null)
       : (business.default_payment_methods || null);
 
-    const resolvedTermsAndConditions = (terms_and_conditions !== undefined && terms_and_conditions !== null && terms_and_conditions !== '')
-      ? terms_and_conditions
-      : (business.default_terms_and_conditions || null);
+    const resolvedTermsAndConditions = terms_and_conditions !== undefined
+      ? (terms_and_conditions && terms_and_conditions.trim() ? terms_and_conditions.trim() : null)
+      : (type === 'invoice' ? (business.default_terms_and_conditions || null) : null);
 
     let resolvedDueDate = due_date || null;
     if (!resolvedDueDate && issue_date) {
@@ -116,9 +116,9 @@ exports.create = async (req, res, next) => {
       discount_amount: totals.discount_amount,
       discount_percent: totals.discount_percent,
       total_amount: totals.total_amount,
-      notes: notes || null,
-      description: description || null,
-      po_number: po_number || null,
+      notes: (notes && notes.trim()) || null,
+      description: (description && description.trim()) || null,
+      po_number: (po_number && po_number.trim()) || null,
       payment_terms: resolvedPaymentTerms,
       accepted_payment_methods: resolvedPaymentMethods,
       terms_and_conditions: resolvedTermsAndConditions,
@@ -219,6 +219,27 @@ exports.update = async (req, res, next) => {
     }
 
     const { items, ...invoiceData } = req.body;
+
+    if ('payment_terms' in invoiceData) {
+      invoiceData.payment_terms = invoiceData.payment_terms && invoiceData.payment_terms.trim() ? invoiceData.payment_terms.trim() : null;
+    }
+    if ('terms_and_conditions' in invoiceData) {
+      invoiceData.terms_and_conditions = invoiceData.terms_and_conditions && invoiceData.terms_and_conditions.trim() ? invoiceData.terms_and_conditions.trim() : null;
+    }
+    if ('notes' in invoiceData) {
+      invoiceData.notes = invoiceData.notes && invoiceData.notes.trim() ? invoiceData.notes.trim() : null;
+    }
+    if ('description' in invoiceData) {
+      invoiceData.description = invoiceData.description && invoiceData.description.trim() ? invoiceData.description.trim() : null;
+    }
+    if ('po_number' in invoiceData) {
+      invoiceData.po_number = invoiceData.po_number && invoiceData.po_number.trim() ? invoiceData.po_number.trim() : null;
+    }
+    if ('accepted_payment_methods' in invoiceData) {
+      invoiceData.accepted_payment_methods = (Array.isArray(invoiceData.accepted_payment_methods) && invoiceData.accepted_payment_methods.length > 0)
+        ? invoiceData.accepted_payment_methods
+        : null;
+    }
 
     if (items) {
       // Recalculate totals

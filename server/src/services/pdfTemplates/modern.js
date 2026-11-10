@@ -150,22 +150,26 @@ const render = (doc, invoice, business, ctx = {}) => {
   const t = totalsOf(invoice);
 
   // Left: Notes / Terms / T&C
-  doc.font(FONT.bold).fontSize(9).fillColor('#111827')
-    .text('NOTES & TERMS:', margin, postTableY);
-  doc.font(FONT.regular).fontSize(8.5).fillColor('#4B5563');
+  const paymentTerms = invoice.payment_terms;
+  const tc = invoice.terms_and_conditions;
+  const hasLeftNotes = Boolean(paymentTerms || invoice.notes || tc);
 
-  const paymentTerms = invoice.payment_terms || business.default_payment_terms;
-  if (paymentTerms) {
-    doc.text(`Terms: ${paymentTerms}`, margin, doc.y + 3, { width: halfW - 20 });
-  }
-  if (invoice.notes) {
-    doc.text(invoice.notes, margin, doc.y + 2, { width: halfW - 20 });
-  }
-  const tc = invoice.terms_and_conditions || business.default_terms_and_conditions;
-  if (tc) {
-    doc.moveDown(0.3);
-    doc.font(FONT.bold).fontSize(8.5).fillColor('#111827').text('Terms & Conditions:', margin, doc.y);
-    doc.font(FONT.regular).fontSize(8).fillColor('#4B5563').text(tc, margin, doc.y, { width: halfW - 20 });
+  if (hasLeftNotes) {
+    doc.font(FONT.bold).fontSize(9).fillColor('#111827')
+      .text('NOTES & TERMS:', margin, postTableY);
+    doc.font(FONT.regular).fontSize(8.5).fillColor('#4B5563');
+
+    if (paymentTerms) {
+      doc.text(`Terms: ${paymentTerms}`, margin, doc.y + 3, { width: halfW - 20 });
+    }
+    if (invoice.notes) {
+      doc.text(invoice.notes, margin, doc.y + 2, { width: halfW - 20 });
+    }
+    if (tc) {
+      doc.moveDown(0.3);
+      doc.font(FONT.bold).fontSize(8.5).fillColor('#111827').text('Terms & Conditions:', margin, doc.y);
+      doc.font(FONT.regular).fontSize(8).fillColor('#4B5563').text(tc, margin, doc.y, { width: halfW - 20 });
+    }
   }
 
   // Right: Totals Box (Bordered grid)
@@ -200,14 +204,12 @@ const render = (doc, invoice, business, ctx = {}) => {
   const bottomY = Math.max(doc.y, doc.page.height - margin - 70);
 
   // Left: Payment Method
-  const payMethods = formatPaymentMethods(invoice.accepted_payment_methods || business.default_payment_methods);
-  doc.font(FONT.bold).fontSize(9).fillColor('#111827')
-    .text('PAYMENT METHODS', margin, bottomY);
-  doc.font(FONT.regular).fontSize(8.5).fillColor('#4B5563');
+  const payMethods = formatPaymentMethods(invoice.accepted_payment_methods);
   if (payMethods) {
+    doc.font(FONT.bold).fontSize(9).fillColor('#111827')
+      .text('PAYMENT METHODS', margin, bottomY);
+    doc.font(FONT.regular).fontSize(8.5).fillColor('#4B5563');
     doc.text(`Accepted: ${payMethods}`, margin, doc.y + 2, { width: halfW - 20 });
-  } else {
-    doc.text(`Bank: Business Account / Cash`, margin, doc.y + 2);
   }
 
   // Right: Prepared By

@@ -111,16 +111,15 @@ const render = (doc, invoice, business) => {
     text('*** PAID ***', { bold: true, align: 'center' });
   }
 
-  const payMethods = formatPaymentMethods(invoice.accepted_payment_methods || business.default_payment_methods);
+  const payMethods = formatPaymentMethods(invoice.accepted_payment_methods);
   if (payMethods) {
     doc.y += 2;
     text(`Payment: ${payMethods}`, { size: L.small, align: 'center' });
   }
 
-  const pTerms = invoice.payment_terms || business.default_payment_terms;
-  if (pTerms) {
+  if (invoice.payment_terms) {
     doc.y += 2;
-    text(`Terms: ${pTerms}`, { size: L.small, align: 'center' });
+    text(`Terms: ${invoice.payment_terms}`, { size: L.small, align: 'center' });
   }
 
   if (invoice.notes) {
@@ -128,10 +127,9 @@ const render = (doc, invoice, business) => {
     text(invoice.notes, { size: L.small, align: 'center' });
   }
 
-  const tc = invoice.terms_and_conditions || business.default_terms_and_conditions;
-  if (tc) {
+  if (invoice.terms_and_conditions) {
     doc.y += 2;
-    text(tc, { size: L.small, align: 'center' });
+    text(invoice.terms_and_conditions, { size: L.small, align: 'center' });
   }
 
   doc.y += 6;

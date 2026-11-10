@@ -48,7 +48,7 @@ export default function InvoicePreviewCard({
 
   const paymentMethods = Array.isArray(invoice.accepted_payment_methods) && invoice.accepted_payment_methods.length > 0
     ? invoice.accepted_payment_methods
-    : (Array.isArray(business?.default_payment_methods) ? business.default_payment_methods : []);
+    : [];
 
   const isBill = invoice.type === 'bill';
 

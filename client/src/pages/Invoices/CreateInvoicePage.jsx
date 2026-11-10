@@ -110,11 +110,11 @@ export default function CreateInvoicePage() {
     notes: '',
     description: '',
     po_number: '',
-    payment_terms: activeBusiness?.default_payment_terms || '',
+    payment_terms: defaultType === 'invoice' ? (activeBusiness?.default_payment_terms || '') : '',
     accepted_payment_methods: Array.isArray(activeBusiness?.default_payment_methods)
       ? activeBusiness.default_payment_methods
       : ['cash'],
-    terms_and_conditions: activeBusiness?.default_terms_and_conditions || '',
+    terms_and_conditions: defaultType === 'invoice' ? (activeBusiness?.default_terms_and_conditions || '') : '',
     shipping_address: { ...EMPTY_SHIPPING },
   });
 
@@ -127,8 +127,8 @@ export default function CreateInvoicePage() {
         const dueDays = getDueDaysForType(prev.type, activeBusiness);
         return {
           ...prev,
-          payment_terms: prev.payment_terms || activeBusiness.default_payment_terms || '',
-          terms_and_conditions: prev.terms_and_conditions || activeBusiness.default_terms_and_conditions || '',
+          payment_terms: prev.type === 'invoice' ? (prev.payment_terms || activeBusiness.default_payment_terms || '') : prev.payment_terms,
+          terms_and_conditions: prev.type === 'invoice' ? (prev.terms_and_conditions || activeBusiness.default_terms_and_conditions || '') : prev.terms_and_conditions,
           accepted_payment_methods: (prev.accepted_payment_methods && prev.accepted_payment_methods.length > 0)
             ? prev.accepted_payment_methods
             : (Array.isArray(activeBusiness.default_payment_methods) ? activeBusiness.default_payment_methods : ['cash']),
@@ -221,9 +221,28 @@ export default function CreateInvoicePage() {
     const nextType = e.target.value;
     setForm((f) => {
       const defaultDueDays = getDueDaysForType(nextType, activeBusiness);
+      let nextPaymentTerms = f.payment_terms;
+      let nextTerms = f.terms_and_conditions;
+      if (nextType === 'bill') {
+        if (f.payment_terms === activeBusiness?.default_payment_terms) {
+          nextPaymentTerms = '';
+        }
+        if (f.terms_and_conditions === activeBusiness?.default_terms_and_conditions) {
+          nextTerms = '';
+        }
+      } else if (nextType === 'invoice') {
+        if (!nextPaymentTerms && activeBusiness?.default_payment_terms) {
+          nextPaymentTerms = activeBusiness.default_payment_terms;
+        }
+        if (!nextTerms && activeBusiness?.default_terms_and_conditions) {
+          nextTerms = activeBusiness.default_terms_and_conditions;
+        }
+      }
       return {
         ...f,
         type: nextType,
+        payment_terms: nextPaymentTerms,
+        terms_and_conditions: nextTerms,
         due_date: calculateDueDate(f.issue_date, defaultDueDays),
       };
     });

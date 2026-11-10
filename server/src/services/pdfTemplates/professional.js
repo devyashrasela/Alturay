@@ -173,28 +173,30 @@ const render = (doc, invoice, business) => {
   doc.y = Math.max(doc.y, boxTop + boxHeight + 15);
 
   // ── Payment Terms / Notes / Terms & Conditions ──
-  const paymentMethodsStr = formatPaymentMethods(invoice.accepted_payment_methods || business.default_payment_methods);
-  const termsText = invoice.payment_terms || business.default_payment_terms;
+  const paymentMethodsStr = formatPaymentMethods(invoice.accepted_payment_methods);
+  const termsText = invoice.payment_terms;
+  const tc = invoice.terms_and_conditions;
+  const hasBottomDetails = Boolean(paymentMethodsStr || termsText || invoice.notes || tc);
 
-  doc.font(FONT.bold).fontSize(9.5).fillColor('#111827')
-    .text('PAYMENT DETAILS', contentLeft, doc.y);
-  doc.font(FONT.regular).fontSize(8.5).fillColor('#4B5563');
+  if (hasBottomDetails) {
+    doc.font(FONT.bold).fontSize(9.5).fillColor('#111827')
+      .text('PAYMENT DETAILS', contentLeft, doc.y);
+    doc.font(FONT.regular).fontSize(8.5).fillColor('#4B5563');
 
-  if (paymentMethodsStr) {
-    doc.text(`Accepted Methods: ${paymentMethodsStr}`, contentLeft, doc.y + 2, { width: pageWidth * 0.65 });
-  }
-  if (termsText) {
-    doc.text(`Terms: ${termsText}`, contentLeft, doc.y + 2, { width: pageWidth * 0.65 });
-  }
-  if (invoice.notes) {
-    doc.text(`Notes: ${invoice.notes}`, contentLeft, doc.y + 2, { width: pageWidth * 0.65 });
-  }
-
-  const tc = invoice.terms_and_conditions || business.default_terms_and_conditions;
-  if (tc) {
-    doc.moveDown(0.3);
-    doc.font(FONT.bold).fontSize(8.5).fillColor('#111827').text('Terms & Conditions:', contentLeft, doc.y);
-    doc.font(FONT.regular).fontSize(8).fillColor('#4B5563').text(tc, contentLeft, doc.y, { width: pageWidth * 0.65 });
+    if (paymentMethodsStr) {
+      doc.text(`Accepted Methods: ${paymentMethodsStr}`, contentLeft, doc.y + 2, { width: pageWidth * 0.65 });
+    }
+    if (termsText) {
+      doc.text(`Terms: ${termsText}`, contentLeft, doc.y + 2, { width: pageWidth * 0.65 });
+    }
+    if (invoice.notes) {
+      doc.text(`Notes: ${invoice.notes}`, contentLeft, doc.y + 2, { width: pageWidth * 0.65 });
+    }
+    if (tc) {
+      doc.moveDown(0.3);
+      doc.font(FONT.bold).fontSize(8.5).fillColor('#111827').text('Terms & Conditions:', contentLeft, doc.y);
+      doc.font(FONT.regular).fontSize(8).fillColor('#4B5563').text(tc, contentLeft, doc.y, { width: pageWidth * 0.65 });
+    }
   }
 
   // ── Signature Lines at bottom ──

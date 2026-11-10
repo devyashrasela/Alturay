@@ -202,13 +202,12 @@ const render = (doc, invoice, business) => {
   doc.y = footerY;
 
   // Bottom left: Payment Info, Terms & Conditions, Notes
-  const paymentMethodsStr = formatPaymentMethods(invoice.accepted_payment_methods || business.default_payment_methods);
-
-  doc.font(FONT.bold).fontSize(9.5).fillColor('#111827')
-    .text('Payment Information', margin, footerY);
-  doc.font(FONT.regular).fontSize(8.5).fillColor('#4B5563');
+  const paymentMethodsStr = formatPaymentMethods(invoice.accepted_payment_methods);
 
   if (paymentMethodsStr) {
+    doc.font(FONT.bold).fontSize(9.5).fillColor('#111827')
+      .text('Payment Information', margin, footerY);
+    doc.font(FONT.regular).fontSize(8.5).fillColor('#4B5563');
     doc.text(`Accepted: ${paymentMethodsStr}`, margin, doc.y, { width: colWidth - 20 });
   }
 
@@ -218,11 +217,10 @@ const render = (doc, invoice, business) => {
     doc.font(FONT.regular).fontSize(8).fillColor('#4B5563').text(invoice.notes, margin, doc.y, { width: colWidth - 20 });
   }
 
-  const terms = invoice.terms_and_conditions || business.default_terms_and_conditions;
-  if (terms) {
+  if (invoice.terms_and_conditions) {
     doc.moveDown(0.4);
     doc.font(FONT.bold).fontSize(8.5).fillColor('#111827').text('Terms & Conditions:', margin, doc.y);
-    doc.font(FONT.regular).fontSize(8).fillColor('#4B5563').text(terms, margin, doc.y, { width: colWidth - 20 });
+    doc.font(FONT.regular).fontSize(8).fillColor('#4B5563').text(invoice.terms_and_conditions, margin, doc.y, { width: colWidth - 20 });
   }
 
   // Bottom right: Business info
