@@ -3957,6 +3957,12 @@ select.form-field__input:disabled {
   gap: var(--space-4);
 }
 
+.form-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--space-4);
+}
+
 .create-inv {
   max-width: 1080px;
   margin: 0 auto;
@@ -5036,6 +5042,7 @@ select.form-field__input:disabled {
   }
 
   .form-grid-2,
+  .form-grid-3,
   .create-inv__cols {
     grid-template-columns: 1fr;
   }

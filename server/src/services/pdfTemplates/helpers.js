@@ -110,6 +110,18 @@ const formatCustomerAddress = (customer) => {
   return customer.formatted_address || null;
 };
 
+const formatBusinessAddress = (business) => {
+  if (!business) return null;
+  const parts = [
+    business.address_line1,
+    business.address_line2,
+    [business.city, business.state].filter(Boolean).join(', '),
+    business.pincode ? `PIN: ${business.pincode}` : null,
+  ].filter(Boolean);
+  if (parts.length > 0) return parts.join('\n');
+  return business.formatted_address || null;
+};
+
 const PAYMENT_LABELS = {
   cash: 'Cash',
   check: 'Check / Cheque',
@@ -138,6 +150,7 @@ module.exports = {
   formatDate,
   totalsOf,
   loadLogo,
+  formatBusinessAddress,
   formatCustomerAddress,
   formatShippingAddress,
   formatPaymentMethods,

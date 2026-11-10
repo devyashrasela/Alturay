@@ -91,7 +91,6 @@ exports.getMe = async (req, res, next) => {
           'email',
           'phone',
           'tax_id',
-          'address',
           'address_line1',
           'address_line2',
           'city',

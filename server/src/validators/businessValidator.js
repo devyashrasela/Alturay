@@ -68,7 +68,6 @@ const updateBusinessSchema = Joi.object({
   email: Joi.string().trim().email().allow('', null),
   phone: Joi.string().trim().max(20).allow('', null),
   tax_id: Joi.string().trim().max(50).allow('', null),
-  address: Joi.string().trim().max(500).allow('', null),
   address_line1: Joi.string().trim().max(255).allow('', null),
   address_line2: Joi.string().trim().max(255).allow('', null),
   city: Joi.string().trim().max(100).allow('', null),

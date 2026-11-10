@@ -32,10 +32,6 @@ module.exports = (sequelize) => {
       type: DataTypes.STRING(50),
       allowNull: true,
     },
-    address: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
     address_line1: {
       type: DataTypes.STRING(255),
       allowNull: true,
@@ -55,6 +51,19 @@ module.exports = (sequelize) => {
     pincode: {
       type: DataTypes.STRING(20),
       allowNull: true,
+    },
+    formatted_address: {
+      type: DataTypes.VIRTUAL,
+      get() {
+        const parts = [
+          this.address_line1,
+          this.address_line2,
+          this.city,
+          this.state,
+          this.pincode,
+        ].filter(Boolean);
+        return parts.length > 0 ? parts.join(', ') : '';
+      },
     },
     currency: {
       type: DataTypes.STRING(10),

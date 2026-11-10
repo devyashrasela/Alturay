@@ -11,7 +11,6 @@ const BUSINESS_ATTRIBUTES = [
   'email',
   'phone',
   'tax_id',
-  'address',
   'address_line1',
   'address_line2',
   'city',
@@ -90,13 +89,6 @@ exports.create = async (req, res, next) => {
       });
     }
 
-    // Compose backward-compatible full address string for invoices and PDFs
-    const compositeAddress = [
-      address_line1,
-      address_line2,
-      `${city}, ${state} - ${pincode}`,
-    ].filter(Boolean).join(', ');
-
     const business = await Business.create({
       name,
       qr_prefix: normalizedPrefix,
@@ -107,7 +99,6 @@ exports.create = async (req, res, next) => {
       city,
       state,
       pincode,
-      address: compositeAddress,
       email,
       phone,
       currency: currency || 'INR',
@@ -191,15 +182,6 @@ exports.update = async (req, res, next) => {
           },
         });
       }
-    }
-
-    if (updates.address_line1 || updates.city || updates.state || updates.pincode) {
-      const line1 = updates.address_line1 || req.business.address_line1;
-      const line2 = updates.address_line2 || req.business.address_line2;
-      const city = updates.city || req.business.city;
-      const state = updates.state || req.business.state;
-      const pincode = updates.pincode || req.business.pincode;
-      updates.address = [line1, line2, `${city}, ${state} - ${pincode}`].filter(Boolean).join(', ');
     }
 
     await req.business.update(updates);

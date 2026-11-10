@@ -1,4 +1,4 @@
-const { MM, FONT, numberFmt, moneyFmt, formatDate, totalsOf, formatCustomerAddress, formatPaymentMethods } = require('./helpers');
+const { MM, FONT, numberFmt, moneyFmt, formatDate, totalsOf, formatBusinessAddress, formatCustomerAddress, formatPaymentMethods } = require('./helpers');
 
 const SIZES = {
   80: { paper: 80, margin: 4 * MM, body: 8.5, small: 7, title: 12, grand: 11 },
@@ -52,7 +52,8 @@ const render = (doc, invoice, business) => {
 
   // Header
   text(business.name, { size: L.title, bold: true, align: 'center' });
-  if (business.address) text(business.address, { size: L.small, align: 'center' });
+  const bizAddr = formatBusinessAddress(business);
+  if (bizAddr) text(bizAddr, { size: L.small, align: 'center' });
   if (business.phone) text(`Ph: ${business.phone}`, { size: L.small, align: 'center' });
   if (business.tax_id) text(`GSTIN: ${business.tax_id}`, { size: L.small, align: 'center' });
   rule();

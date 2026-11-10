@@ -20,9 +20,8 @@ export default function InvoicePreviewCard({
     business?.address_line1,
     business?.address_line2,
     business?.city,
-    business?.state,
-    business?.pincode,
-  ].filter(Boolean).join(', ') || business?.address || '';
+    [business?.state, business?.pincode ? `- ${business?.pincode}` : ''].filter(Boolean).join(' '),
+  ].filter(Boolean).join(', ') || business?.formatted_address || '';
 
   // Format customer billing address
   const customer = invoice.customer;

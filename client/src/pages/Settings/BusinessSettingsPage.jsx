@@ -7,6 +7,7 @@ import Card from '../../components/ui/Card/Card';
 import Button from '../../components/ui/Button/Button';
 import FormField from '../../components/ui/FormField/FormField';
 import InputField from '../../components/ui/Input/InputField';
+import SearchableStateDropdown from '../../components/ui/Select/SearchableStateDropdown';
 
 export default function BusinessSettingsPage() {
   const dispatch = useDispatch();
@@ -17,7 +18,11 @@ export default function BusinessSettingsPage() {
     email: '',
     phone: '',
     tax_id: '',
-    address: '',
+    address_line1: '',
+    address_line2: '',
+    city: '',
+    state: '',
+    pincode: '',
     currency: 'INR',
   });
 
@@ -28,7 +33,11 @@ export default function BusinessSettingsPage() {
         email: activeBusiness.email || '',
         phone: activeBusiness.phone || '',
         tax_id: activeBusiness.tax_id || '',
-        address: activeBusiness.address || '',
+        address_line1: activeBusiness.address_line1 || '',
+        address_line2: activeBusiness.address_line2 || '',
+        city: activeBusiness.city || '',
+        state: activeBusiness.state || '',
+        pincode: activeBusiness.pincode || '',
         currency: activeBusiness.currency || 'INR',
       });
     }
@@ -79,9 +88,56 @@ export default function BusinessSettingsPage() {
           <FormField label="Tax ID / GST Number">
             <InputField id="s-tax" value={form.tax_id} onChange={setField('tax_id')} placeholder="22AAAAA0000A1Z5" />
           </FormField>
-          <FormField label="Address">
-            <InputField textarea id="s-addr" value={form.address} onChange={setField('address')} placeholder="Full business address…" style={{ minHeight: 80 }} />
-          </FormField>
+
+          {/* ── Business Address ── */}
+          <div style={{ marginTop: 'var(--space-3)', marginBottom: 'var(--space-2)' }}>
+            <h4 style={{ margin: '0 0 var(--space-3)', fontSize: 13, fontWeight: 600, color: 'var(--color-text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              Business Address
+            </h4>
+            <FormField label="Address line 1" required>
+              <InputField
+                id="s-line1"
+                value={form.address_line1}
+                onChange={setField('address_line1')}
+                placeholder="Shop/Floor/Building number, Street name"
+              />
+            </FormField>
+            <FormField label="Address line 2">
+              <InputField
+                id="s-line2"
+                value={form.address_line2}
+                onChange={setField('address_line2')}
+                placeholder="Area, Locality or Landmark"
+              />
+            </FormField>
+            <div className="form-grid-3">
+              <FormField label="City" required>
+                <InputField
+                  id="s-city"
+                  value={form.city}
+                  onChange={setField('city')}
+                  placeholder="City / District"
+                />
+              </FormField>
+              <FormField label="State" required>
+                <SearchableStateDropdown
+                  id="s-state"
+                  value={form.state}
+                  onChange={(val) => setForm((f) => ({ ...f, state: val }))}
+                  placeholder="Select State"
+                />
+              </FormField>
+              <FormField label="Pin code" required>
+                <InputField
+                  id="s-pincode"
+                  value={form.pincode}
+                  onChange={setField('pincode')}
+                  placeholder="e.g. 110001"
+                />
+              </FormField>
+            </div>
+          </div>
+
           <FormField label="Default currency">
             <InputField id="s-currency" value={form.currency} onChange={setField('currency')} placeholder="INR" />
           </FormField>

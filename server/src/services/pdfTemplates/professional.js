@@ -1,4 +1,4 @@
-const { FONT, numberFmt, moneyFmt, formatDate, totalsOf, formatCustomerAddress, formatShippingAddress, formatPaymentMethods } = require('./helpers');
+const { FONT, numberFmt, moneyFmt, formatDate, totalsOf, formatBusinessAddress, formatCustomerAddress, formatShippingAddress, formatPaymentMethods } = require('./helpers');
 
 const pageOptions = () => ({
   size: 'A4',
@@ -87,7 +87,8 @@ const render = (doc, invoice, business) => {
   doc.font(FONT.bold).fontSize(13).fillColor('#111827')
     .text(business.name, compX, doc.y + 2);
   doc.font(FONT.regular).fontSize(9).fillColor('#4B5563');
-  if (business.address) doc.text(business.address, compX, doc.y, { width: halfW });
+  const bizAddr = formatBusinessAddress(business);
+  if (bizAddr) doc.text(bizAddr, compX, doc.y, { width: halfW });
   if (business.phone) doc.text(`Phone: ${business.phone}`, compX, doc.y);
   if (business.email) doc.text(`Email: ${business.email}`, compX, doc.y);
   if (business.tax_id) doc.text(`Tax ID: ${business.tax_id}`, compX, doc.y);
