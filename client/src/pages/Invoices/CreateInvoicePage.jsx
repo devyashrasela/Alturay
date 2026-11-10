@@ -47,11 +47,19 @@ const localDate = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
 
+const getDueDaysForType = (type, business) => {
+  if (type === 'bill') {
+    return business?.default_bill_due_days != null ? Number(business.default_bill_due_days) : 0;
+  }
+  return business?.default_due_days != null ? Number(business.default_due_days) : 15;
+};
+
 const calculateDueDate = (issueDateStr, dueDays) => {
-  if (!issueDateStr || dueDays == null || dueDays === '') return '';
+  if (!issueDateStr) return '';
+  const days = Number(dueDays) || 0;
   const d = new Date(issueDateStr);
   if (isNaN(d.getTime())) return '';
-  d.setDate(d.getDate() + parseInt(dueDays, 10));
+  d.setDate(d.getDate() + days);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 };
 
@@ -86,7 +94,8 @@ export default function CreateInvoicePage() {
   const [showShippingAddress, setShowShippingAddress] = useState(false);
 
   const initialIssueDate = localDate();
-  const initialDueDate = calculateDueDate(initialIssueDate, activeBusiness?.default_due_days);
+  const initialDueDays = getDueDaysForType(defaultType, activeBusiness);
+  const initialDueDate = calculateDueDate(initialIssueDate, initialDueDays);
 
   const [form, setForm] = useState({
     type: defaultType,
@@ -111,18 +120,21 @@ export default function CreateInvoicePage() {
 
   const [items, setItems] = useState([{ ...EMPTY_ITEM }]);
 
-  // Sync defaults when activeBusiness loads (if in create mode and not yet touched)
+  // Sync defaults when activeBusiness loads (if in create mode and fields not yet customized)
   useEffect(() => {
     if (!isEditMode && activeBusiness) {
-      setForm((prev) => ({
-        ...prev,
-        payment_terms: prev.payment_terms || activeBusiness.default_payment_terms || '',
-        terms_and_conditions: prev.terms_and_conditions || activeBusiness.default_terms_and_conditions || '',
-        accepted_payment_methods: (prev.accepted_payment_methods && prev.accepted_payment_methods.length > 0)
-          ? prev.accepted_payment_methods
-          : (Array.isArray(activeBusiness.default_payment_methods) ? activeBusiness.default_payment_methods : ['cash']),
-        due_date: prev.due_date || calculateDueDate(prev.issue_date, activeBusiness.default_due_days),
-      }));
+      setForm((prev) => {
+        const dueDays = getDueDaysForType(prev.type, activeBusiness);
+        return {
+          ...prev,
+          payment_terms: prev.payment_terms || activeBusiness.default_payment_terms || '',
+          terms_and_conditions: prev.terms_and_conditions || activeBusiness.default_terms_and_conditions || '',
+          accepted_payment_methods: (prev.accepted_payment_methods && prev.accepted_payment_methods.length > 0)
+            ? prev.accepted_payment_methods
+            : (Array.isArray(activeBusiness.default_payment_methods) ? activeBusiness.default_payment_methods : ['cash']),
+          due_date: prev.due_date || calculateDueDate(prev.issue_date, dueDays),
+        };
+      });
     }
   }, [activeBusiness, isEditMode]);
 
@@ -204,15 +216,35 @@ export default function CreateInvoicePage() {
     discount_percent: form.discount_percent,
   });
 
+  // Handle document type change (automatically recomputes due date according to settings)
+  const handleTypeChange = (e) => {
+    const nextType = e.target.value;
+    setForm((f) => {
+      const defaultDueDays = getDueDaysForType(nextType, activeBusiness);
+      return {
+        ...f,
+        type: nextType,
+        due_date: calculateDueDate(f.issue_date, defaultDueDays),
+      };
+    });
+  };
+
+  // Handle issue date change (automatically updates due date)
+  const handleIssueDateChange = (e) => {
+    const nextIssue = e.target.value;
+    setForm((f) => {
+      const defaultDueDays = getDueDaysForType(f.type, activeBusiness);
+      return {
+        ...f,
+        issue_date: nextIssue,
+        due_date: calculateDueDate(nextIssue, defaultDueDays),
+      };
+    });
+  };
+
   const setField = (field) => (e) => {
     const val = e.target.value;
-    setForm((f) => {
-      const next = { ...f, [field]: val };
-      if (field === 'issue_date' && !isEditMode && activeBusiness?.default_due_days) {
-        next.due_date = calculateDueDate(val, activeBusiness.default_due_days);
-      }
-      return next;
-    });
+    setForm((f) => ({ ...f, [field]: val }));
   };
 
   const setShippingField = (field, value) => {
@@ -235,6 +267,7 @@ export default function CreateInvoicePage() {
     });
   };
 
+  // Pick up customer details directly from the selected customer in database
   const handleCustomerSelect = (customer) => {
     setSelectedCustomer(customer);
     setCustomerError('');
@@ -244,7 +277,7 @@ export default function CreateInvoicePage() {
         customer_id: customer.id,
         customer_name: customer.name,
         customer_phone: customer.phone || '',
-        customer_email: customer.email || f.customer_email || '',
+        customer_email: customer.email || '',
       }));
     } else {
       setForm((f) => ({
@@ -383,7 +416,8 @@ export default function CreateInvoicePage() {
     }
   };
 
-  const typeLabel = form.type === 'invoice' ? 'Invoice' : 'Bill';
+  const isBill = form.type === 'bill';
+  const typeLabel = isBill ? 'Bill' : 'Invoice';
 
   if (isEditMode && loadingInvoice) {
     return (
@@ -397,9 +431,24 @@ export default function CreateInvoicePage() {
     <div className="create-inv">
       <div className="page-header">
         <div>
-          <h2 className="page-header__title">
-            {isEditMode ? `Edit ${typeLabel} (${existingInvoice?.invoice_number || ''})` : `Create ${typeLabel}`}
-          </h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <h2 className="page-header__title">
+              {isEditMode ? `Edit ${typeLabel} (${existingInvoice?.invoice_number || ''})` : `Create ${typeLabel}`}
+            </h2>
+            <span
+              style={{
+                fontSize: 12,
+                fontWeight: 600,
+                textTransform: 'uppercase',
+                padding: '2px 8px',
+                borderRadius: 4,
+                background: isBill ? 'rgba(16, 185, 129, 0.12)' : 'var(--color-primary-subtle, rgba(59, 130, 246, 0.12))',
+                color: isBill ? '#10b981' : 'var(--color-primary)',
+              }}
+            >
+              {isBill ? 'Cash / POS Bill' : 'Credit Invoice'}
+            </span>
+          </div>
           <p className="page-header__sub">for {activeBusiness?.name}</p>
         </div>
         <div className="page-header__actions">
@@ -411,25 +460,49 @@ export default function CreateInvoicePage() {
 
       <form onSubmit={handleSubmit}>
         <div className="create-inv__cols">
-          {/* Left: Invoice Meta */}
+          {/* Left: Document Meta */}
           <Card>
             <h3 className="form-section__title">{typeLabel} Details</h3>
             <div className="form-stack">
               <FormField label="Type" htmlFor="inv-type">
-                <SelectDropdown id="inv-type" value={form.type} onChange={setField('type')}>
-                  <option value="invoice">Invoice</option>
-                  <option value="bill">Bill</option>
+                <SelectDropdown id="inv-type" value={form.type} onChange={handleTypeChange}>
+                  <option value="invoice">Invoice (Credit terms)</option>
+                  <option value="bill">Bill (Cash / Immediate)</option>
                 </SelectDropdown>
               </FormField>
-              <FormField label="Issue date" htmlFor="inv-issue" required>
-                <InputField id="inv-issue" type="date" value={form.issue_date} onChange={setField('issue_date')} />
-              </FormField>
-              <FormField label="Due date" htmlFor="inv-due">
-                <InputField id="inv-due" type="date" value={form.due_date} onChange={setField('due_date')} />
-              </FormField>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <FormField label="Issue date" htmlFor="inv-issue" required>
+                  <InputField
+                    id="inv-issue"
+                    type="date"
+                    value={form.issue_date}
+                    onChange={handleIssueDateChange}
+                  />
+                </FormField>
+                <FormField
+                  label="Due date"
+                  htmlFor="inv-due"
+                  helper={isBill ? 'Default: Immediate' : `Default: Net ${getDueDaysForType('invoice', activeBusiness)}d`}
+                >
+                  <InputField
+                    id="inv-due"
+                    type="date"
+                    value={form.due_date}
+                    onChange={setField('due_date')}
+                  />
+                </FormField>
+              </div>
+
               <FormField label="PO Number" htmlFor="inv-po">
-                <InputField id="inv-po" placeholder="e.g. PO-2026-001" value={form.po_number} onChange={setField('po_number')} />
+                <InputField
+                  id="inv-po"
+                  placeholder="e.g. PO-2026-001"
+                  value={form.po_number}
+                  onChange={setField('po_number')}
+                />
               </FormField>
+
               <FormField label="Subject / Description" htmlFor="inv-desc">
                 <InputField
                   textarea
@@ -446,13 +519,14 @@ export default function CreateInvoicePage() {
           {/* Right: Customer & Shipping */}
           <Card>
             <h3 className="form-section__title">
-              {form.type === 'invoice' ? 'Customer Details *' : 'Customer / Vendor Details'}
+              {!isBill ? 'Customer Details *' : 'Customer / Vendor Details'}
             </h3>
             <div className="form-stack">
               <FormField
                 label="Customer"
-                required={form.type === 'invoice'}
+                required={!isBill}
                 error={customerError}
+                helper={!isBill ? 'Email and phone are retrieved automatically from saved customer details.' : ''}
               >
                 <CustomerSelectDropdown
                   businessId={activeBusinessId}
@@ -460,36 +534,53 @@ export default function CreateInvoicePage() {
                   onChange={handleCustomerSelect}
                   error={customerError}
                   placeholder={
-                    form.type === 'invoice'
+                    !isBill
                       ? 'Select or add customer (required)…'
-                      : 'Search existing customer or enter below…'
+                      : 'Search existing customer or enter walk-in below…'
                   }
                 />
               </FormField>
 
-              <FormField label="Customer Email" htmlFor="cust-email">
-                <InputField
-                  id="cust-email"
-                  type="email"
-                  placeholder="billing@customer.com"
-                  value={form.customer_email}
-                  onChange={setField('customer_email')}
-                />
-              </FormField>
+              {/* Read-only customer details badge automatically populated from database */}
+              {selectedCustomer && (
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 3,
+                    padding: '8px 12px',
+                    borderRadius: 'var(--radius-md, 6px)',
+                    background: 'var(--color-bg-muted, rgba(255, 255, 255, 0.04))',
+                    border: '1px solid var(--color-border)',
+                    fontSize: 12,
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontWeight: 600, color: 'var(--color-text-primary)' }}>{selectedCustomer.name}</span>
+                    {selectedCustomer.phone && <span style={{ color: 'var(--color-text-muted)' }}>{selectedCustomer.phone}</span>}
+                  </div>
+                  {selectedCustomer.email && (
+                    <span style={{ color: 'var(--color-primary)' }}>{selectedCustomer.email}</span>
+                  )}
+                  {selectedCustomer.formatted_address && (
+                    <span style={{ color: 'var(--color-text-muted)', fontSize: 11 }}>{selectedCustomer.formatted_address}</span>
+                  )}
+                </div>
+              )}
 
-              {form.type === 'bill' && !selectedCustomer && (
+              {isBill && !selectedCustomer && (
                 <>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '4px 0' }}>
-                    <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
-                    <span style={{ fontSize: 11, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                      or walk-in entry
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '2px 0' }}>
+                    <div style={{ flex: 1, height: 1, background: 'var(--color-border)' }} />
+                    <span style={{ fontSize: 11, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                      or walk-in customer
                     </span>
-                    <div style={{ flex: 1, height: 1, background: 'var(--border)' }} />
+                    <div style={{ flex: 1, height: 1, background: 'var(--color-border)' }} />
                   </div>
                   <FormField label="Customer / Vendor name" htmlFor="cust-name" required>
                     <InputField
                       id="cust-name"
-                      placeholder="e.g. Cash Customer / Walk-in Vendor"
+                      placeholder="e.g. Cash Customer / Walk-in"
                       value={form.customer_name}
                       onChange={setField('customer_name')}
                     />
@@ -580,7 +671,7 @@ export default function CreateInvoicePage() {
           </Card>
         </div>
 
-        {/* Line Items */}
+        {/* Line Items: Description BESIDE Product */}
         <Card className="create-inv__card">
           <div className="create-inv__items-head">
             <h3 className="form-section__title" style={{ marginBottom: 0 }}>Line Items</h3>
@@ -592,7 +683,7 @@ export default function CreateInvoicePage() {
           <div className="create-inv__item-list">
             {/* Header row (desktop only) */}
             <div className="inv-item-grid inv-item-grid--head">
-              {['Item / Product', 'Price', 'Qty', 'Disc %', 'Tax %', 'Total', ''].map((h, i) => (
+              {['Item / Product', 'Description', 'Price', 'Qty', 'Disc %', 'Tax %', 'Total', ''].map((h, i) => (
                 <span key={i} className="section-label">{h}</span>
               ))}
             </div>
@@ -601,7 +692,9 @@ export default function CreateInvoicePage() {
               const calc = totals.items[i] || {};
               return (
                 <div className="inv-item-grid" key={i}>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {/* 1. Item / Product */}
+                  <div className="inv-item-field">
+                    <span className="inv-item-field__label">Item / Product</span>
                     <SearchableProductDropdown
                       id={`item-prod-${i}`}
                       products={products}
@@ -610,13 +703,21 @@ export default function CreateInvoicePage() {
                       itemName={item.item_name}
                       onChange={(selection) => handleSelectItem(i, selection)}
                     />
+                  </div>
+
+                  {/* 2. Item Description beside product */}
+                  <div className="inv-item-field">
+                    <span className="inv-item-field__label">Description</span>
                     <InputField
-                      placeholder="Item description (optional)…"
+                      placeholder="Description / details…"
+                      aria-label="Item description"
                       value={item.description || ''}
                       onChange={setItemField(i, 'description')}
-                      style={{ height: 28, fontSize: 12, padding: '2px 8px' }}
+                      style={{ height: 36, fontSize: 13 }}
                     />
                   </div>
+
+                  {/* 3. Price */}
                   <div className="inv-item-field">
                     <span className="inv-item-field__label">Price</span>
                     <InputField
@@ -628,6 +729,8 @@ export default function CreateInvoicePage() {
                       style={{ height: 36, fontSize: 13 }}
                     />
                   </div>
+
+                  {/* 4. Qty */}
                   <div className="inv-item-field">
                     <span className="inv-item-field__label">Qty</span>
                     <InputField
@@ -639,6 +742,8 @@ export default function CreateInvoicePage() {
                       style={{ height: 36, fontSize: 13 }}
                     />
                   </div>
+
+                  {/* 5. Disc % */}
                   <div className="inv-item-field">
                     <span className="inv-item-field__label">Disc %</span>
                     <InputField
@@ -651,6 +756,8 @@ export default function CreateInvoicePage() {
                       style={{ height: 36, fontSize: 13 }}
                     />
                   </div>
+
+                  {/* 6. Tax % */}
                   <div className="inv-item-field">
                     <span className="inv-item-field__label">Tax %</span>
                     <InputField
@@ -663,12 +770,16 @@ export default function CreateInvoicePage() {
                       style={{ height: 36, fontSize: 13 }}
                     />
                   </div>
+
+                  {/* 7. Line Total */}
                   <div className="inv-item-field">
                     <span className="inv-item-field__label">Total</span>
                     <div className="inv-item__total num">
                       {formatCurrency(calc.line_total || 0, activeBusiness?.currency)}
                     </div>
                   </div>
+
+                  {/* 8. Delete */}
                   <Button
                     type="button"
                     variant="ghost"
@@ -678,7 +789,7 @@ export default function CreateInvoicePage() {
                     disabled={items.length === 1}
                     style={{ color: 'var(--color-danger)', padding: 4 }}
                   >
-                    <Trash2 size={14} />
+                    <Trash2 size={15} />
                   </Button>
                 </div>
               );
@@ -735,7 +846,7 @@ export default function CreateInvoicePage() {
               <FormField label="Payment Terms" htmlFor="inv-pterms">
                 <InputField
                   id="inv-pterms"
-                  placeholder="e.g. Net 30, Due upon receipt"
+                  placeholder={isBill ? 'e.g. Due upon receipt' : 'e.g. Net 15, Net 30, Due on receipt'}
                   value={form.payment_terms}
                   onChange={setField('payment_terms')}
                 />

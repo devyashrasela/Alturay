@@ -106,6 +106,12 @@ module.exports = (sequelize) => {
     default_due_days: {
       type: DataTypes.INTEGER,
       allowNull: true,
+      defaultValue: 15,
+    },
+    default_bill_due_days: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      defaultValue: 0,
     },
   }, {
     tableName: 'businesses',

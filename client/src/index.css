@@ -3958,7 +3958,7 @@ select.form-field__input:disabled {
 }
 
 .create-inv {
-  max-width: 900px;
+  max-width: 1080px;
   margin: 0 auto;
 }
 
@@ -4052,7 +4052,7 @@ select.form-field__input:disabled {
 
 .inv-item-grid {
   display: grid;
-  grid-template-columns: 2fr 1fr 72px 64px 64px 96px 36px;
+  grid-template-columns: minmax(170px, 2fr) minmax(170px, 2fr) 95px 65px 65px 65px 95px 36px;
   gap: var(--space-2);
   align-items: center;
 }
@@ -5042,9 +5042,14 @@ select.form-field__input:disabled {
 
   .inv-item-grid {
     grid-template-columns: 1fr 1fr;
+    gap: var(--space-3) var(--space-2);
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md, 6px);
   }
 
-  .inv-item-grid> :first-child {
+  .inv-item-grid > :nth-child(1),
+  .inv-item-grid > :nth-child(2) {
     grid-column: 1 / -1;
   }
 

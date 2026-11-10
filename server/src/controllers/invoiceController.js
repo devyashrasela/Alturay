@@ -89,10 +89,13 @@ exports.create = async (req, res, next) => {
       : (business.default_terms_and_conditions || null);
 
     let resolvedDueDate = due_date || null;
-    if (!resolvedDueDate && business.default_due_days && issue_date) {
+    if (!resolvedDueDate && issue_date) {
+      const dueDays = type === 'bill'
+        ? (business.default_bill_due_days != null ? business.default_bill_due_days : 0)
+        : (business.default_due_days != null ? business.default_due_days : 15);
       const issueD = new Date(issue_date);
       if (!isNaN(issueD.getTime())) {
-        issueD.setDate(issueD.getDate() + business.default_due_days);
+        issueD.setDate(issueD.getDate() + dueDays);
         resolvedDueDate = issueD.toISOString().split('T')[0];
       }
     }

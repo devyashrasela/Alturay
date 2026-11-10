@@ -26,6 +26,7 @@ const BUSINESS_ATTRIBUTES = [
   'default_payment_terms',
   'default_terms_and_conditions',
   'default_due_days',
+  'default_bill_due_days',
   'created_at',
 ];
 
