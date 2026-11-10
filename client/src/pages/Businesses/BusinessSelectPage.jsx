@@ -67,8 +67,23 @@ export default function BusinessSelectPage() {
               className="biz-card"
               onClick={() => handleSelect(biz)}
             >
-              <div className={`biz-card__icon ${businessAccent(biz.name)}`}>
-                {biz.name?.charAt(0).toUpperCase()}
+              <div className={`biz-card__icon ${!biz.logo_url ? businessAccent(biz.name) : 'biz-card__icon--logo'}`}>
+                {biz.logo_url ? (
+                  <img
+                    src={biz.logo_url}
+                    alt=""
+                    className="biz-card__img"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      if (e.currentTarget.parentElement) {
+                        e.currentTarget.parentElement.textContent = biz.name?.charAt(0).toUpperCase() || 'B';
+                        e.currentTarget.parentElement.className = `biz-card__icon ${businessAccent(biz.name)}`;
+                      }
+                    }}
+                  />
+                ) : (
+                  biz.name?.charAt(0).toUpperCase()
+                )}
               </div>
               <div className="biz-card__body">
                 <div className="biz-card__name">{biz.name}</div>

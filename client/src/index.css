@@ -3853,6 +3853,21 @@ select.form-field__input:disabled {
   font-size: 17px;
   flex-shrink: 0;
   border: none;
+  overflow: hidden;
+}
+
+.biz-card__icon--logo {
+  background: var(--color-bg-muted);
+  border: 1px solid var(--color-border);
+  padding: 0;
+}
+
+.biz-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  display: block;
 }
 
 .biz-card__body {

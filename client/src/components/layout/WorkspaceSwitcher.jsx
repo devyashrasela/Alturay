@@ -59,7 +59,23 @@ export default function WorkspaceSwitcher() {
         aria-controls="wsMenu"
         onClick={() => setOpen((prev) => !prev)}
       >
-        <span className="tile">{activeInitial}</span>
+        <span className="tile" style={{ overflow: 'hidden' }}>
+          {activeBusiness.logo_url ? (
+            <img
+              src={activeBusiness.logo_url}
+              alt=""
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                if (e.currentTarget.parentElement) {
+                  e.currentTarget.parentElement.textContent = activeInitial;
+                }
+              }}
+            />
+          ) : (
+            activeInitial
+          )}
+        </span>
         <span>{activeBusiness.name}</span>
         <Icon name="chev" size={14} />
       </button>
@@ -79,7 +95,23 @@ export default function WorkspaceSwitcher() {
                 type="button"
                 onClick={() => handleSwitch(b)}
               >
-                <span className="tile">{initial}</span>
+                <span className="tile" style={{ overflow: 'hidden' }}>
+                  {b.logo_url ? (
+                    <img
+                      src={b.logo_url}
+                      alt=""
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      onError={(e) => {
+                        e.currentTarget.style.display = 'none';
+                        if (e.currentTarget.parentElement) {
+                          e.currentTarget.parentElement.textContent = initial;
+                        }
+                      }}
+                    />
+                  ) : (
+                    initial
+                  )}
+                </span>
                 <span>{b.name}</span>
                 {isCurrent && (
                   <Icon name="check" size={14} style={{ marginLeft: 'auto' }} />
