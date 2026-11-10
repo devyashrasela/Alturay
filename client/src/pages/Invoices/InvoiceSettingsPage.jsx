@@ -1,11 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   FileText,
   Receipt,
   CreditCard,
   ShieldCheck,
-  ChevronDown,
   Check,
   Loader2,
 } from 'lucide-react';
@@ -13,80 +12,64 @@ import { useUpdateBusinessMutation } from '../../store/api/businessApi';
 import { updateBusinessInList, setActiveBusiness } from '../../store/slices/businessSlice';
 import { addToast } from '../../store/slices/uiSlice';
 import { PAYMENT_METHODS } from '../../constants/paymentMethods';
+import SearchableSelectDropdown from '../../components/ui/Select/SearchableSelectDropdown';
 import './InvoiceSettingsPage.css';
 
-const PRESET_DUE_DAYS = [0, 2, 7, 10, 15, 30];
+const PRESET_DUE_DAYS = [0, 2, 7, 10, 15];
 
-function DuePeriodSelect({
+function DuePeriodField({
   id,
   value,
   onChange,
   isInvoice = false,
-  presets = PRESET_DUE_DAYS,
 }) {
   const numVal = value !== '' && value != null ? Number(value) : 0;
-  const isPreset = presets.includes(numVal);
-  const [isCustomMode, setIsCustomMode] = useState(!isPreset);
+  const isPreset = PRESET_DUE_DAYS.includes(numVal);
+  const [isCustom, setIsCustom] = useState(!isPreset);
 
-  // Sync custom mode if incoming value is not one of presets
   useEffect(() => {
-    if (!presets.includes(numVal)) {
-      setIsCustomMode(true);
+    if (!PRESET_DUE_DAYS.includes(numVal)) {
+      setIsCustom(true);
     }
-  }, [numVal, presets]);
+  }, [numVal]);
 
-  const handleSelectChange = (e) => {
-    const selected = e.target.value;
-    if (selected === 'custom') {
-      setIsCustomMode(true);
+  const options = [
+    {
+      value: 0,
+      label: isInvoice
+        ? 'On Receipt / Immediate (0 days)'
+        : 'Immediate / On Receipt (0 days)',
+    },
+    { value: 2, label: isInvoice ? 'Net 2 days' : '2 days' },
+    { value: 7, label: isInvoice ? 'Net 7 days' : '7 days' },
+    { value: 10, label: isInvoice ? 'Net 10 days' : '10 days' },
+    { value: 15, label: isInvoice ? 'Net 15 days' : '15 days' },
+    { value: 'custom', label: 'Custom days...' },
+  ];
+
+  const handleDropdownChange = (val) => {
+    if (val === 'custom') {
+      setIsCustom(true);
     } else {
-      setIsCustomMode(false);
-      onChange(Number(selected));
+      setIsCustom(false);
+      onChange(Number(val));
     }
   };
 
-  const handleCustomInputChange = (e) => {
-    const raw = e.target.value;
-    if (raw === '') {
-      onChange('');
-    } else {
-      const parsed = Math.min(365, Math.max(0, parseInt(raw, 10) || 0));
-      onChange(parsed);
-    }
-  };
-
-  const selectValue = isCustomMode ? 'custom' : String(numVal);
+  const selectedDropdownValue = isCustom ? 'custom' : numVal;
 
   return (
     <div className="due-period-picker">
-      <div className="due-select-wrap">
-        <select
-          id={id}
-          className="due-select"
-          value={selectValue}
-          onChange={handleSelectChange}
-        >
-          {presets.map((days) => {
-            let label = '';
-            if (days === 0) {
-              label = isInvoice
-                ? 'On Receipt / Immediate (0 days)'
-                : 'Immediate / On Receipt (0 days)';
-            } else {
-              label = isInvoice ? `Net ${days} days` : `${days} days`;
-            }
-            return (
-              <option key={days} value={String(days)}>
-                {label}
-              </option>
-            );
-          })}
-          <option value="custom">Custom days...</option>
-        </select>
-        <ChevronDown size={16} className="due-select-wrap__icon" aria-hidden="true" />
-      </div>
+      <SearchableSelectDropdown
+        id={id}
+        value={selectedDropdownValue}
+        onChange={handleDropdownChange}
+        options={options}
+        placeholder="Select default due period..."
+        searchPlaceholder="Search days (e.g. 2, 7, 10, 15, custom)..."
+      />
 
-      {isCustomMode && (
+      {isCustom && (
         <div className="due-custom-wrap">
           <input
             id={`${id}-custom`}
@@ -96,7 +79,15 @@ function DuePeriodSelect({
             className="due-custom-input"
             placeholder="Enter custom days (0–365)"
             value={value}
-            onChange={handleCustomInputChange}
+            onChange={(e) => {
+              const raw = e.target.value;
+              if (raw === '') {
+                onChange('');
+              } else {
+                const parsed = Math.min(365, Math.max(0, parseInt(raw, 10) || 0));
+                onChange(parsed);
+              }
+            }}
             autoFocus
           />
           <span className="due-custom-suffix">days from issue date</span>
@@ -223,7 +214,7 @@ export default function InvoiceSettingsPage() {
                 <label className="inv-field-label" htmlFor="inv-due-select">
                   Default Due Period
                 </label>
-                <DuePeriodSelect
+                <DuePeriodField
                   id="inv-due-select"
                   value={form.default_due_days}
                   onChange={(days) => setForm((f) => ({ ...f, default_due_days: days }))}
@@ -272,7 +263,7 @@ export default function InvoiceSettingsPage() {
                 <label className="inv-field-label" htmlFor="bill-due-select">
                   Default Due Period
                 </label>
-                <DuePeriodSelect
+                <DuePeriodField
                   id="bill-due-select"
                   value={form.default_bill_due_days}
                   onChange={(days) => setForm((f) => ({ ...f, default_bill_due_days: days }))}
