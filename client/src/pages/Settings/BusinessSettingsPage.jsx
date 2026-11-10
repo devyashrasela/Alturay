@@ -198,7 +198,6 @@ export default function BusinessSettingsPage() {
 
           {/* 2. BUSINESS INFORMATION */}
           <BusinessInfoCard
-            business={activeBusiness}
             formData={formData}
             isEditing={activeEditCard === 'c-info'}
             onEdit={handleEdit}

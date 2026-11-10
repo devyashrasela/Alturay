@@ -1,8 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
-import { Building2, Pencil, Copy, Check } from 'lucide-react';
+import { useRef, useEffect } from 'react';
+import { Building2, Pencil } from 'lucide-react';
 
 export default function BusinessInfoCard({
-  business,
   formData,
   isEditing,
   onEdit,
@@ -12,7 +11,6 @@ export default function BusinessInfoCard({
   onChangeField,
   focusFieldId,
 }) {
-  const [copied, setCopied] = useState(false);
   const firstInputRef = useRef(null);
 
   useEffect(() => {
@@ -24,14 +22,6 @@ export default function BusinessInfoCard({
       }
     }
   }, [isEditing, focusFieldId]);
-
-  const handleCopyId = () => {
-    if (business?.id && navigator.clipboard) {
-      navigator.clipboard.writeText(business.id);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    }
-  };
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
@@ -76,24 +66,6 @@ export default function BusinessInfoCard({
               <li className="brow">
                 <span className="bk">Business name</span>
                 <span className="bv">{formData.name || '—'}</span>
-              </li>
-
-              <li className="brow">
-                <span className="bk">Business ID</span>
-                <span className="bv bv--row">
-                  <span className="mono">{business?.id || '—'}</span>
-                  {business?.id && (
-                    <button
-                      type="button"
-                      className={`bcopy ${copied ? 'ok' : ''}`}
-                      onClick={handleCopyId}
-                      aria-label="Copy business ID"
-                      title={copied ? 'Copied!' : 'Copy business ID'}
-                    >
-                      {copied ? <Check size={15} /> : <Copy size={15} />}
-                    </button>
-                  )}
-                </span>
               </li>
 
               <li className="brow">
@@ -168,17 +140,6 @@ export default function BusinessInfoCard({
                   onChange={(e) => onChangeField('name', e.target.value)}
                   required
                 />
-              </div>
-
-              <div className="bfield">
-                <label htmlFor="i-id">Business ID</label>
-                <input
-                  className="binput mono"
-                  id="i-id"
-                  value={business?.id || ''}
-                  readOnly
-                />
-                <span className="bhelp">Assigned automatically. It can’t be changed.</span>
               </div>
 
               <div className="bfield">
