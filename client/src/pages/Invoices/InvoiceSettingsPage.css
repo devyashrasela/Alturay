@@ -41,7 +41,8 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 24px;
   width: 100%;
-  overflow: visible;
+  overflow: visible !important;
+  position: relative;
 }
 
 @media (max-width: 860px) {
@@ -61,12 +62,18 @@
   display: flex;
   flex-direction: column;
   transition: border-color 0.15s ease;
-  overflow: visible;
+  overflow: visible !important;
   position: relative;
+  z-index: 1;
 }
 
 .inv-settings-card:hover {
   border-color: var(--icon);
+}
+
+.inv-settings-card:focus-within,
+.inv-settings-card:has(.searchable-select--open) {
+  z-index: 40;
 }
 
 .inv-settings-card__head {
@@ -141,7 +148,8 @@
   flex-direction: column;
   gap: 20px;
   width: 100%;
-  overflow: visible;
+  overflow: visible !important;
+  position: relative;
 }
 
 .inv-field {
@@ -150,7 +158,12 @@
   gap: 7px;
   width: 100%;
   position: relative;
-  overflow: visible;
+  overflow: visible !important;
+}
+
+.inv-field:focus-within,
+.inv-field:has(.searchable-select--open) {
+  z-index: 30;
 }
 
 .inv-field-label {
@@ -174,7 +187,13 @@
   gap: 10px;
   width: 100%;
   position: relative;
-  overflow: visible;
+  overflow: visible !important;
+  z-index: 2;
+}
+
+.due-period-picker:focus-within,
+.due-period-picker:has(.searchable-select--open) {
+  z-index: 50;
 }
 
 .due-custom-wrap {

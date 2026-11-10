@@ -120,7 +120,7 @@ export default function SearchableSelectDropdown({
       className={`searchable-select ${isOpen ? 'searchable-select--open' : ''} ${className}`}
       ref={containerRef}
       onKeyDown={handleKeyDown}
-      style={{ zIndex: isOpen ? 50 : undefined }}
+      style={{ position: 'relative', zIndex: isOpen ? 60 : undefined }}
     >
       {/* Trigger Button */}
       <button
