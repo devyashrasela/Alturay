@@ -176,30 +176,27 @@ export default function DashboardPage() {
   const totalDays = dailySeries.length > 0 ? dailySeries.length : monthMeta.daysInMonth;
   const effectiveDR = Math.max(1.5, Math.min(6, (RW / totalDays) * 0.42));
 
-  const dateRangeLabel = useMemo(() => {
-    if (isCustomActive && customRange) {
-      const parts1 = customRange.startDate.split('-');
-      const parts2 = customRange.endDate.split('-');
-      const d1 = new Date(parseInt(parts1[0], 10), parseInt(parts1[1], 10) - 1, parseInt(parts1[2], 10));
-      const d2 = new Date(parseInt(parts2[0], 10), parseInt(parts2[1], 10) - 1, parseInt(parts2[2], 10));
-      const m1 = d1.toLocaleString('en-US', { month: 'short' });
-      const m2 = d2.toLocaleString('en-US', { month: 'short' });
-      const y1 = d1.getFullYear();
-      const y2 = d2.getFullYear();
-      const day1 = d1.getDate();
-      const day2 = d2.getDate();
+  let dateRangeLabel = `${monthMeta.shortName} 1 – ${monthMeta.shortName} ${monthMeta.daysInMonth}, ${monthMeta.year}`;
+  if (isCustomActive && customRange) {
+    const parts1 = customRange.startDate.split('-');
+    const parts2 = customRange.endDate.split('-');
+    const d1 = new Date(parseInt(parts1[0], 10), parseInt(parts1[1], 10) - 1, parseInt(parts1[2], 10));
+    const d2 = new Date(parseInt(parts2[0], 10), parseInt(parts2[1], 10) - 1, parseInt(parts2[2], 10));
+    const m1 = d1.toLocaleString('en-US', { month: 'short' });
+    const m2 = d2.toLocaleString('en-US', { month: 'short' });
+    const y1 = d1.getFullYear();
+    const y2 = d2.getFullYear();
+    const day1 = d1.getDate();
+    const day2 = d2.getDate();
 
-      if (y1 === y2) {
-        if (m1 === m2) {
-          return `${m1} ${day1} – ${day2}, ${y1}`;
-        }
-        return `${m1} ${day1} – ${m2} ${day2}, ${y1}`;
-      }
-      return `${m1} ${day1}, ${y1} – ${m2} ${day2}, ${y2}`;
+    if (y1 === y2) {
+      dateRangeLabel = m1 === m2
+        ? `${m1} ${day1} – ${day2}, ${y1}`
+        : `${m1} ${day1} – ${m2} ${day2}, ${y1}`;
+    } else {
+      dateRangeLabel = `${m1} ${day1}, ${y1} – ${m2} ${day2}, ${y2}`;
     }
-
-    return `${monthMeta.shortName} 1 – ${monthMeta.shortName} ${monthMeta.daysInMonth}, ${monthMeta.year}`;
-  }, [isCustomActive, customRange, monthMeta]);
+  }
 
   // KPI figures
   const totalRev = formatCurrency(stats.total_revenue ?? 0, activeBusiness?.currency);
@@ -337,17 +334,14 @@ export default function DashboardPage() {
     ? dailySeries[activeIndex] || { day: activeIndex + 1, revenue: 0, invoices: 0 }
     : { day: 0, revenue: 0, invoices: 0 };
 
-  const activeDayDateStr = useMemo(() => {
-    if (!activeDay) return '';
-    if (activeDay.date) {
-      const parts = activeDay.date.split('-');
-      if (parts.length === 3) {
-        const dObj = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
-        return `${dObj.toLocaleString('en-US', { month: 'short' })} ${dObj.getDate()}`;
-      }
+  let activeDayDateStr = `${monthMeta.shortName} ${activeDay.day}`;
+  if (activeDay?.date) {
+    const parts = activeDay.date.split('-');
+    if (parts.length === 3) {
+      const dObj = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+      activeDayDateStr = `${dObj.toLocaleString('en-US', { month: 'short' })} ${dObj.getDate()}`;
     }
-    return `${monthMeta.shortName} ${activeDay.day}`;
-  }, [activeDay, monthMeta.shortName]);
+  }
 
   const activeDots = activeDay.revenue > 0 ? Math.max(1, Math.min(13, Math.round(activeDay.revenue / UNIT))) : 0;
   const activeX = isGuideActive ? cx(activeIndex, totalDays) : 0;
@@ -357,18 +351,18 @@ export default function DashboardPage() {
   const activeAmountStr = isGuideActive ? formatCurrency(activeDay.revenue, activeBusiness?.currency) : '';
 
   // Smart X-axis ticks
-  const xTickIndices = useMemo(() => {
-    if (totalDays <= 7) {
-      return Array.from({ length: totalDays }, (_, i) => i);
-    }
+  let xTickIndices = [];
+  if (totalDays <= 7) {
+    xTickIndices = Array.from({ length: totalDays }, (_, i) => i);
+  } else {
     const count = Math.min(7, totalDays);
     const step = (totalDays - 1) / (count - 1);
     const indices = [];
     for (let i = 0; i < count; i += 1) {
       indices.push(Math.round(i * step));
     }
-    return [...new Set(indices)];
-  }, [totalDays]);
+    xTickIndices = [...new Set(indices)];
+  }
 
   // Quick Presets
   const handleQuickPreset = (days) => {
