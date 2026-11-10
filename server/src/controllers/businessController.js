@@ -1,3 +1,4 @@
+const { Op } = require('sequelize');
 const { Business, BusinessMember } = require('../models');
 const { TEMPLATE_POOLS, DEFAULT_TEMPLATE, PAPER_WIDTHS } = require('../constants/templates');
 const { generateInvoicePDF } = require('../services/pdfGeneratorService');
@@ -124,6 +125,7 @@ exports.create = async (req, res, next) => {
 exports.checkQrPrefix = async (req, res, next) => {
   try {
     const prefix = (req.query.prefix || '').trim().toLowerCase();
+    const excludeId = (req.query.excludeId || req.query.businessId || '').trim();
     if (!prefix || prefix.length < 3) {
       return res.json({
         success: true,
@@ -135,8 +137,13 @@ exports.checkQrPrefix = async (req, res, next) => {
       });
     }
 
+    const where = { qr_prefix: prefix };
+    if (excludeId) {
+      where.id = { [Op.ne]: excludeId };
+    }
+
     const existing = await Business.findOne({
-      where: { qr_prefix: prefix },
+      where,
       attributes: ['id'],
     });
 

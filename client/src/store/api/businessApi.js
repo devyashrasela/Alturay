@@ -22,7 +22,15 @@ export const businessApi = baseApi.injectEndpoints({
       }),
     }),
     checkQrPrefix: builder.query({
-      query: (prefix) => `/businesses/check-qr-prefix?prefix=${encodeURIComponent(prefix)}`,
+      query: (arg) => {
+        if (typeof arg === 'string') {
+          return `/businesses/check-qr-prefix?prefix=${encodeURIComponent(arg)}`;
+        }
+        const { prefix, excludeId } = arg || {};
+        let url = `/businesses/check-qr-prefix?prefix=${encodeURIComponent(prefix || '')}`;
+        if (excludeId) url += `&excludeId=${encodeURIComponent(excludeId)}`;
+        return url;
+      },
     }),
   }),
 });

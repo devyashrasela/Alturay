@@ -444,6 +444,52 @@
   color: var(--danger);
 }
 
+/* ── QR Prefix Input & Availability ── */
+.binput-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.binput-wrap__prefix {
+  position: absolute;
+  left: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  pointer-events: none;
+  user-select: none;
+  font-size: 14px;
+}
+
+.binput-wrap .binput--has-prefix {
+  padding-left: 28px;
+  padding-right: 130px;
+}
+
+.binput-wrap__status {
+  position: absolute;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 500;
+  pointer-events: none;
+}
+
+.binput-wrap__status--checking {
+  color: var(--text-2);
+}
+
+.binput-wrap__status--available {
+  color: var(--color-success, #22c55e);
+}
+
+.binput-wrap__status--taken {
+  color: var(--danger, #ef4444);
+}
+
 .bactions {
   display: flex;
   justify-content: flex-end;

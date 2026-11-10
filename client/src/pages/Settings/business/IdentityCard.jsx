@@ -1,5 +1,6 @@
-import { useRef, useEffect } from 'react';
-import { Pencil, Loader2 } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Pencil, Loader2, Check, X } from 'lucide-react';
+import { useLazyCheckQrPrefixQuery } from '../../../store/api/businessApi';
 
 export default function IdentityCard({
   business,
@@ -17,6 +18,10 @@ export default function IdentityCard({
   onEditCard,
   focusFieldId,
 }) {
+  const [triggerCheckQrPrefix] = useLazyCheckQrPrefixQuery();
+  const [qrStatus, setQrStatus] = useState(null); // { available: boolean, message: string }
+  const [isCheckingQr, setIsCheckingQr] = useState(false);
+
   const fileInputRef = useRef(null);
   const nameInputRef = useRef(null);
   const editBtnRef = useRef(null);
@@ -30,6 +35,62 @@ export default function IdentityCard({
       }
     }
   }, [isEditing, focusFieldId]);
+
+  // Debounced QR Prefix availability check
+  useEffect(() => {
+    if (!isEditing) {
+      setQrStatus(null);
+      setIsCheckingQr(false);
+      return;
+    }
+
+    const prefix = (formData.qr_prefix || '').trim().toLowerCase();
+    const currentPrefix = (business?.qr_prefix || '').trim().toLowerCase();
+
+    // If unchanged from current business prefix
+    if (prefix && prefix === currentPrefix) {
+      setQrStatus({ available: true, message: 'Current prefix' });
+      setIsCheckingQr(false);
+      return;
+    }
+
+    if (!prefix) {
+      setQrStatus({ available: false, message: 'Prefix is required' });
+      setIsCheckingQr(false);
+      return;
+    }
+
+    if (prefix.length < 3) {
+      setQrStatus({ available: false, message: 'Min 3 characters' });
+      setIsCheckingQr(false);
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9_-]+$/.test(prefix)) {
+      setQrStatus({ available: false, message: 'Alphanumeric, - or _ only' });
+      setIsCheckingQr(false);
+      return;
+    }
+
+    setIsCheckingQr(true);
+    const timer = setTimeout(async () => {
+      try {
+        const res = await triggerCheckQrPrefix({ prefix, excludeId: business?.id }).unwrap();
+        if (res?.data) {
+          setQrStatus({
+            available: res.data.available,
+            message: res.data.available ? 'Available' : 'Unavailable',
+          });
+        }
+      } catch {
+        setQrStatus(null);
+      } finally {
+        setIsCheckingQr(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [formData.qr_prefix, isEditing, business?.qr_prefix, business?.id, triggerCheckQrPrefix]);
 
   const initial = formData.name ? formData.name.trim().charAt(0).toUpperCase() : 'B';
   const roleLabel = business?.role
@@ -49,6 +110,9 @@ export default function IdentityCard({
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
+    if (isCheckingQr || (qrStatus && !qrStatus.available)) {
+      return;
+    }
     onSave(['name', 'qr_prefix', 'logo_url']);
   };
 
@@ -187,20 +251,41 @@ export default function IdentityCard({
                 <label htmlFor="f-qr">
                   QR prefix <span className="breq">*</span>
                 </label>
-                <input
-                  className="binput"
-                  id="f-qr"
-                  value={formData.qr_prefix}
-                  onChange={(e) =>
-                    onChangeField(
-                      'qr_prefix',
-                      e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, '')
-                    )
-                  }
-                  placeholder="e.g. acme-retail"
-                  autoComplete="off"
-                  required
-                />
+                <div className="binput-wrap">
+                  <span className="binput-wrap__prefix" aria-hidden="true">#</span>
+                  <input
+                    className={`binput binput--has-prefix ${qrStatus && !qrStatus.available ? 'err' : ''}`}
+                    id="f-qr"
+                    value={formData.qr_prefix}
+                    onChange={(e) =>
+                      onChangeField(
+                        'qr_prefix',
+                        e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, '')
+                      )
+                    }
+                    placeholder="e.g. acme-retail"
+                    autoComplete="off"
+                    maxLength={30}
+                    required
+                  />
+                  <div className="binput-wrap__status" aria-live="polite">
+                    {isCheckingQr ? (
+                      <span className="binput-wrap__status--checking">
+                        <Loader2 size={13} className="animate-spin" /> Checking...
+                      </span>
+                    ) : qrStatus ? (
+                      qrStatus.available ? (
+                        <span className="binput-wrap__status--available">
+                          <Check size={14} /> {qrStatus.message}
+                        </span>
+                      ) : (
+                        <span className="binput-wrap__status--taken">
+                          <X size={14} /> {qrStatus.message}
+                        </span>
+                      )
+                    ) : null}
+                  </div>
+                </div>
                 <span className="bhelp">
                   Added to the QR codes and barcodes we generate for your products.
                 </span>
@@ -219,7 +304,7 @@ export default function IdentityCard({
               <button
                 type="submit"
                 className="bbtn bbtn--primary"
-                disabled={isSaving}
+                disabled={isSaving || isCheckingQr || (qrStatus && !qrStatus.available)}
               >
                 {isSaving ? 'Saving…' : 'Save changes'}
               </button>
