@@ -54,9 +54,14 @@ function App() {
                 <Route path="/invoices/new" element={<CreateInvoicePage />} />
                 <Route path="/invoices/:id/edit" element={<CreateInvoicePage />} />
                 <Route path="/invoices/:id" element={<InvoiceDetailPage />} />
+                <Route path="/billing/templates/invoice" element={<InvoiceTemplatePage />} />
+                <Route path="/billing/templates/bill" element={<BillTemplatePage />} />
+                {/* Backwards-compatible aliases */}
+                <Route path="/settings/templates/invoice" element={<Navigate to="/billing/templates/invoice" replace />} />
+                <Route path="/settings/templates/bill" element={<Navigate to="/billing/templates/bill" replace />} />
+                <Route path="/invoices/templates/invoice" element={<Navigate to="/billing/templates/invoice" replace />} />
+                <Route path="/invoices/templates/bill" element={<Navigate to="/billing/templates/bill" replace />} />
                 <Route path="/settings" element={<BusinessSettingsPage />} />
-                <Route path="/settings/templates/invoice" element={<InvoiceTemplatePage />} />
-                <Route path="/settings/templates/bill" element={<BillTemplatePage />} />
                 <Route path="/customers" element={<CustomersPage />} />
               </Route>
             </Route>

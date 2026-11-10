@@ -2,7 +2,7 @@ import TemplateSelector from '../../components/templates/TemplateSelector';
 
 export default function BillTemplatePage() {
   return (
-    <div className="settings-page">
+    <div className="settings-page" style={{ maxWidth: '960px' }}>
       <div className="page-header">
         <div>
           <h2 className="page-header__title">Bill Template</h2>

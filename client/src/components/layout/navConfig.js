@@ -103,6 +103,13 @@ export const NAV_SECTIONS = [
             },
           ],
         },
+        {
+          label: 'PDF templates',
+          items: [
+            { id: 'tpl-inv', label: 'Invoice template', icon: 'tpl', path: '/billing/templates/invoice' },
+            { id: 'tpl-bill', label: 'Bill template', icon: 'tpl', path: '/billing/templates/bill' },
+          ],
+        },
       ],
     },
   },
@@ -137,13 +144,6 @@ export const NAV_SECTIONS = [
           label: 'Business',
           items: [
             { id: 'users', label: 'Users & access', icon: 'user', path: '/settings/users', soon: true },
-          ],
-        },
-        {
-          label: 'PDF templates',
-          items: [
-            { id: 'tpl-inv', label: 'Invoice template', icon: 'tpl', path: '/settings/templates/invoice' },
-            { id: 'tpl-bill', label: 'Bill template', icon: 'tpl', path: '/settings/templates/bill' },
           ],
         },
       ],

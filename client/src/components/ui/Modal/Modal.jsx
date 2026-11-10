@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef } from 'react';
+import { useCallback, useEffect, useId, useRef } from 'react';
 import { X } from 'lucide-react';
 
 export default function Modal({ isOpen, onClose, title, size = '', children, footer }) {
@@ -6,13 +6,19 @@ export default function Modal({ isOpen, onClose, title, size = '', children, foo
   const dialogRef = useRef(null);
   const titleId = useId();
 
+  // Keep a stable ref to onClose so the effect doesn't re-run on every render
+  const onCloseRef = useRef(onClose);
+  useEffect(() => { onCloseRef.current = onClose; }, [onClose]);
+
+  const stableOnClose = useCallback(() => onCloseRef.current?.(), []);
+
   useEffect(() => {
     if (!isOpen) return undefined;
-    const handleKey = (e) => { if (e.key === 'Escape') onClose(); };
+    const handleKey = (e) => { if (e.key === 'Escape') stableOnClose(); };
     document.addEventListener('keydown', handleKey);
     document.body.style.overflow = 'hidden';
 
-    // Move focus into the dialog; restore it to the opener on close.
+    // Move focus into the dialog only on initial open; restore on close.
     const previousFocus = document.activeElement;
     const frame = requestAnimationFrame(() => dialogRef.current?.focus());
     return () => {
@@ -21,7 +27,7 @@ export default function Modal({ isOpen, onClose, title, size = '', children, foo
       document.body.style.overflow = '';
       if (previousFocus instanceof HTMLElement) previousFocus.focus();
     };
-  }, [isOpen, onClose]);
+  }, [isOpen, stableOnClose]);
 
   if (!isOpen) return null;
 
