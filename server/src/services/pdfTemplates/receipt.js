@@ -1,4 +1,4 @@
-const { MM, FONT, numberFmt, moneyFmt, formatDate, totalsOf, formatPaymentMethods } = require('./helpers');
+const { MM, FONT, numberFmt, moneyFmt, formatDate, totalsOf, formatCustomerAddress, formatPaymentMethods } = require('./helpers');
 
 const SIZES = {
   80: { paper: 80, margin: 4 * MM, body: 8.5, small: 7, title: 12, grand: 11 },
@@ -63,8 +63,18 @@ const render = (doc, invoice, business) => {
   row('Bill No', invoice.invoice_number, { size: L.small });
   row('Date', formatDate(invoice.issue_date), { size: L.small });
   if (invoice.po_number) row('PO No', invoice.po_number, { size: L.small });
-  row('Customer', invoice.customer_name || 'Walk-in Customer', { size: L.small, split: 0.35 });
-  if (invoice.customer_phone) row('Phone', invoice.customer_phone, { size: L.small });
+  row('Customer', invoice.customer_name || invoice.customer?.name || 'Walk-in Customer', { size: L.small, split: 0.35 });
+
+  const custPhone = invoice.customer_phone || invoice.customer?.phone;
+  if (custPhone) row('Phone', custPhone, { size: L.small });
+
+  const custEmail = invoice.customer_email || invoice.customer?.email;
+  if (custEmail) row('Email', custEmail, { size: L.small });
+
+  const custAddress = formatCustomerAddress(invoice.customer);
+  if (custAddress) {
+    text(custAddress.replace(/\n/g, ', '), { size: L.small });
+  }
   rule();
   row('Item', 'Amount', { size: L.small, bold: true });
   rule();

@@ -34,6 +34,17 @@ module.exports = (type) => {
     customer_name: 'Sample Customer',
     customer_phone: '+91 98765 43210',
     customer_email: 'billing@samplecustomer.in',
+    customer: {
+      name: 'Sample Customer',
+      email: 'billing@samplecustomer.in',
+      phone: '+91 98765 43210',
+      address_line1: '12th Floor, Cyber Heights',
+      address_line2: 'Hitech City',
+      city: 'Hyderabad',
+      state: 'Telangana',
+      pincode: '500081',
+      formatted_address: '12th Floor, Cyber Heights, Hitech City, Hyderabad, Telangana - 500081',
+    },
     shipping_address: {
       line1: 'Building 4B, Sector 62',
       line2: 'Industrial Area',

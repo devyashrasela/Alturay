@@ -1,6 +1,6 @@
 const router = require('express').Router({ mergeParams: true });
 const invoiceController = require('../controllers/invoiceController');
-const { Invoice, InvoiceItem } = require('../models');
+const { Invoice, InvoiceItem, Customer } = require('../models');
 const { generateInvoicePDF } = require('../services/pdfGeneratorService');
 const { TEMPLATE_POOLS, PAPER_WIDTHS } = require('../constants/templates');
 const validate = require('../middlewares/validate');
@@ -21,7 +21,14 @@ router.get('/:invoiceId/pdf', async (req, res, next) => {
   try {
     const invoice = await Invoice.findOne({
       where: { id: req.params.invoiceId, business_id: req.businessId },
-      include: [{ model: InvoiceItem, as: 'items' }],
+      include: [
+        { model: InvoiceItem, as: 'items' },
+        {
+          model: Customer,
+          as: 'customer',
+          attributes: ['id', 'name', 'phone', 'email', 'address_line1', 'address_line2', 'city', 'state', 'pincode'],
+        },
+      ],
     });
 
     if (!invoice) {

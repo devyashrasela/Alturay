@@ -1,4 +1,4 @@
-const { FONT, numberFmt, moneyFmt, formatDate, totalsOf, formatShippingAddress, formatPaymentMethods } = require('./helpers');
+const { FONT, numberFmt, moneyFmt, formatDate, totalsOf, formatCustomerAddress, formatShippingAddress, formatPaymentMethods } = require('./helpers');
 
 const pageOptions = () => ({
   size: 'A4',
@@ -60,10 +60,17 @@ const render = (doc, invoice, business) => {
   doc.font(FONT.bold).fontSize(8.5).fillColor('#6B7280')
     .text(`${typeLabel} TO`, contentLeft, partyY);
   doc.font(FONT.bold).fontSize(13).fillColor('#111827')
-    .text(invoice.customer_name || 'Customer', contentLeft, doc.y + 2);
+    .text(invoice.customer_name || invoice.customer?.name || 'Customer', contentLeft, doc.y + 2);
   doc.font(FONT.regular).fontSize(9).fillColor('#4B5563');
-  if (invoice.customer_phone) doc.text(`Phone: ${invoice.customer_phone}`, contentLeft, doc.y);
-  if (invoice.customer_email) doc.text(`Email: ${invoice.customer_email}`, contentLeft, doc.y);
+
+  const custPhone = invoice.customer_phone || invoice.customer?.phone;
+  if (custPhone) doc.text(`Phone: ${custPhone}`, contentLeft, doc.y);
+
+  const custEmail = invoice.customer_email || invoice.customer?.email;
+  if (custEmail) doc.text(`Email: ${custEmail}`, contentLeft, doc.y);
+
+  const custAddress = formatCustomerAddress(invoice.customer);
+  if (custAddress) doc.text(custAddress, contentLeft, doc.y, { width: halfW - 20 });
 
   const shipAddr = formatShippingAddress(invoice.shipping_address);
   if (shipAddr) {

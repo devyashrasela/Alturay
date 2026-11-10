@@ -1,4 +1,4 @@
-const { FONT, numberFmt, moneyFmt, formatDate, totalsOf, formatShippingAddress, formatPaymentMethods } = require('./helpers');
+const { FONT, numberFmt, moneyFmt, formatDate, totalsOf, formatCustomerAddress, formatShippingAddress, formatPaymentMethods } = require('./helpers');
 
 const pageOptions = () => ({
   size: 'A4',
@@ -72,10 +72,17 @@ const render = (doc, invoice, business, ctx = {}) => {
   doc.font(FONT.bold).fontSize(10).fillColor('#111827')
     .text(`BILL TO`, rightX, partyY);
   doc.font(FONT.bold).fontSize(11).fillColor('#111827')
-    .text(invoice.customer_name || 'Customer', rightX, doc.y + 2);
+    .text(invoice.customer_name || invoice.customer?.name || 'Customer', rightX, doc.y + 2);
   doc.font(FONT.regular).fontSize(9).fillColor('#4B5563');
-  if (invoice.customer_phone) doc.text(invoice.customer_phone, rightX, doc.y);
-  if (invoice.customer_email) doc.text(invoice.customer_email, rightX, doc.y);
+
+  const custPhone = invoice.customer_phone || invoice.customer?.phone;
+  if (custPhone) doc.text(custPhone, rightX, doc.y);
+
+  const custEmail = invoice.customer_email || invoice.customer?.email;
+  if (custEmail) doc.text(custEmail, rightX, doc.y);
+
+  const custAddress = formatCustomerAddress(invoice.customer);
+  if (custAddress) doc.text(custAddress, rightX, doc.y, { width: halfW });
 
   const shipAddr = formatShippingAddress(invoice.shipping_address);
   if (shipAddr) {
