@@ -41,6 +41,7 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 24px;
   width: 100%;
+  overflow: visible;
 }
 
 @media (max-width: 860px) {
@@ -49,8 +50,8 @@
   }
 }
 
-/* Card */
-.inv-card {
+/* Card - Must have overflow: visible so dropdown popovers are never clipped */
+.inv-settings-card {
   width: 100%;
   background: var(--panel);
   border: 1px solid var(--border);
@@ -60,13 +61,15 @@
   display: flex;
   flex-direction: column;
   transition: border-color 0.15s ease;
+  overflow: visible;
+  position: relative;
 }
 
-.inv-card:hover {
+.inv-settings-card:hover {
   border-color: var(--icon);
 }
 
-.inv-card__head {
+.inv-settings-card__head {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -74,13 +77,13 @@
   gap: 12px;
 }
 
-.inv-card__title-wrap {
+.inv-settings-card__title-wrap {
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-.inv-card__icon {
+.inv-settings-card__icon {
   width: 36px;
   height: 36px;
   border-radius: 10px;
@@ -91,7 +94,7 @@
   flex-shrink: 0;
 }
 
-.inv-card__title {
+.inv-settings-card__title {
   font-size: 16px;
   font-weight: 600;
   color: var(--text);
@@ -99,7 +102,7 @@
   letter-spacing: -0.01em;
 }
 
-.inv-card__badge {
+.inv-settings-card__badge {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.05em;
@@ -111,33 +114,34 @@
   white-space: nowrap;
 }
 
-.inv-card__badge--emerald {
+.inv-settings-card__badge--emerald {
   background: rgba(16, 185, 129, 0.12);
   color: #10b981;
 }
 
-.inv-card__badge--purple {
+.inv-settings-card__badge--purple {
   background: rgba(139, 92, 246, 0.12);
   color: #8b5cf6;
 }
 
-.inv-card__badge--blue {
+.inv-settings-card__badge--blue {
   background: rgba(59, 130, 246, 0.12);
   color: #3b82f6;
 }
 
-.inv-card__desc {
+.inv-settings-card__desc {
   font-size: 13.5px;
   color: var(--muted);
   margin: 0 0 20px 0;
   line-height: 1.5;
 }
 
-.inv-card__body {
+.inv-settings-card__body {
   display: flex;
   flex-direction: column;
   gap: 20px;
   width: 100%;
+  overflow: visible;
 }
 
 .inv-field {
@@ -145,6 +149,8 @@
   flex-direction: column;
   gap: 7px;
   width: 100%;
+  position: relative;
+  overflow: visible;
 }
 
 .inv-field-label {
@@ -165,48 +171,10 @@
 .due-period-picker {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   width: 100%;
-}
-
-.due-select-wrap {
   position: relative;
-  width: 100%;
-}
-
-.due-select {
-  width: 100%;
-  height: 42px;
-  padding: 0 38px 0 14px;
-  border-radius: 9px;
-  border: 1px solid var(--border);
-  background: var(--bg);
-  color: var(--text);
-  font: inherit;
-  font-size: 14px;
-  font-weight: 500;
-  appearance: none;
-  cursor: pointer;
-  outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s;
-}
-
-.due-select:hover {
-  border-color: var(--icon);
-}
-
-.due-select:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent);
-}
-
-.due-select-wrap__icon {
-  position: absolute;
-  right: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--muted);
-  pointer-events: none;
+  overflow: visible;
 }
 
 .due-custom-wrap {

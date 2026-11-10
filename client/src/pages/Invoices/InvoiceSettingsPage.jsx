@@ -195,21 +195,21 @@ export default function InvoiceSettingsPage() {
         {/* Top 2-Column Grid: Invoices vs Bills & POS */}
         <div className="inv-settings-grid">
           {/* Card 1: INVOICES */}
-          <div className="inv-card">
-            <div className="inv-card__head">
-              <div className="inv-card__title-wrap">
-                <span className="inv-card__icon">
+          <div className="inv-settings-card">
+            <div className="inv-settings-card__head">
+              <div className="inv-settings-card__title-wrap">
+                <span className="inv-settings-card__icon">
                   <FileText size={18} />
                 </span>
-                <h2 className="inv-card__title">Invoice Defaults</h2>
+                <h2 className="inv-settings-card__title">Invoice Defaults</h2>
               </div>
-              <span className="inv-card__badge inv-card__badge--blue">Invoices</span>
+              <span className="inv-settings-card__badge inv-settings-card__badge--blue">Invoices</span>
             </div>
-            <p className="inv-card__desc">
+            <p className="inv-settings-card__desc">
               Invoices are issued with credit terms. Select how many days after the issue date the invoice becomes due.
             </p>
 
-            <div className="inv-card__body">
+            <div className="inv-settings-card__body">
               <div className="inv-field">
                 <label className="inv-field-label" htmlFor="inv-due-select">
                   Default Due Period
@@ -244,21 +244,21 @@ export default function InvoiceSettingsPage() {
           </div>
 
           {/* Card 2: CASH BILLS & POS */}
-          <div className="inv-card">
-            <div className="inv-card__head">
-              <div className="inv-card__title-wrap">
-                <span className="inv-card__icon">
+          <div className="inv-settings-card">
+            <div className="inv-settings-card__head">
+              <div className="inv-settings-card__title-wrap">
+                <span className="inv-settings-card__icon">
                   <Receipt size={18} />
                 </span>
-                <h2 className="inv-card__title">Cash Bill &amp; POS Defaults</h2>
+                <h2 className="inv-settings-card__title">Cash Bill &amp; POS Defaults</h2>
               </div>
-              <span className="inv-card__badge inv-card__badge--emerald">Bills &amp; POS</span>
+              <span className="inv-settings-card__badge inv-settings-card__badge--emerald">Bills &amp; POS</span>
             </div>
-            <p className="inv-card__desc">
+            <p className="inv-settings-card__desc">
               Cash bills and POS receipts are typically immediate walk-in transactions. Choose their default due period.
             </p>
 
-            <div className="inv-card__body">
+            <div className="inv-settings-card__body">
               <div className="inv-field">
                 <label className="inv-field-label" htmlFor="bill-due-select">
                   Default Due Period
@@ -295,17 +295,17 @@ export default function InvoiceSettingsPage() {
         </div>
 
         {/* Card 3: PAYMENT METHODS (Full Width) */}
-        <div className="inv-card">
-          <div className="inv-card__head">
-            <div className="inv-card__title-wrap">
-              <span className="inv-card__icon">
+        <div className="inv-settings-card">
+          <div className="inv-settings-card__head">
+            <div className="inv-settings-card__title-wrap">
+              <span className="inv-settings-card__icon">
                 <CreditCard size={18} />
               </span>
-              <h2 className="inv-card__title">Accepted Payment Methods</h2>
+              <h2 className="inv-settings-card__title">Accepted Payment Methods</h2>
             </div>
-            <span className="inv-card__badge inv-card__badge--purple">Payment Options</span>
+            <span className="inv-settings-card__badge inv-settings-card__badge--purple">Payment Options</span>
           </div>
-          <p className="inv-card__desc">
+          <p className="inv-settings-card__desc">
             Select the default payment methods displayed on invoices, bills, and payment links.
           </p>
 
@@ -338,16 +338,16 @@ export default function InvoiceSettingsPage() {
         </div>
 
         {/* Card 4: TERMS & CONDITIONS (Full Width) */}
-        <div className="inv-card">
-          <div className="inv-card__head">
-            <div className="inv-card__title-wrap">
-              <span className="inv-card__icon">
+        <div className="inv-settings-card">
+          <div className="inv-settings-card__head">
+            <div className="inv-settings-card__title-wrap">
+              <span className="inv-settings-card__icon">
                 <ShieldCheck size={18} />
               </span>
-              <h2 className="inv-card__title">Default Terms &amp; Conditions</h2>
+              <h2 className="inv-settings-card__title">Default Terms &amp; Conditions</h2>
             </div>
           </div>
-          <p className="inv-card__desc">
+          <p className="inv-settings-card__desc">
             Standard legal terms, warranty, return policies, or bank transfer instructions automatically added to every new document.
           </p>
 
