@@ -22,19 +22,38 @@ exports.getStats = async (req, res, next) => {
   try {
     const businessId = req.businessId;
     const requestedMonth = req.query.month;
+    const requestedStartDate = req.query.startDate;
+    const requestedEndDate = req.query.endDate;
 
-    const now = new Date();
-    const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-    const targetMonth = requestedMonth && /^\d{4}-\d{2}$/.test(requestedMonth)
-      ? requestedMonth
-      : currentMonthKey;
+    const isCustomRange = Boolean(
+      requestedStartDate &&
+      requestedEndDate &&
+      /^\d{4}-\d{2}-\d{2}$/.test(requestedStartDate) &&
+      /^\d{4}-\d{2}-\d{2}$/.test(requestedEndDate)
+    );
 
-    const [yearStr, monthStr] = targetMonth.split('-');
-    const year = parseInt(yearStr, 10);
-    const month = parseInt(monthStr, 10);
-    const daysInMonth = new Date(year, month, 0).getDate();
-    const monthStart = `${targetMonth}-01`;
-    const monthEnd = `${targetMonth}-${String(daysInMonth).padStart(2, '0')}`;
+    let rangeStart;
+    let rangeEnd;
+    let targetMonth = null;
+    let daysInMonth = 30;
+
+    if (isCustomRange) {
+      rangeStart = requestedStartDate <= requestedEndDate ? requestedStartDate : requestedEndDate;
+      rangeEnd = requestedStartDate <= requestedEndDate ? requestedEndDate : requestedStartDate;
+    } else {
+      const now = new Date();
+      const currentMonthKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      targetMonth = requestedMonth && /^\d{4}-\d{2}$/.test(requestedMonth)
+        ? requestedMonth
+        : currentMonthKey;
+
+      const [yearStr, monthStr] = targetMonth.split('-');
+      const year = parseInt(yearStr, 10);
+      const month = parseInt(monthStr, 10);
+      daysInMonth = new Date(year, month, 0).getDate();
+      rangeStart = `${targetMonth}-01`;
+      rangeEnd = `${targetMonth}-${String(daysInMonth).padStart(2, '0')}`;
+    }
 
     const [
       totalProducts,
@@ -74,14 +93,14 @@ exports.getStats = async (req, res, next) => {
         group: ['month'],
         raw: true,
       }),
-      // Daily revenue series for the target month (issued + paid)
+      // Daily revenue series for the target range/month (issued + paid)
       Invoice.findAll({
         where: {
           business_id: businessId,
           status: { [Op.in]: ['issued', 'paid'] },
           issue_date: {
-            [Op.gte]: monthStart,
-            [Op.lte]: monthEnd,
+            [Op.gte]: rangeStart,
+            [Op.lte]: rangeEnd,
           },
         },
         attributes: [
@@ -161,18 +180,37 @@ exports.getStats = async (req, res, next) => {
       });
     }
 
-    // Fill continuous daily series for the selected month
+    // Fill continuous daily series for the selected range/month
     const dailyByDate = new Map(dailyRows.map((r) => [r.date, r]));
     const daily_series = [];
-    for (let day = 1; day <= daysInMonth; day += 1) {
-      const dateKey = `${targetMonth}-${String(day).padStart(2, '0')}`;
-      const row = dailyByDate.get(dateKey);
-      daily_series.push({
-        date: dateKey,
-        day,
-        revenue: parseFloat(row?.revenue || 0),
-        invoices: parseInt(row?.invoices, 10) || 0,
-      });
+
+    if (isCustomRange) {
+      const cur = new Date(rangeStart + 'T00:00:00');
+      const end = new Date(rangeEnd + 'T00:00:00');
+      let dayIndex = 1;
+      while (cur <= end && dayIndex <= 366) {
+        const dateKey = formatLocalDate(cur);
+        const row = dailyByDate.get(dateKey);
+        daily_series.push({
+          date: dateKey,
+          day: dayIndex,
+          revenue: parseFloat(row?.revenue || 0),
+          invoices: parseInt(row?.invoices, 10) || 0,
+        });
+        cur.setDate(cur.getDate() + 1);
+        dayIndex += 1;
+      }
+    } else {
+      for (let day = 1; day <= daysInMonth; day += 1) {
+        const dateKey = `${targetMonth}-${String(day).padStart(2, '0')}`;
+        const row = dailyByDate.get(dateKey);
+        daily_series.push({
+          date: dateKey,
+          day,
+          revenue: parseFloat(row?.revenue || 0),
+          invoices: parseInt(row?.invoices, 10) || 0,
+        });
+      }
     }
 
     const status_counts = { draft: 0, issued: 0, paid: 0, cancelled: 0 };
@@ -200,6 +238,9 @@ exports.getStats = async (req, res, next) => {
           monthly_series,
           daily_series,
           selected_month: targetMonth,
+          start_date: rangeStart,
+          end_date: rangeEnd,
+          is_custom_range: isCustomRange,
           status_counts,
           outstanding_receivable,
           outstanding_payable: 0,

@@ -5,8 +5,13 @@ export const dashboardApi = baseApi.injectEndpoints({
     getDashboardStats: builder.query({
       query: (arg) => {
         if (typeof arg === 'object' && arg !== null) {
-          const { businessId, month } = arg;
-          return `/businesses/${businessId}/dashboard/stats${month ? `?month=${month}` : ''}`;
+          const { businessId, month, startDate, endDate } = arg;
+          const params = new URLSearchParams();
+          if (month) params.set('month', month);
+          if (startDate) params.set('startDate', startDate);
+          if (endDate) params.set('endDate', endDate);
+          const qs = params.toString();
+          return `/businesses/${businessId}/dashboard/stats${qs ? `?${qs}` : ''}`;
         }
         return `/businesses/${arg}/dashboard/stats`;
       },
