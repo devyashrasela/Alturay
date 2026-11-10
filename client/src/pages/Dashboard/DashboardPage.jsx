@@ -9,9 +9,9 @@ import { formatDate } from '../../utils/formatDate';
 import { effectiveStatus } from '../../utils/invoiceStatus';
 
 const RW = 760;
-const RH = 300;
-const PITCH = 18;
-const DR = 8;
+const RH = 190;
+const PITCH = 13;
+const DR = 6;
 
 function cy(k) {
   return RH - 12 - DR - k * PITCH;

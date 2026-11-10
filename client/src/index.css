@@ -505,6 +505,7 @@ textarea {
   grid-template-columns: minmax(0, 1fr) 340px;
   gap: 16px;
   margin-top: 16px;
+  align-items: stretch;
 }
 
 .dpad {
@@ -519,7 +520,7 @@ textarea {
 .legend {
   display: flex;
   gap: 16px;
-  margin: 10px 0 18px;
+  margin: 8px 0 14px;
   color: var(--text-2);
   font-size: 13px;
 }
@@ -536,8 +537,8 @@ textarea {
 
 .rv-plot {
   position: relative;
-  margin: 0 0 34px 62px;
-  aspect-ratio: 760/300;
+  margin: 0 0 28px 62px;
+  aspect-ratio: 760/190;
 }
 
 .rv-plot svg {
