@@ -1,16 +1,110 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
+import {
+  FileText,
+  Receipt,
+  CreditCard,
+  ShieldCheck,
+  ChevronDown,
+  Check,
+  Loader2,
+} from 'lucide-react';
 import { useUpdateBusinessMutation } from '../../store/api/businessApi';
 import { updateBusinessInList, setActiveBusiness } from '../../store/slices/businessSlice';
 import { addToast } from '../../store/slices/uiSlice';
-import Card from '../../components/ui/Card/Card';
-import Button from '../../components/ui/Button/Button';
-import FormField from '../../components/ui/FormField/FormField';
-import InputField from '../../components/ui/Input/InputField';
 import { PAYMENT_METHODS } from '../../constants/paymentMethods';
+import './InvoiceSettingsPage.css';
 
-const INVOICE_DUE_PRESETS = [0, 7, 15, 30, 45, 60];
-const BILL_DUE_PRESETS = [0, 7, 15, 30];
+const PRESET_DUE_DAYS = [0, 2, 7, 10, 15, 30];
+
+function DuePeriodSelect({
+  id,
+  value,
+  onChange,
+  isInvoice = false,
+  presets = PRESET_DUE_DAYS,
+}) {
+  const numVal = value !== '' && value != null ? Number(value) : 0;
+  const isPreset = presets.includes(numVal);
+  const [isCustomMode, setIsCustomMode] = useState(!isPreset);
+
+  // Sync custom mode if incoming value is not one of presets
+  useEffect(() => {
+    if (!presets.includes(numVal)) {
+      setIsCustomMode(true);
+    }
+  }, [numVal, presets]);
+
+  const handleSelectChange = (e) => {
+    const selected = e.target.value;
+    if (selected === 'custom') {
+      setIsCustomMode(true);
+    } else {
+      setIsCustomMode(false);
+      onChange(Number(selected));
+    }
+  };
+
+  const handleCustomInputChange = (e) => {
+    const raw = e.target.value;
+    if (raw === '') {
+      onChange('');
+    } else {
+      const parsed = Math.min(365, Math.max(0, parseInt(raw, 10) || 0));
+      onChange(parsed);
+    }
+  };
+
+  const selectValue = isCustomMode ? 'custom' : String(numVal);
+
+  return (
+    <div className="due-period-picker">
+      <div className="due-select-wrap">
+        <select
+          id={id}
+          className="due-select"
+          value={selectValue}
+          onChange={handleSelectChange}
+        >
+          {presets.map((days) => {
+            let label = '';
+            if (days === 0) {
+              label = isInvoice
+                ? 'On Receipt / Immediate (0 days)'
+                : 'Immediate / On Receipt (0 days)';
+            } else {
+              label = isInvoice ? `Net ${days} days` : `${days} days`;
+            }
+            return (
+              <option key={days} value={String(days)}>
+                {label}
+              </option>
+            );
+          })}
+          <option value="custom">Custom days...</option>
+        </select>
+        <ChevronDown size={16} className="due-select-wrap__icon" aria-hidden="true" />
+      </div>
+
+      {isCustomMode && (
+        <div className="due-custom-wrap">
+          <input
+            id={`${id}-custom`}
+            type="number"
+            min="0"
+            max="365"
+            className="due-custom-input"
+            placeholder="Enter custom days (0–365)"
+            value={value}
+            onChange={handleCustomInputChange}
+            autoFocus
+          />
+          <span className="due-custom-suffix">days from issue date</span>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function InvoiceSettingsPage() {
   const dispatch = useDispatch();
@@ -33,8 +127,12 @@ export default function InvoiceSettingsPage() {
           : ['cash'],
         default_payment_terms: activeBusiness.default_payment_terms || '',
         default_terms_and_conditions: activeBusiness.default_terms_and_conditions || '',
-        default_due_days: activeBusiness.default_due_days != null ? activeBusiness.default_due_days : 15,
-        default_bill_due_days: activeBusiness.default_bill_due_days != null ? activeBusiness.default_bill_due_days : 0,
+        default_due_days:
+          activeBusiness.default_due_days != null ? activeBusiness.default_due_days : 15,
+        default_bill_due_days:
+          activeBusiness.default_bill_due_days != null
+            ? activeBusiness.default_bill_due_days
+            : 0,
       });
     }
   }, [activeBusiness]);
@@ -62,10 +160,12 @@ export default function InvoiceSettingsPage() {
       const payload = {
         id: activeBusiness.id,
         default_payment_methods: form.default_payment_methods,
-        default_payment_terms: form.default_payment_terms || null,
-        default_terms_and_conditions: form.default_terms_and_conditions || null,
-        default_due_days: form.default_due_days !== '' ? parseInt(form.default_due_days, 10) : 15,
-        default_bill_due_days: form.default_bill_due_days !== '' ? parseInt(form.default_bill_due_days, 10) : 0,
+        default_payment_terms: form.default_payment_terms?.trim() || null,
+        default_terms_and_conditions: form.default_terms_and_conditions?.trim() || null,
+        default_due_days:
+          form.default_due_days !== '' ? parseInt(form.default_due_days, 10) : 15,
+        default_bill_due_days:
+          form.default_bill_due_days !== '' ? parseInt(form.default_bill_due_days, 10) : 0,
       };
 
       const result = await updateBusiness(payload).unwrap();
@@ -75,7 +175,12 @@ export default function InvoiceSettingsPage() {
       };
       dispatch(updateBusinessInList(updated));
       dispatch(setActiveBusiness(updated));
-      dispatch(addToast({ type: 'success', message: 'Invoice & Bill defaults saved successfully.' }));
+      dispatch(
+        addToast({
+          type: 'success',
+          message: 'Invoice & billing defaults saved successfully.',
+        })
+      );
     } catch (err) {
       dispatch(
         addToast({
@@ -87,198 +192,205 @@ export default function InvoiceSettingsPage() {
   };
 
   return (
-    <div className="settings-page" style={{ maxWidth: 760 }}>
-      <div className="page-header">
-        <div>
-          <h2 className="page-header__title">Invoice &amp; Billing Settings</h2>
-          <p className="page-header__sub">Configure default due periods, payment terms, and methods for Invoices vs. Bills</p>
-        </div>
+    <div className="inv-settings-page">
+      <div className="inv-settings-header">
+        <h1 className="inv-settings-title">Invoice &amp; Billing Settings</h1>
+        <p className="inv-settings-sub">
+          Configure default due periods, payment terms, and accepted methods for Invoices, Cash Bills, and POS receipts.
+        </p>
       </div>
 
-      <form onSubmit={handleSave} className="settings-form">
-        {/* Invoice Due Date & Terms */}
-        <Card>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <h3 className="form-section__title" style={{ margin: 0 }}>Invoice Due Period &amp; Terms</h3>
-            <span style={{ fontSize: 11, background: 'var(--color-primary-subtle, rgba(59, 130, 246, 0.1))', color: 'var(--color-primary)', padding: '2px 8px', borderRadius: 4, fontWeight: 600 }}>
-              INVOICES
-            </span>
-          </div>
-          <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginBottom: 14 }}>
-            Invoices are generally issued with credit terms. Select how many days after the issue date the invoice becomes due.
-          </p>
-
-          <div className="form-stack">
-            <FormField label="Default Due Period" htmlFor="invoice-due-days">
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
-                {INVOICE_DUE_PRESETS.map((days) => {
-                  const isSelected = Number(form.default_due_days) === days;
-                  const label = days === 0 ? 'On Receipt (0d)' : `Net ${days} days`;
-                  return (
-                    <button
-                      key={days}
-                      type="button"
-                      className={`btn btn--sm ${isSelected ? 'btn--primary' : 'btn--secondary'}`}
-                      onClick={() => setForm((f) => ({ ...f, default_due_days: days }))}
-                      style={{ fontSize: 12, padding: '5px 12px' }}
-                    >
-                      {label}
-                    </button>
-                  );
-                })}
+      <form onSubmit={handleSave} className="inv-settings-form">
+        {/* Top 2-Column Grid: Invoices vs Bills & POS */}
+        <div className="inv-settings-grid">
+          {/* Card 1: INVOICES */}
+          <div className="inv-card">
+            <div className="inv-card__head">
+              <div className="inv-card__title-wrap">
+                <span className="inv-card__icon">
+                  <FileText size={18} />
+                </span>
+                <h2 className="inv-card__title">Invoice Defaults</h2>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, maxWidth: 280 }}>
-                <InputField
-                  id="invoice-due-days"
-                  type="number"
-                  min="0"
-                  max="365"
-                  placeholder="Custom days"
+              <span className="inv-card__badge inv-card__badge--blue">Invoices</span>
+            </div>
+            <p className="inv-card__desc">
+              Invoices are issued with credit terms. Select how many days after the issue date the invoice becomes due.
+            </p>
+
+            <div className="inv-card__body">
+              <div className="inv-field">
+                <label className="inv-field-label" htmlFor="inv-due-select">
+                  Default Due Period
+                </label>
+                <DuePeriodSelect
+                  id="inv-due-select"
                   value={form.default_due_days}
-                  onChange={setField('default_due_days')}
-                  style={{ height: 34, fontSize: 13 }}
+                  onChange={(days) => setForm((f) => ({ ...f, default_due_days: days }))}
+                  isInvoice
                 />
-                <span style={{ fontSize: 12, color: 'var(--color-text-muted)', whiteSpace: 'nowrap' }}>
-                  days from issue date
+                <span className="inv-field-hint">
+                  Automatically populates the due date on newly created credit invoices.
                 </span>
               </div>
-            </FormField>
 
-            <FormField
-              label="Default Invoice Payment Terms"
-              htmlFor="default-payment-terms"
-              helper="Printed on invoices (e.g. 'Net 15', 'Net 30', 'Payment due within 15 days')."
-            >
-              <InputField
-                id="default-payment-terms"
-                placeholder="e.g. Net 15, Due within 15 days"
-                value={form.default_payment_terms}
-                onChange={setField('default_payment_terms')}
-              />
-            </FormField>
-          </div>
-        </Card>
-
-        {/* Bill Due Date & Terms */}
-        <Card>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <h3 className="form-section__title" style={{ margin: 0 }}>Bill / POS Due Period</h3>
-            <span style={{ fontSize: 11, background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '2px 8px', borderRadius: 4, fontWeight: 600 }}>
-              CASH BILLS &amp; POS
-            </span>
-          </div>
-          <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginBottom: 14 }}>
-            Cash bills and receipts are typically immediate sales. Choose the default due period for bills.
-          </p>
-
-          <div className="form-stack">
-            <FormField label="Default Due Period" htmlFor="bill-due-days">
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 8 }}>
-                {BILL_DUE_PRESETS.map((days) => {
-                  const isSelected = Number(form.default_bill_due_days) === days;
-                  const label = days === 0 ? 'Immediate / On Receipt (0d)' : `${days} days`;
-                  return (
-                    <button
-                      key={days}
-                      type="button"
-                      className={`btn btn--sm ${isSelected ? 'btn--primary' : 'btn--secondary'}`}
-                      onClick={() => setForm((f) => ({ ...f, default_bill_due_days: days }))}
-                      style={{ fontSize: 12, padding: '5px 12px' }}
-                    >
-                      {label}
-                    </button>
-                  );
-                })}
+              <div className="inv-field">
+                <label className="inv-field-label" htmlFor="default-payment-terms">
+                  Default Payment Terms Label
+                </label>
+                <input
+                  id="default-payment-terms"
+                  className="inv-input"
+                  placeholder="e.g. Net 15, Due within 15 days"
+                  value={form.default_payment_terms}
+                  onChange={setField('default_payment_terms')}
+                />
+                <span className="inv-field-hint">
+                  Printed in document headers and summary sections (e.g. &apos;Net 15&apos;, &apos;Due upon receipt&apos;).
+                </span>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, maxWidth: 280 }}>
-                <InputField
-                  id="bill-due-days"
-                  type="number"
-                  min="0"
-                  max="365"
-                  placeholder="Custom days"
+            </div>
+          </div>
+
+          {/* Card 2: CASH BILLS & POS */}
+          <div className="inv-card">
+            <div className="inv-card__head">
+              <div className="inv-card__title-wrap">
+                <span className="inv-card__icon">
+                  <Receipt size={18} />
+                </span>
+                <h2 className="inv-card__title">Cash Bill &amp; POS Defaults</h2>
+              </div>
+              <span className="inv-card__badge inv-card__badge--emerald">Bills &amp; POS</span>
+            </div>
+            <p className="inv-card__desc">
+              Cash bills and POS receipts are typically immediate walk-in transactions. Choose their default due period.
+            </p>
+
+            <div className="inv-card__body">
+              <div className="inv-field">
+                <label className="inv-field-label" htmlFor="bill-due-select">
+                  Default Due Period
+                </label>
+                <DuePeriodSelect
+                  id="bill-due-select"
                   value={form.default_bill_due_days}
-                  onChange={setField('default_bill_due_days')}
-                  style={{ height: 34, fontSize: 13 }}
+                  onChange={(days) => setForm((f) => ({ ...f, default_bill_due_days: days }))}
+                  isInvoice={false}
                 />
-                <span style={{ fontSize: 12, color: 'var(--color-text-muted)', whiteSpace: 'nowrap' }}>
-                  days from issue date
+                <span className="inv-field-hint">
+                  Usually set to 0 days (Immediate / On Receipt) for point-of-sale sales.
                 </span>
               </div>
-            </FormField>
-          </div>
-        </Card>
 
-        {/* Payment Methods */}
-        <Card>
-          <h3 className="form-section__title">Default Accepted Payment Methods</h3>
-          <p style={{ fontSize: 13, color: 'var(--color-text-secondary)', marginBottom: 14 }}>
-            Select the default payment options enabled for invoices and bills:
+              <div className="inv-field">
+                <label className="inv-field-label">Document Behavior</label>
+                <div
+                  style={{
+                    padding: '12px 14px',
+                    borderRadius: 9,
+                    background: 'var(--hover)',
+                    border: '1px solid var(--border)',
+                    fontSize: 13,
+                    color: 'var(--text-2)',
+                    lineHeight: 1.5,
+                  }}
+                >
+                  Cash bills skip credit aging reports and automatically track immediate customer payments upon creation.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: PAYMENT METHODS (Full Width) */}
+        <div className="inv-card">
+          <div className="inv-card__head">
+            <div className="inv-card__title-wrap">
+              <span className="inv-card__icon">
+                <CreditCard size={18} />
+              </span>
+              <h2 className="inv-card__title">Accepted Payment Methods</h2>
+            </div>
+            <span className="inv-card__badge inv-card__badge--purple">Payment Options</span>
+          </div>
+          <p className="inv-card__desc">
+            Select the default payment methods displayed on invoices, bills, and payment links.
           </p>
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-              gap: 10,
-            }}
-          >
+
+          <div className="pm-grid">
             {PAYMENT_METHODS.map((method) => {
               const checked = form.default_payment_methods?.includes(method.id);
               return (
-                <label
+                <div
                   key={method.id}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    padding: '8px 12px',
-                    borderRadius: 'var(--radius-md, 6px)',
-                    border: '1px solid',
-                    borderColor: checked ? 'var(--color-primary)' : 'var(--color-border)',
-                    background: checked ? 'var(--color-primary-subtle, rgba(59, 130, 246, 0.05))' : 'var(--color-bg-surface)',
-                    cursor: 'pointer',
-                    fontSize: 13,
-                    userSelect: 'none',
-                    transition: 'border-color 0.15s, background-color 0.15s',
+                  className={`pm-tile ${checked ? 'pm-tile--checked' : ''}`}
+                  onClick={() => togglePaymentMethod(method.id)}
+                  role="checkbox"
+                  aria-checked={checked}
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === ' ' || e.key === 'Enter') {
+                      e.preventDefault();
+                      togglePaymentMethod(method.id);
+                    }
                   }}
                 >
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    onChange={() => togglePaymentMethod(method.id)}
-                    style={{ accentColor: 'var(--color-primary)' }}
-                  />
-                  <span>{method.label}</span>
-                </label>
+                  <div className="pm-tile__check">
+                    {checked && <Check size={13} strokeWidth={3} />}
+                  </div>
+                  <span className="pm-tile__label">{method.label}</span>
+                </div>
               );
             })}
           </div>
-        </Card>
+        </div>
 
-        {/* Terms & Conditions */}
-        <Card>
-          <h3 className="form-section__title">Default Terms &amp; Conditions</h3>
-          <FormField
-            label="Terms &amp; Conditions"
-            htmlFor="default-tc"
-            helper="Legal, delivery, or return terms automatically populated into new invoices and bills."
-          >
-            <InputField
-              textarea
+        {/* Card 4: TERMS & CONDITIONS (Full Width) */}
+        <div className="inv-card">
+          <div className="inv-card__head">
+            <div className="inv-card__title-wrap">
+              <span className="inv-card__icon">
+                <ShieldCheck size={18} />
+              </span>
+              <h2 className="inv-card__title">Default Terms &amp; Conditions</h2>
+            </div>
+          </div>
+          <p className="inv-card__desc">
+            Standard legal terms, warranty, return policies, or bank transfer instructions automatically added to every new document.
+          </p>
+
+          <div className="inv-field">
+            <textarea
               id="default-tc"
+              className="inv-textarea"
               rows={4}
-              placeholder="e.g. 1. Goods once sold are not returnable without original invoice.&#10;2. Payments delayed beyond due date incur interest."
+              placeholder="e.g. 1. Goods once sold are not returnable without the original invoice.&#10;2. Payments delayed beyond the due date incur 1.5% monthly interest.&#10;3. Bank: HDFC Bank | A/C: 1234567890 | IFSC: HDFC0001234"
               value={form.default_terms_and_conditions}
               onChange={setField('default_terms_and_conditions')}
-              style={{ minHeight: 90 }}
             />
-          </FormField>
-        </Card>
+            <span className="inv-field-hint">
+              You can always customize or override these terms individually on any invoice before issuing.
+            </span>
+          </div>
+        </div>
 
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
-          <Button type="submit" variant="primary" loading={isLoading} size="lg">
-            Save Settings
-          </Button>
+        {/* Actions Footer */}
+        <div className="inv-settings-actions">
+          <button
+            type="submit"
+            className="inv-save-btn"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 size={16} className="animate-spin" />
+                Saving settings...
+              </>
+            ) : (
+              'Save Settings'
+            )}
+          </button>
         </div>
       </form>
     </div>

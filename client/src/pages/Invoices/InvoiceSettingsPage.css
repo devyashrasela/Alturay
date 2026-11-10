@@ -1,0 +1,375 @@
+/* ═══════════════════════════════════════════════════════════
+   INVOICE & BILLING SETTINGS PAGE (Full Width Modern UI)
+   ═══════════════════════════════════════════════════════════ */
+
+.inv-settings-page {
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+.inv-settings-header {
+  margin-bottom: 28px;
+}
+
+.inv-settings-title {
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--text);
+  margin: 0;
+}
+
+.inv-settings-sub {
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--text-2);
+  line-height: 1.5;
+}
+
+.inv-settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  width: 100%;
+}
+
+/* 2-Column Grid for Invoice vs Bill due settings */
+.inv-settings-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  width: 100%;
+}
+
+@media (max-width: 860px) {
+  .inv-settings-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Card */
+.inv-card {
+  width: 100%;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  transition: border-color 0.15s ease;
+}
+
+.inv-card:hover {
+  border-color: var(--icon);
+}
+
+.inv-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  gap: 12px;
+}
+
+.inv-card__title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.inv-card__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--hover);
+  color: var(--icon);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.inv-card__title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.inv-card__badge {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 3px 9px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+.inv-card__badge--emerald {
+  background: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+}
+
+.inv-card__badge--purple {
+  background: rgba(139, 92, 246, 0.12);
+  color: #8b5cf6;
+}
+
+.inv-card__badge--blue {
+  background: rgba(59, 130, 246, 0.12);
+  color: #3b82f6;
+}
+
+.inv-card__desc {
+  font-size: 13.5px;
+  color: var(--muted);
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+}
+
+.inv-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+}
+
+.inv-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  width: 100%;
+}
+
+.inv-field-label {
+  display: block;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.inv-field-hint {
+  display: block;
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+/* Due Period Dropdown */
+.due-period-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.due-select-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.due-select {
+  width: 100%;
+  height: 42px;
+  padding: 0 38px 0 14px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  appearance: none;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.due-select:hover {
+  border-color: var(--icon);
+}
+
+.due-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.due-select-wrap__icon {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.due-custom-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.due-custom-input {
+  flex: 1;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.due-custom-input:hover {
+  border-color: var(--icon);
+}
+
+.due-custom-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.due-custom-suffix {
+  font-size: 13px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* Inputs & Textareas */
+.inv-input,
+.inv-textarea {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.inv-input {
+  height: 42px;
+  padding: 0 14px;
+}
+
+.inv-textarea {
+  padding: 12px 14px;
+  min-height: 110px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.inv-input:hover,
+.inv-textarea:hover {
+  border-color: var(--icon);
+}
+
+.inv-input:focus,
+.inv-textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+/* Payment Methods Grid */
+.pm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+.pm-tile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+}
+
+.pm-tile:hover {
+  background: var(--hover);
+  border-color: var(--icon);
+}
+
+.pm-tile--checked {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--bg));
+}
+
+.pm-tile__check {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: 1.5px solid var(--border);
+  display: grid;
+  place-items: center;
+  color: #fff;
+  transition: all 0.12s ease;
+  flex-shrink: 0;
+  background: transparent;
+}
+
+.pm-tile--checked .pm-tile__check {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.pm-tile__label {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text);
+  flex: 1;
+}
+
+/* Actions footer */
+.inv-settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 8px 0 32px;
+  width: 100%;
+}
+
+.inv-save-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 24px;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 600;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  transition: filter 0.12s ease, opacity 0.12s ease;
+}
+
+.inv-save-btn:hover:not(:disabled) {
+  filter: brightness(1.1);
+}
+
+.inv-save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
