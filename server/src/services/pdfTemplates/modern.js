@@ -1,4 +1,4 @@
-const { FONT, numberFmt, moneyFmt, formatDate, totalsOf } = require('./helpers');
+const { FONT, numberFmt, moneyFmt, formatDate, totalsOf, formatShippingAddress, formatPaymentMethods } = require('./helpers');
 
 const pageOptions = () => ({
   size: 'A4',
@@ -27,6 +27,14 @@ const render = (doc, invoice, business, ctx = {}) => {
   if (invoice.due_date) {
     doc.text(`Due Date: ${formatDate(invoice.due_date)}`);
   }
+  if (invoice.po_number) {
+    doc.text(`PO Number: ${invoice.po_number}`);
+  }
+  if (invoice.description) {
+    doc.moveDown(0.2);
+    doc.font(FONT.regular).fontSize(9).fillColor('#6B7280')
+      .text(invoice.description, margin, doc.y, { width: pageWidth * 0.6 });
+  }
 
   // Logo / Business mark on right
   const logoBoxSize = 56;
@@ -36,7 +44,6 @@ const render = (doc, invoice, business, ctx = {}) => {
     try {
       doc.image(ctx.logo, logoX, headerY, { fit: [logoBoxSize, logoBoxSize], align: 'right' });
     } catch {
-      // fallback to stylized tile
       drawLogoTile(doc, business.name, logoX, headerY, logoBoxSize);
     }
   } else {
@@ -58,8 +65,9 @@ const render = (doc, invoice, business, ctx = {}) => {
   if (business.phone) doc.text(business.phone, margin, doc.y);
   if (business.email) doc.text(business.email, margin, doc.y);
   if (business.tax_id) doc.text(`GST/Tax: ${business.tax_id}`, margin, doc.y);
+  const leftPartyBottom = doc.y;
 
-  // Right: Bill To
+  // Right: Bill To & Ship To
   const rightX = margin + halfW;
   doc.font(FONT.bold).fontSize(10).fillColor('#111827')
     .text(`BILL TO`, rightX, partyY);
@@ -67,8 +75,16 @@ const render = (doc, invoice, business, ctx = {}) => {
     .text(invoice.customer_name || 'Customer', rightX, doc.y + 2);
   doc.font(FONT.regular).fontSize(9).fillColor('#4B5563');
   if (invoice.customer_phone) doc.text(invoice.customer_phone, rightX, doc.y);
+  if (invoice.customer_email) doc.text(invoice.customer_email, rightX, doc.y);
 
-  const partiesBottom = Math.max(doc.y, partyY + 65);
+  const shipAddr = formatShippingAddress(invoice.shipping_address);
+  if (shipAddr) {
+    doc.moveDown(0.4);
+    doc.font(FONT.bold).fontSize(8.5).fillColor('#111827').text('SHIP TO:', rightX, doc.y);
+    doc.font(FONT.regular).fontSize(8.5).fillColor('#4B5563').text(shipAddr, rightX, doc.y, { width: halfW });
+  }
+
+  const partiesBottom = Math.max(leftPartyBottom, doc.y, partyY + 65);
   doc.y = partiesBottom + 15;
 
   // ── Table ──
@@ -97,32 +113,53 @@ const render = (doc, invoice, business, ctx = {}) => {
   const items = invoice.items || [];
   items.forEach((item) => {
     const rY = doc.y;
+    const rowH = item.description ? 34 : 22;
+
     // Row border
     doc.save().lineWidth(0.6).strokeColor('#D1D5DB')
-      .rect(margin, rY, pageWidth, 22).stroke().restore();
+      .rect(margin, rY, pageWidth, rowH).stroke().restore();
 
     doc.font(FONT.regular).fontSize(9).fillColor('#1F2937');
     x = margin + 8;
-    doc.text(item.item_name, x, rY + 6, { width: colW.desc - 8 }); x += colW.desc;
+    doc.text(item.item_name, x, rY + 5, { width: colW.desc - 8 });
+    if (item.description) {
+      doc.font(FONT.regular).fontSize(7.5).fillColor('#6B7280')
+        .text(item.description, x, rY + 18, { width: colW.desc - 8 });
+    }
+
+    x += colW.desc;
+    doc.font(FONT.regular).fontSize(9).fillColor('#1F2937');
     doc.text(moneyFmt(item.unit_price, cur), x, rY + 6, { width: colW.price, align: 'right' }); x += colW.price;
     doc.text(String(item.quantity), x, rY + 6, { width: colW.qty, align: 'center' }); x += colW.qty;
     doc.font(FONT.bold).text(moneyFmt(item.line_total, cur), x, rY + 6, { width: colW.amount - 8, align: 'right' });
 
-    doc.y = rY + 22;
+    doc.y = rY + rowH;
   });
 
   doc.moveDown(1);
 
-  // ── Notes (Left) & Totals (Right) ──
+  // ── Notes & Terms (Left) & Totals (Right) ──
   const postTableY = doc.y;
   const t = totalsOf(invoice);
 
-  // Left: Notes / Terms
+  // Left: Notes / Terms / T&C
   doc.font(FONT.bold).fontSize(9).fillColor('#111827')
-    .text('NOTES / TERMS:', margin, postTableY);
+    .text('NOTES & TERMS:', margin, postTableY);
   doc.font(FONT.regular).fontSize(8.5).fillColor('#4B5563');
-  const notesText = invoice.notes || 'Payment is due within 15 days of receiving this invoice.';
-  doc.text(notesText, margin, doc.y + 4, { width: halfW - 20 });
+
+  const paymentTerms = invoice.payment_terms || business.default_payment_terms;
+  if (paymentTerms) {
+    doc.text(`Terms: ${paymentTerms}`, margin, doc.y + 3, { width: halfW - 20 });
+  }
+  if (invoice.notes) {
+    doc.text(invoice.notes, margin, doc.y + 2, { width: halfW - 20 });
+  }
+  const tc = invoice.terms_and_conditions || business.default_terms_and_conditions;
+  if (tc) {
+    doc.moveDown(0.3);
+    doc.font(FONT.bold).fontSize(8.5).fillColor('#111827').text('Terms & Conditions:', margin, doc.y);
+    doc.font(FONT.regular).fontSize(8).fillColor('#4B5563').text(tc, margin, doc.y, { width: halfW - 20 });
+  }
 
   // Right: Totals Box (Bordered grid)
   const totalsW = pageWidth * 0.44;
@@ -156,11 +193,15 @@ const render = (doc, invoice, business, ctx = {}) => {
   const bottomY = Math.max(doc.y, doc.page.height - margin - 70);
 
   // Left: Payment Method
+  const payMethods = formatPaymentMethods(invoice.accepted_payment_methods || business.default_payment_methods);
   doc.font(FONT.bold).fontSize(9).fillColor('#111827')
-    .text('PAYMENT METHOD', margin, bottomY);
+    .text('PAYMENT METHODS', margin, bottomY);
   doc.font(FONT.regular).fontSize(8.5).fillColor('#4B5563');
-  doc.text(`Bank: Business Account`, margin, doc.y + 2);
-  doc.text(`Account Name: ${business.name}`, margin, doc.y);
+  if (payMethods) {
+    doc.text(`Accepted: ${payMethods}`, margin, doc.y + 2, { width: halfW - 20 });
+  } else {
+    doc.text(`Bank: Business Account / Cash`, margin, doc.y + 2);
+  }
 
   // Right: Prepared By
   doc.font(FONT.bold).fontSize(9).fillColor('#111827')
@@ -171,9 +212,7 @@ const render = (doc, invoice, business, ctx = {}) => {
 
   // ── Decorative Bottom Bars ──
   doc.save();
-  // Bottom purple bar
   doc.rect(0, doc.page.height - 12, doc.page.width, 12).fill(PURPLE);
-  // Thin accent line above it
   doc.rect(0, doc.page.height - 14, doc.page.width, 2).fill('#15803D');
   doc.restore();
 };

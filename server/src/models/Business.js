@@ -90,6 +90,23 @@ module.exports = (sequelize) => {
       allowNull: false,
       defaultValue: 80,
     },
+    default_payment_methods: {
+      type: DataTypes.JSON,
+      allowNull: true,
+      defaultValue: ['cash'],
+    },
+    default_payment_terms: {
+      type: DataTypes.STRING(500),
+      allowNull: true,
+    },
+    default_terms_and_conditions: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    default_due_days: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
   }, {
     tableName: 'businesses',
     timestamps: true,

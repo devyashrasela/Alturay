@@ -97,6 +97,14 @@
   margin: 4px 0 0 0;
 }
 
+.inv-card__desc {
+  font-size: 12.5px;
+  color: #e0dfff;
+  margin: 6px 0 0 0;
+  line-height: 1.4;
+  opacity: 0.95;
+}
+
 /* From / Billed to Metadata */
 .inv-card__parties {
   display: grid;
@@ -223,6 +231,28 @@
   color: var(--color-text-muted, #7c7a76);
   margin: 0;
   line-height: 1.5;
+  white-space: pre-line;
+}
+
+.inv-card__payment-methods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.inv-card__payment-pill {
+  font-size: 11px;
+  font-weight: 500;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: var(--color-bg-muted, rgba(255, 255, 255, 0.06));
+  color: var(--color-text-primary, #ffffff);
+  border: 1px solid var(--color-border, #2a2a2e);
+}
+
+.inv-card__footer-section + .inv-card__footer-section {
+  margin-top: 14px;
 }
 
 @media (max-width: 600px) {

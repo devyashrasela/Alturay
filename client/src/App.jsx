@@ -19,6 +19,7 @@ const CreateInvoicePage = lazy(() => import('./pages/Invoices/CreateInvoicePage'
 const InvoiceDetailPage = lazy(() => import('./pages/Invoices/InvoiceDetailPage'));
 const CustomersPage = lazy(() => import('./pages/Customers/CustomersPage'));
 const BusinessSettingsPage = lazy(() => import('./pages/Settings/BusinessSettingsPage'));
+const InvoiceSettingsPage = lazy(() => import('./pages/Invoices/InvoiceSettingsPage'));
 const InvoiceTemplatePage = lazy(() => import('./pages/Settings/InvoiceTemplatePage'));
 const BillTemplatePage = lazy(() => import('./pages/Settings/BillTemplatePage'));
 const PersonalizationPage = lazy(() => import('./pages/Settings/PersonalizationPage'));
@@ -56,6 +57,7 @@ function App() {
                 <Route path="/invoices/:id" element={<InvoiceDetailPage />} />
                 <Route path="/billing/templates/invoice" element={<InvoiceTemplatePage />} />
                 <Route path="/billing/templates/bill" element={<BillTemplatePage />} />
+                <Route path="/billing/settings" element={<InvoiceSettingsPage />} />
                 {/* Backwards-compatible aliases */}
                 <Route path="/settings/templates/invoice" element={<Navigate to="/billing/templates/invoice" replace />} />
                 <Route path="/settings/templates/bill" element={<Navigate to="/billing/templates/bill" replace />} />

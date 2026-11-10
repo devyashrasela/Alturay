@@ -79,6 +79,12 @@ const updateBusinessSchema = Joi.object({
   invoice_template_id: Joi.string().valid(...TEMPLATE_POOLS.invoice),
   bill_template_id: Joi.string().valid(...TEMPLATE_POOLS.bill),
   receipt_paper_width: Joi.number().valid(...PAPER_WIDTHS),
+  default_payment_methods: Joi.array().items(Joi.string().valid(
+    'cash', 'check', 'upi', 'bank_transfer', 'credit_card', 'debit_card', 'net_banking', 'other'
+  )).allow(null),
+  default_payment_terms: Joi.string().trim().max(500).allow('', null),
+  default_terms_and_conditions: Joi.string().trim().max(5000).allow('', null),
+  default_due_days: Joi.number().integer().min(0).max(365).allow(null),
 }).min(1);
 
 module.exports = { createBusinessSchema, updateBusinessSchema };

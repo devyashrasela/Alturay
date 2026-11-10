@@ -80,6 +80,42 @@ const loadLogo = async (url) => {
   }
 };
 
+const formatShippingAddress = (addr) => {
+  if (!addr) return null;
+  if (typeof addr === 'string') {
+    const trimmed = addr.trim();
+    return trimmed.length > 0 ? trimmed : null;
+  }
+  if (typeof addr === 'object') {
+    const parts = [
+      addr.line1,
+      addr.line2,
+      [addr.city, addr.state].filter(Boolean).join(', '),
+      addr.pincode,
+    ].filter(Boolean);
+    return parts.length > 0 ? parts.join('\n') : null;
+  }
+  return null;
+};
+
+const PAYMENT_LABELS = {
+  cash: 'Cash',
+  check: 'Check / Cheque',
+  upi: 'UPI',
+  bank_transfer: 'Bank Transfer',
+  credit_card: 'Credit Card',
+  debit_card: 'Debit Card',
+  net_banking: 'Net Banking',
+  other: 'Other',
+};
+
+const formatPaymentMethods = (methods) => {
+  if (!methods) return null;
+  const arr = Array.isArray(methods) ? methods : (typeof methods === 'string' ? [methods] : []);
+  if (arr.length === 0) return null;
+  return arr.map((m) => PAYMENT_LABELS[m] || m).join(', ');
+};
+
 module.exports = {
   MM,
   FONT,
@@ -90,4 +126,6 @@ module.exports = {
   formatDate,
   totalsOf,
   loadLogo,
+  formatShippingAddress,
+  formatPaymentMethods,
 };

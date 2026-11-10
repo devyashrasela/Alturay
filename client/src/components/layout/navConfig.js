@@ -110,6 +110,12 @@ export const NAV_SECTIONS = [
             { id: 'tpl-bill', label: 'Bill template', icon: 'tpl', path: '/billing/templates/bill' },
           ],
         },
+        {
+          label: 'Configuration',
+          items: [
+            { id: 'billing-settings', label: 'Invoice settings', icon: 'sliders', path: '/billing/settings' },
+          ],
+        },
       ],
     },
   },

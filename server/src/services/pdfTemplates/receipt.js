@@ -1,4 +1,4 @@
-const { MM, FONT, numberFmt, moneyFmt, formatDate, totalsOf } = require('./helpers');
+const { MM, FONT, numberFmt, moneyFmt, formatDate, totalsOf, formatPaymentMethods } = require('./helpers');
 
 const SIZES = {
   80: { paper: 80, margin: 4 * MM, body: 8.5, small: 7, title: 12, grand: 11 },
@@ -62,6 +62,7 @@ const render = (doc, invoice, business) => {
   // Meta
   row('Bill No', invoice.invoice_number, { size: L.small });
   row('Date', formatDate(invoice.issue_date), { size: L.small });
+  if (invoice.po_number) row('PO No', invoice.po_number, { size: L.small });
   row('Customer', invoice.customer_name || 'Walk-in Customer', { size: L.small, split: 0.35 });
   if (invoice.customer_phone) row('Phone', invoice.customer_phone, { size: L.small });
   rule();
@@ -76,6 +77,9 @@ const render = (doc, invoice, business) => {
     const gross = Number(it.unit_price) * Number(it.quantity);
     const disc = Number(it.item_discount_amount || 0) + (gross * Number(it.item_discount_percent || 0)) / 100;
     text(it.item_name);
+    if (it.description) {
+      text(`  ${it.description}`, { size: L.small });
+    }
     row(`${n(it.unit_price)} x ${it.quantity}`, n(it.line_total), { size: L.small });
     if (disc > 0) row('  Discount', `-${n(disc)}`, { size: L.small });
     doc.y += 3;
@@ -96,10 +100,30 @@ const render = (doc, invoice, business) => {
     doc.y += 2;
     text('*** PAID ***', { bold: true, align: 'center' });
   }
+
+  const payMethods = formatPaymentMethods(invoice.accepted_payment_methods || business.default_payment_methods);
+  if (payMethods) {
+    doc.y += 2;
+    text(`Payment: ${payMethods}`, { size: L.small, align: 'center' });
+  }
+
+  const pTerms = invoice.payment_terms || business.default_payment_terms;
+  if (pTerms) {
+    doc.y += 2;
+    text(`Terms: ${pTerms}`, { size: L.small, align: 'center' });
+  }
+
   if (invoice.notes) {
     doc.y += 2;
     text(invoice.notes, { size: L.small, align: 'center' });
   }
+
+  const tc = invoice.terms_and_conditions || business.default_terms_and_conditions;
+  if (tc) {
+    doc.y += 2;
+    text(tc, { size: L.small, align: 'center' });
+  }
+
   doc.y += 6;
   text('Thank you! Visit again.', { align: 'center' });
   text('Powered by Alturay', { size: L.small, align: 'center' });

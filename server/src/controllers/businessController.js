@@ -22,6 +22,10 @@ const BUSINESS_ATTRIBUTES = [
   'invoice_template_id',
   'bill_template_id',
   'receipt_paper_width',
+  'default_payment_methods',
+  'default_payment_terms',
+  'default_terms_and_conditions',
+  'default_due_days',
   'created_at',
 ];
 

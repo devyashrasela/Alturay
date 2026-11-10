@@ -75,6 +75,34 @@ module.exports = (sequelize) => {
       type: DataTypes.TEXT,
       allowNull: true,
     },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    po_number: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+    },
+    payment_terms: {
+      type: DataTypes.STRING(500),
+      allowNull: true,
+    },
+    accepted_payment_methods: {
+      type: DataTypes.JSON,
+      allowNull: true,
+    },
+    terms_and_conditions: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+    },
+    shipping_address: {
+      type: DataTypes.JSON,
+      allowNull: true,
+    },
+    customer_email: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
   }, {
     tableName: 'invoices',
     timestamps: true,
