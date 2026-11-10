@@ -141,29 +141,69 @@ export default function BusinessSettingsPage() {
   const handleUploadLogo = useCallback(
     async (file) => {
       if (!file) return;
+      const localPreview = URL.createObjectURL(file);
+      handleChangeField('logo_url', localPreview);
+
       try {
         const data = new FormData();
         data.append('image', file);
         const res = await uploadImage(data).unwrap();
         if (res?.data?.url) {
-          handleChangeField('logo_url', res.data.url);
-          dispatch(addToast({ type: 'success', message: 'Logo uploaded. Save changes to persist.' }));
+          const finalUrl = res.data.url;
+          handleChangeField('logo_url', finalUrl);
+
+          if (activeBusiness?.id) {
+            const updateRes = await updateBusiness({
+              id: activeBusiness.id,
+              logo_url: finalUrl,
+            }).unwrap();
+            const updated = {
+              ...activeBusiness,
+              ...updateRes.data.business,
+            };
+            dispatch(updateBusinessInList(updated));
+            dispatch(setActiveBusiness(updated));
+          }
+          dispatch(addToast({ type: 'success', message: 'Business logo updated successfully.' }));
         }
       } catch (err) {
+        handleChangeField('logo_url', activeBusiness?.logo_url || '');
         dispatch(
           addToast({
             type: 'error',
-            message: err?.data?.message || 'Failed to upload logo.',
+            message:
+              err?.data?.error?.message ||
+              err?.data?.message ||
+              err?.message ||
+              'Failed to upload logo.',
           })
         );
       }
     },
-    [uploadImage, handleChangeField, dispatch]
+    [uploadImage, updateBusiness, activeBusiness, handleChangeField, dispatch]
   );
 
-  const handleRemoveLogo = useCallback(() => {
+  const handleRemoveLogo = useCallback(async () => {
     handleChangeField('logo_url', '');
-  }, [handleChangeField]);
+    if (activeBusiness?.id) {
+      try {
+        const updateRes = await updateBusiness({
+          id: activeBusiness.id,
+          logo_url: null,
+        }).unwrap();
+        const updated = {
+          ...activeBusiness,
+          ...updateRes.data.business,
+        };
+        dispatch(updateBusinessInList(updated));
+        dispatch(setActiveBusiness(updated));
+        dispatch(addToast({ type: 'success', message: 'Business logo removed.' }));
+      } catch (err) {
+        handleChangeField('logo_url', activeBusiness?.logo_url || '');
+        dispatch(addToast({ type: 'error', message: 'Failed to remove logo.' }));
+      }
+    }
+  }, [handleChangeField, activeBusiness, updateBusiness, dispatch]);
 
   const completeness = useMemo(() => calculateCompleteness(formData), [formData]);
 

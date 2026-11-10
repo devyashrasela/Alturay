@@ -1,3 +1,4 @@
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
@@ -10,8 +11,10 @@ const errorHandler = require('./middlewares/errorHandler');
 
 const app = express();
 
-// Security headers
-app.use(helmet());
+// Security headers (allow cross-origin for static assets like uploaded logos)
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+}));
 
 // CORS
 app.use(cors({
@@ -41,6 +44,9 @@ const authLimiter = rateLimit({
   },
 });
 app.use('/api/auth', authLimiter);
+
+// Static file serving for uploads (e.g. logos)
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // API routes
 app.use('/api', routes);

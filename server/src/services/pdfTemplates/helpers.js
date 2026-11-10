@@ -68,11 +68,14 @@ const loadLogo = async (url) => {
   try {
     if (!url) return null;
     const u = new URL(url);
-    if (u.protocol !== 'https:') return null;
-    const { address } = await dns.lookup(u.hostname);
-    if (isPrivateIp(address)) return null;
+    if (u.protocol !== 'https:' && u.protocol !== 'http:') return null;
+    const isLocalhost = u.hostname === 'localhost' || u.hostname === '127.0.0.1';
+    if (!isLocalhost) {
+      const { address } = await dns.lookup(u.hostname);
+      if (isPrivateIp(address)) return null;
+    }
     const res = await fetch(u, { signal: AbortSignal.timeout(2500), redirect: 'error' });
-    if (!res.ok || !/^image\/(png|jpe?g)/.test(res.headers.get('content-type') || '')) return null;
+    if (!res.ok || !/^image\/(png|jpe?g|webp)/.test(res.headers.get('content-type') || '')) return null;
     const buf = Buffer.from(await res.arrayBuffer());
     return buf.length <= 512 * 1024 ? buf : null;
   } catch {

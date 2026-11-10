@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Pencil, Loader2, Check, X } from 'lucide-react';
+import { Pencil, Loader2, Check, X, Camera } from 'lucide-react';
 import { useLazyCheckQrPrefixQuery } from '../../../store/api/businessApi';
 
 export default function IdentityCard({
@@ -106,6 +106,9 @@ export default function IdentityCard({
     if (file) {
       onUploadLogo(file);
     }
+    if (e.target) {
+      e.target.value = '';
+    }
   };
 
   const handleFormSubmit = (e) => {
@@ -118,15 +121,41 @@ export default function IdentityCard({
 
   return (
     <section className="bcard" id="c-ident" aria-label="Business identity">
+      {/* Hidden file input accessible in both view and edit modes */}
+      <input
+        ref={fileInputRef}
+        id="logoFileInput"
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        style={{ display: 'none' }}
+        onChange={handleFileChange}
+      />
+
       {!isEditing ? (
         <div>
           <div className="ident">
-            <div className="ident-logo" aria-hidden="true">
-              {formData.logo_url ? (
+            <div
+              className="ident-logo ident-logo--clickable"
+              onClick={() => fileInputRef.current?.click()}
+              title="Click to upload or change business logo"
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  fileInputRef.current?.click();
+                }
+              }}
+            >
+              {isUploadingLogo ? (
+                <Loader2 size={26} className="animate-spin" style={{ color: 'var(--accent)' }} />
+              ) : formData.logo_url ? (
                 <img src={formData.logo_url} alt="Logo" />
               ) : (
                 <span>{initial}</span>
               )}
+              <div className="ident-logo__overlay" aria-hidden="true">
+                <Camera size={18} />
+              </div>
             </div>
 
             <div className="ident__body">
@@ -191,7 +220,13 @@ export default function IdentityCard({
         <form onSubmit={handleFormSubmit} noValidate>
           <div style={{ padding: '24px 24px 0' }}>
             <div className="logo-edit">
-              <div className="ident-logo">
+              <div
+                className="ident-logo ident-logo--clickable"
+                onClick={() => fileInputRef.current?.click()}
+                title="Click to upload photo"
+                role="button"
+                tabIndex={0}
+              >
                 {isUploadingLogo ? (
                   <Loader2 size={24} className="animate-spin" style={{ color: 'var(--accent)' }} />
                 ) : formData.logo_url ? (
@@ -199,6 +234,9 @@ export default function IdentityCard({
                 ) : (
                   <span>{initial}</span>
                 )}
+                <div className="ident-logo__overlay" aria-hidden="true">
+                  <Camera size={18} />
+                </div>
               </div>
               <div>
                 <div style={{ fontWeight: 600, color: 'var(--text)' }}>Business logo</div>
@@ -206,27 +244,25 @@ export default function IdentityCard({
                   PNG, JPG or WebP, up to 5 MB. Square images look best.
                 </div>
                 <div className="logo-edit__btns">
-                  <label className="linkbtn" htmlFor="logoFileInput" style={{ cursor: 'pointer' }}>
-                    Upload photo
-                  </label>
+                  <button
+                    type="button"
+                    className="linkbtn"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploadingLogo}
+                  >
+                    {isUploadingLogo ? 'Uploading photo...' : 'Upload photo'}
+                  </button>
                   {formData.logo_url && (
                     <button
                       type="button"
                       className="linkbtn linkbtn--danger"
                       onClick={onRemoveLogo}
+                      disabled={isUploadingLogo}
                     >
                       Remove photo
                     </button>
                   )}
                 </div>
-                <input
-                  ref={fileInputRef}
-                  id="logoFileInput"
-                  type="file"
-                  accept="image/png,image/jpeg,image/webp"
-                  style={{ display: 'none' }}
-                  onChange={handleFileChange}
-                />
               </div>
             </div>
 
