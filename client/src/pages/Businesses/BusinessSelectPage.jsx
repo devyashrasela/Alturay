@@ -22,8 +22,7 @@ export default function BusinessSelectPage() {
 
   const handleSelect = (biz) => {
     dispatch(setActiveBusiness(biz));
-    const homePath = biz.role === 'staff' ? '/invoices' : '/dashboard';
-    navigate(homePath);
+    navigate('/dashboard');
   };
 
   const handleCreatedSuccess = (business) => {

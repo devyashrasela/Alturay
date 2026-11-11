@@ -9,7 +9,7 @@ export const ROLE_DESCRIPTIONS = {
   owner: 'Full control of the business, including identity settings and Admins.',
   admin: 'Manages business settings, billing configuration and team members below Admin.',
   manager: 'Manages products, customers and invoices. Can view the dashboard and the team.',
-  staff: 'Creates customers and invoices and edits their own drafts. No settings or financial dashboard.',
+  staff: 'Creates customers and invoices and edits their own drafts. Personal billing dashboard.',
 };
 
 export const PERMISSION_LABELS = {

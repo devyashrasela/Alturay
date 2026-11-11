@@ -8,6 +8,9 @@ exports.list = async (req, res, next) => {
     const offset = (parseInt(page) - 1) * parseInt(limit);
 
     const whereClause = { business_id: req.businessId };
+    if (req.memberRole === 'staff') {
+      whereClause.created_by = req.user.id;
+    }
     if (type) whereClause.type = type;
     if (status) whereClause.status = status;
     if (search) {
@@ -176,8 +179,13 @@ exports.create = async (req, res, next) => {
 
 exports.getById = async (req, res, next) => {
   try {
+    const whereClause = { id: req.params.invoiceId, business_id: req.businessId };
+    if (req.memberRole === 'staff') {
+      whereClause.created_by = req.user.id;
+    }
+
     const invoice = await Invoice.findOne({
-      where: { id: req.params.invoiceId, business_id: req.businessId },
+      where: whereClause,
       include: [
         {
           model: InvoiceItem,

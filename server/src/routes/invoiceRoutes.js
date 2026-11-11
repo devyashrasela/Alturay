@@ -30,8 +30,13 @@ router.patch(
 // PDF download / stream
 router.get('/:invoiceId/pdf', requirePermission('invoice.view'), async (req, res, next) => {
   try {
+    const whereClause = { id: req.params.invoiceId, business_id: req.businessId };
+    if (req.memberRole === 'staff') {
+      whereClause.created_by = req.user.id;
+    }
+
     const invoice = await Invoice.findOne({
-      where: { id: req.params.invoiceId, business_id: req.businessId },
+      where: whereClause,
       include: [
         { model: InvoiceItem, as: 'items' },
         {

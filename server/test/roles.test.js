@@ -38,7 +38,7 @@ test('Permissions matrix checks', () => {
   assert.equal(hasPermission('staff', 'product.create'), false);
   assert.equal(hasPermission('staff', 'customer.create'), true);
   assert.equal(hasPermission('staff', 'invoice.create'), true);
-  assert.equal(hasPermission('staff', 'dashboard.view'), false);
+  assert.equal(hasPermission('staff', 'dashboard.view'), true);
 });
 
 test('memberRules: decideRoleChange', () => {

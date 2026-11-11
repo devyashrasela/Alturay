@@ -29,8 +29,9 @@ test('resolveSectionPath for roles', () => {
 });
 
 test('filterNavForPermissions filters navigation for Staff', () => {
-  // Staff permissions
+  // Staff permissions (now includes dashboard.view)
   const staffPerms = [
+    'dashboard.view',
     'product.view',
     'customer.view',
     'customer.create',
@@ -38,13 +39,14 @@ test('filterNavForPermissions filters navigation for Staff', () => {
     'invoice.create',
     'invoice.edit_own',
     'invoice.issue',
+    'business.view',
   ];
   const staffCan = (p) => staffPerms.includes(p);
 
   const filtered = filterNavForPermissions(NAV_SECTIONS, staffCan);
   const ids = filtered.map((s) => s.id);
 
-  assert.equal(ids.includes('dashboard'), false);
+  assert.equal(ids.includes('dashboard'), true);
   assert.equal(ids.includes('settings'), false);
   assert.equal(ids.includes('inventory'), true);
   assert.equal(ids.includes('billing'), true);

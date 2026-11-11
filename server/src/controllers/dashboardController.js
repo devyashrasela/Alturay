@@ -21,6 +21,51 @@ const todayISO = () => formatLocalDate(new Date());
 exports.getStats = async (req, res, next) => {
   try {
     const businessId = req.businessId;
+
+    if (req.memberRole === 'staff') {
+      const staffWhere = {
+        business_id: businessId,
+        created_by: req.user.id,
+      };
+
+      const [
+        myTotalInvoices,
+        myDraftsCount,
+        myIssuedCount,
+        myPaidCount,
+        billedResult,
+      ] = await Promise.all([
+        Invoice.count({ where: staffWhere }),
+        Invoice.count({ where: { ...staffWhere, status: 'draft' } }),
+        Invoice.count({ where: { ...staffWhere, status: 'issued' } }),
+        Invoice.count({ where: { ...staffWhere, status: 'paid' } }),
+        Invoice.findOne({
+          where: {
+            ...staffWhere,
+            status: { [Op.ne]: 'cancelled' },
+          },
+          attributes: [[fn('COALESCE', fn('SUM', col('total_amount')), 0), 'total']],
+          raw: true,
+        }),
+      ]);
+
+      const myBilledAmount = parseFloat(billedResult?.total || 0);
+
+      return res.json({
+        success: true,
+        data: {
+          isScoped: true,
+          stats: {
+            totalInvoices: myTotalInvoices,
+            draftsCount: myDraftsCount,
+            issuedCount: myIssuedCount,
+            paidCount: myPaidCount,
+            billedAmount: myBilledAmount,
+          },
+        },
+      });
+    }
+
     const requestedMonth = req.query.month;
     const requestedStartDate = req.query.startDate;
     const requestedEndDate = req.query.endDate;
@@ -229,6 +274,7 @@ exports.getStats = async (req, res, next) => {
     return res.json({
       success: true,
       data: {
+        isScoped: false,
         stats: {
           total_products: totalProducts,
           total_invoices: totalInvoices,
@@ -262,11 +308,27 @@ exports.getStats = async (req, res, next) => {
 
 exports.getRecent = async (req, res, next) => {
   try {
+    const whereClause = { business_id: req.businessId };
+    if (req.memberRole === 'staff') {
+      whereClause.created_by = req.user.id;
+    }
+
     const invoices = await Invoice.findAll({
-      where: { business_id: req.businessId },
+      where: whereClause,
       order: [['created_at', 'DESC']],
       limit: 10,
-      attributes: ['id', 'invoice_number', 'type', 'customer_name', 'total_amount', 'status', 'issue_date', 'due_date', 'created_at'],
+      attributes: [
+        'id',
+        'invoice_number',
+        'type',
+        'customer_name',
+        'total_amount',
+        'status',
+        'issue_date',
+        'due_date',
+        'created_by',
+        'created_at',
+      ],
     });
 
     return res.json({

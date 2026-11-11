@@ -78,6 +78,7 @@ const PERMISSIONS = {
     'member.view',
   ],
   staff: [
+    'dashboard.view',
     'product.view',
     'customer.view',
     'customer.create',
@@ -112,7 +113,7 @@ const ROLE_META = {
   },
   staff: {
     label: 'Staff',
-    description: 'Creates customers and invoices and edits their own drafts. No settings or financial dashboard.',
+    description: 'Creates customers and invoices and edits their own drafts. Personal billing dashboard.',
   },
 };
 

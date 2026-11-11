@@ -41,8 +41,7 @@ export default function WorkspaceSwitcher() {
   const handleSwitch = (biz) => {
     setOpen(false);
     dispatch(setActiveBusiness(biz));
-    const homePath = biz.role === 'staff' ? '/invoices' : '/dashboard';
-    navigate(homePath);
+    navigate('/dashboard');
   };
 
   const handleAddBusiness = () => {
