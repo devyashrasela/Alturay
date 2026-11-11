@@ -6,10 +6,11 @@ import SecondarySidebar from './SecondarySidebar';
 import QuickActions from './QuickActions';
 import UserSettingsModal from './UserSettingsModal';
 import Toast from '../ui/Toast/Toast';
-import { getActiveSection } from './navConfig';
+import { NAV_SECTIONS, filterNavForPermissions } from './navConfig';
 import { useGetMeQuery } from '../../store/api/authApi';
 import { setUser } from '../../store/slices/authSlice';
-import { setBusinesses, setActiveBusiness } from '../../store/slices/businessSlice';
+import { setBusinesses, setActiveBusiness, clearBusiness } from '../../store/slices/businessSlice';
+import { usePermissions } from '../../hooks/usePermissions';
 import './appShell.css';
 
 const COLLAPSE_KEY = 'alturay_secnav_collapsed';
@@ -27,13 +28,15 @@ export default function AppLayout() {
   const location = useLocation();
   const { isAuthenticated } = useSelector((state) => state.auth);
   const { activeBusinessId } = useSelector((state) => state.business);
+  const { can } = usePermissions();
 
   const [collapsed, setCollapsed] = useState(readCollapsed);
   const [userSettingsOpen, setUserSettingsOpen] = useState(false);
   const [userSettingsTab, setUserSettingsTab] = useState('profile');
 
-  const section = getActiveSection(location.pathname);
-  const hasSidebar = Boolean(section?.sidebar);
+  const filteredSections = filterNavForPermissions(NAV_SECTIONS, can);
+  const section = filteredSections.find((s) => s.match(location.pathname)) || null;
+  const hasSidebar = Boolean(section?.sidebar && (section.sidebar.pill || section.sidebar.groups?.length > 0));
 
   const { data: meData } = useGetMeQuery(undefined, { skip: !isAuthenticated });
 
@@ -60,6 +63,8 @@ export default function AppLayout() {
         } else {
           dispatch(setActiveBusiness(user.businesses[0]));
         }
+      } else {
+        dispatch(clearBusiness());
       }
     }
   }, [meData, dispatch, activeBusinessId]);

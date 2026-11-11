@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
-import { Pencil, Loader2, Check, X, Camera } from 'lucide-react';
+import { Pencil, Loader2, Check, X, Camera, Lock } from 'lucide-react';
 import { useLazyCheckQrPrefixQuery } from '../../../store/api/businessApi';
+import { usePermissions } from '../../../hooks/usePermissions';
 
 export default function IdentityCard({
   business,
@@ -18,6 +19,9 @@ export default function IdentityCard({
   onEditCard,
   focusFieldId,
 }) {
+  const { roleLabel: permRoleLabel, can } = usePermissions();
+  const canUpdateIdentity = can('business.update_identity');
+
   const [triggerCheckQrPrefix] = useLazyCheckQrPrefixQuery();
   const [qrStatus, setQrStatus] = useState(null); // { available: boolean, message: string }
   const [isCheckingQr, setIsCheckingQr] = useState(false);
@@ -93,9 +97,9 @@ export default function IdentityCard({
   }, [formData.qr_prefix, isEditing, business?.qr_prefix, business?.id, triggerCheckQrPrefix]);
 
   const initial = formData.name ? formData.name.trim().charAt(0).toUpperCase() : 'B';
-  const roleLabel = business?.role
+  const roleLabel = permRoleLabel || (business?.role
     ? business.role.charAt(0).toUpperCase() + business.role.slice(1)
-    : 'Owner';
+    : 'Member');
 
   const ownerName = business?.contact_details ? `Owned by ${business.contact_details}` : `Owned by ${roleLabel}`;
   const location = [formData.city, formData.state].filter(Boolean).join(', ');
@@ -113,10 +117,13 @@ export default function IdentityCard({
 
   const handleFormSubmit = (e) => {
     e.preventDefault();
-    if (isCheckingQr || (qrStatus && !qrStatus.available)) {
+    if (canUpdateIdentity && (isCheckingQr || (qrStatus && !qrStatus.available))) {
       return;
     }
-    onSave(['name', 'qr_prefix', 'logo_url']);
+    const fields = canUpdateIdentity
+      ? ['name', 'qr_prefix', 'logo_url']
+      : ['name', 'logo_url'];
+    onSave(fields);
   };
 
   return (
@@ -294,10 +301,17 @@ export default function IdentityCard({
                     id="f-qr"
                     value={formData.qr_prefix}
                     onChange={(e) =>
+                      canUpdateIdentity &&
                       onChangeField(
                         'qr_prefix',
                         e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, '')
                       )
+                    }
+                    readOnly={!canUpdateIdentity}
+                    style={
+                      !canUpdateIdentity
+                        ? { opacity: 0.75, cursor: 'not-allowed', background: 'var(--hover)' }
+                        : undefined
                     }
                     placeholder="e.g. acme-retail"
                     autoComplete="off"
@@ -305,7 +319,21 @@ export default function IdentityCard({
                     required
                   />
                   <div className="binput-wrap__status" aria-live="polite">
-                    {isCheckingQr ? (
+                    {!canUpdateIdentity ? (
+                      <span
+                        title="Only the business owner can change the QR prefix."
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px',
+                          color: 'var(--muted)',
+                          fontSize: '11px',
+                          fontWeight: 500,
+                        }}
+                      >
+                        <Lock size={12} /> Owner only
+                      </span>
+                    ) : isCheckingQr ? (
                       <span className="binput-wrap__status--checking">
                         <Loader2 size={13} className="animate-spin" /> Checking...
                       </span>

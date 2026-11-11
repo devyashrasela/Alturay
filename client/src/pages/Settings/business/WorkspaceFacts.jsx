@@ -1,15 +1,17 @@
 import { formatDate } from '../../../utils/formatDate';
+import { usePermissions } from '../../../hooks/usePermissions';
 
 export default function WorkspaceFacts({ business }) {
+  const { roleLabel: permRoleLabel } = usePermissions();
   if (!business) return null;
 
   const shortId = business.id
     ? `${business.id.slice(0, 8)}…${business.id.slice(-4)}`
     : '—';
 
-  const roleLabel = business.role
+  const roleLabel = permRoleLabel || (business.role
     ? business.role.charAt(0).toUpperCase() + business.role.slice(1)
-    : 'Owner';
+    : 'Member');
 
   const createdDate = business.created_at ? formatDate(business.created_at) : '—';
 

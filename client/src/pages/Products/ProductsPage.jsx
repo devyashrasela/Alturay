@@ -8,6 +8,7 @@ import {
   useDeleteProductMutation,
 } from '../../store/api/productApi';
 import { addToast } from '../../store/slices/uiSlice';
+import { usePermissions } from '../../hooks/usePermissions';
 import Icon from '../../components/ui/Icon';
 import PageHeader from '../../components/ui/PageHeader/PageHeader';
 import DataTable from '../../components/ui/DataTable';
@@ -31,6 +32,12 @@ export default function ProductsPage() {
   const dispatch = useDispatch();
   const location = useLocation();
   const { activeBusinessId, activeBusiness } = useSelector((s) => s.business);
+  const { can } = usePermissions();
+
+  const canCreate = can('product.create');
+  const canUpdate = can('product.update');
+  const canDelete = can('product.delete');
+
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
@@ -49,15 +56,16 @@ export default function ProductsPage() {
   const products = data?.data?.products || [];
   const meta = data?.meta || {};
 
-  // Auto-open create modal if navigated with ?add=1 or ?create=1
+  // Auto-open create modal if navigated with ?add=1 or ?create=1 and permitted
   useEffect(() => {
+    if (!canCreate) return;
     const params = new URLSearchParams(location.search);
     if (params.get('add') === '1' || params.get('create') === '1') {
       setEditProduct(null);
       setForm(EMPTY_FORM);
       setShowModal(true);
     }
-  }, [location.search]);
+  }, [location.search, canCreate]);
 
   const openCreate = () => {
     setEditProduct(null);
@@ -156,31 +164,39 @@ export default function ProductsPage() {
     {
       key: 'tax_rate',
       header: 'Tax %',
-      width: '12%',
+      width: canUpdate || canDelete ? '12%' : '26%',
       tax: true,
       render: (p) => `${p.tax_rate}%`,
     },
-    {
-      key: 'actions',
-      header: 'Actions',
-      width: '14%',
-      align: 'right',
-      render: (p) => (
-        <DataTable.RowActions>
-          <DataTable.ActionButton
-            icon="edit"
-            label={`Edit ${p.name}`}
-            onClick={() => openEdit(p)}
-          />
-          <DataTable.ActionButton
-            icon="trash"
-            variant="danger"
-            label={`Delete ${p.name}`}
-            onClick={() => setDeleteProduct(p)}
-          />
-        </DataTable.RowActions>
-      ),
-    },
+    ...(canUpdate || canDelete
+      ? [
+          {
+            key: 'actions',
+            header: 'Actions',
+            width: '14%',
+            align: 'right',
+            render: (p) => (
+              <DataTable.RowActions>
+                {canUpdate && (
+                  <DataTable.ActionButton
+                    icon="edit"
+                    label={`Edit ${p.name}`}
+                    onClick={() => openEdit(p)}
+                  />
+                )}
+                {canDelete && (
+                  <DataTable.ActionButton
+                    icon="trash"
+                    variant="danger"
+                    label={`Delete ${p.name}`}
+                    onClick={() => setDeleteProduct(p)}
+                  />
+                )}
+              </DataTable.RowActions>
+            ),
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -203,9 +219,11 @@ export default function ProductsPage() {
           />
           <DataTable.Actions>
             <DataTable.FilterButton ariaLabel="Filter and sort products" />
-            <DataTable.NewButton onClick={openCreate}>
-              Add product
-            </DataTable.NewButton>
+            {canCreate && (
+              <DataTable.NewButton onClick={openCreate}>
+                Add product
+              </DataTable.NewButton>
+            )}
           </DataTable.Actions>
         </DataTable.Toolbar>
 
@@ -216,8 +234,8 @@ export default function ProductsPage() {
             icon: <Icon name="pkg" size={28} />,
             title: 'No products yet',
             description: 'Add your first product to start creating invoices and bills.',
-            actionLabel: 'Add Product',
-            onAction: openCreate,
+            actionLabel: canCreate ? 'Add Product' : undefined,
+            onAction: canCreate ? openCreate : undefined,
           }}
           columns={columns}
           data={products}

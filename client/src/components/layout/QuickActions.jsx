@@ -2,11 +2,15 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../ui/Icon';
 import { QUICK_ACTIONS } from './navConfig';
+import { usePermissions } from '../../hooks/usePermissions';
 
 export default function QuickActions() {
   const navigate = useNavigate();
+  const { can } = usePermissions();
   const [open, setOpen] = useState(false);
   const containerRef = useRef(null);
+
+  const visibleActions = QUICK_ACTIONS.filter((action) => !action.perm || can(action.perm));
 
   useEffect(() => {
     if (!open) return undefined;
@@ -29,6 +33,10 @@ export default function QuickActions() {
       document.removeEventListener('keydown', handleKey);
     };
   }, [open]);
+
+  if (visibleActions.length === 0) {
+    return null;
+  }
 
   const handleAction = (action) => {
     if (action.soon) return;
@@ -54,7 +62,7 @@ export default function QuickActions() {
       {open && (
         <div className="pop qa" id="qa" role="menu" aria-label="Quick actions">
           <div className="pop__label">Create</div>
-          {QUICK_ACTIONS.map((action) => (
+          {visibleActions.map((action) => (
             <button
               key={action.label}
               type="button"

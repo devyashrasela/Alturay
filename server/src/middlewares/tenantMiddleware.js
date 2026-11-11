@@ -1,4 +1,5 @@
 const { BusinessMember, Business } = require('../models');
+const { hasPermission } = require('../constants/roles');
 
 const tenantMiddleware = async (req, res, next) => {
   try {
@@ -30,7 +31,7 @@ const tenantMiddleware = async (req, res, next) => {
       return res.status(403).json({
         success: false,
         error: {
-          code: 'FORBIDDEN',
+          code: 'NOT_A_MEMBER',
           message: 'You do not have access to this business.',
         },
       });
@@ -39,6 +40,9 @@ const tenantMiddleware = async (req, res, next) => {
     req.business = membership.business;
     req.businessId = businessId;
     req.memberRole = membership.role;
+    req.membership = membership;
+    req.can = (perm) => hasPermission(req.memberRole, perm);
+
     next();
   } catch (error) {
     next(error);

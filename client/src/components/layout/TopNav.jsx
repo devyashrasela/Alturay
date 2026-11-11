@@ -1,15 +1,19 @@
 import { Link, useLocation } from 'react-router-dom';
 import WorkspaceSwitcher from './WorkspaceSwitcher';
 import UserMenu from './UserMenu';
-import { NAV_SECTIONS, getActiveSection } from './navConfig';
+import { NAV_SECTIONS, getActiveSection, filterNavForPermissions, getHomePath } from './navConfig';
+import { usePermissions } from '../../hooks/usePermissions';
 
 export default function TopNav({ onOpenUserSettings }) {
   const { pathname } = useLocation();
+  const { can } = usePermissions();
   const activeId = getActiveSection(pathname)?.id;
+  const filteredSections = filterNavForPermissions(NAV_SECTIONS, can);
+  const homePath = getHomePath(can);
 
   return (
     <header className="topbar">
-      <Link className="topbar__brand" to="/dashboard" aria-label="Alturay home">
+      <Link className="topbar__brand" to={homePath} aria-label="Alturay home">
         <img
           className="topbar__logo"
           src="/alturay_light.png"
@@ -22,7 +26,7 @@ export default function TopNav({ onOpenUserSettings }) {
       </Link>
 
       <nav className="topbar__links" id="navLinks" aria-label="Main">
-        {NAV_SECTIONS.map((section) => {
+        {filteredSections.map((section) => {
           const active = section.id === activeId;
           return (
             <Link

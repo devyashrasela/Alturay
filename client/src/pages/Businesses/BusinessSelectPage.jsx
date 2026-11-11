@@ -8,6 +8,7 @@ import { useGetBusinessesQuery } from '../../store/api/businessApi';
 import { addToast } from '../../store/slices/uiSlice';
 import { businessAccent } from '../../utils/businessAccent';
 import { PageLoader } from '../../components/ui/Loader/Spinner';
+import RoleBadge from '../../components/ui/Badge/RoleBadge';
 import CreateBusinessModal from '../../components/business/CreateBusinessModal';
 
 export default function BusinessSelectPage() {
@@ -21,7 +22,8 @@ export default function BusinessSelectPage() {
 
   const handleSelect = (biz) => {
     dispatch(setActiveBusiness(biz));
-    navigate('/dashboard');
+    const homePath = biz.role === 'staff' ? '/invoices' : '/dashboard';
+    navigate(homePath);
   };
 
   const handleCreatedSuccess = (business) => {
@@ -87,9 +89,10 @@ export default function BusinessSelectPage() {
               </div>
               <div className="biz-card__body">
                 <div className="biz-card__name">{biz.name}</div>
-                <div className="biz-card__meta">
-                  {biz.qr_prefix ? `#${biz.qr_prefix} · ` : ''}
-                  {biz.role} · {biz.currency}
+                <div className="biz-card__meta" style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                  {biz.qr_prefix ? <span>#{biz.qr_prefix} · </span> : null}
+                  <RoleBadge role={biz.role} size="sm" />
+                  <span>· {biz.currency}</span>
                 </div>
               </div>
               <ChevronRight size={18} className="biz-card__chev" />

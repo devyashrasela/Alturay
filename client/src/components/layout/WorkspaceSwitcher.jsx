@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { setActiveBusiness } from '../../store/slices/businessSlice';
 import Icon from '../ui/Icon';
+import RoleBadge from '../ui/Badge/RoleBadge';
 
 export default function WorkspaceSwitcher() {
   const dispatch = useDispatch();
@@ -40,7 +41,8 @@ export default function WorkspaceSwitcher() {
   const handleSwitch = (biz) => {
     setOpen(false);
     dispatch(setActiveBusiness(biz));
-    navigate('/dashboard');
+    const homePath = biz.role === 'staff' ? '/invoices' : '/dashboard';
+    navigate(homePath);
   };
 
   const handleAddBusiness = () => {
@@ -112,7 +114,8 @@ export default function WorkspaceSwitcher() {
                     initial
                   )}
                 </span>
-                <span>{b.name}</span>
+                <span style={{ marginRight: '6px' }}>{b.name}</span>
+                {b.role && <RoleBadge role={b.role} size="sm" />}
                 {isCurrent && (
                   <Icon name="check" size={14} style={{ marginLeft: 'auto' }} />
                 )}

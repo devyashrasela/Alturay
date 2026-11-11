@@ -57,6 +57,10 @@ Invoice.belongsTo(Business, { foreignKey: 'business_id', as: 'business' });
 Customer.hasMany(Invoice, { foreignKey: 'customer_id', as: 'invoices' });
 Invoice.belongsTo(Customer, { foreignKey: 'customer_id', as: 'customer' });
 
+// Invoice -> Creator (User)
+Invoice.belongsTo(User, { foreignKey: 'created_by', as: 'creator' });
+User.hasMany(Invoice, { foreignKey: 'created_by', as: 'createdInvoices' });
+
 // Invoice -> InvoiceItems
 Invoice.hasMany(InvoiceItem, { foreignKey: 'invoice_id', as: 'items' });
 InvoiceItem.belongsTo(Invoice, { foreignKey: 'invoice_id', as: 'invoice' });

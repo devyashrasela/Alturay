@@ -1,4 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
+import { setupListeners } from '@reduxjs/toolkit/query';
 import authReducer from './slices/authSlice';
 import businessReducer from './slices/businessSlice';
 import themeReducer from './slices/themeSlice';
@@ -16,5 +17,7 @@ export const store = configureStore({
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(baseApi.middleware),
 });
+
+setupListeners(store.dispatch);
 
 export default store;

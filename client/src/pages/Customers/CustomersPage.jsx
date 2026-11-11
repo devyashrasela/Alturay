@@ -6,6 +6,7 @@ import {
   useDeleteCustomerMutation,
 } from '../../store/api/customerApi';
 import { addToast } from '../../store/slices/uiSlice';
+import { usePermissions } from '../../hooks/usePermissions';
 import Icon from '../../components/ui/Icon';
 import PageHeader from '../../components/ui/PageHeader/PageHeader';
 import DataTable from '../../components/ui/DataTable';
@@ -17,6 +18,11 @@ export default function CustomersPage() {
   const dispatch = useDispatch();
   const location = useLocation();
   const { activeBusinessId, activeBusiness } = useSelector((s) => s.business);
+  const { can } = usePermissions();
+
+  const canCreate = can('customer.create');
+  const canUpdate = can('customer.update');
+  const canDelete = can('customer.delete');
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
@@ -34,14 +40,15 @@ export default function CustomersPage() {
   const customers = data?.data?.customers || [];
   const meta = data?.meta || {};
 
-  // Auto-open create modal if navigated with ?add=1 or ?create=1
+  // Auto-open create modal if navigated with ?add=1 or ?create=1 and permitted
   useEffect(() => {
+    if (!canCreate) return;
     const params = new URLSearchParams(location.search);
     if (params.get('add') === '1' || params.get('create') === '1') {
       setEditCustomer(null);
       setShowModal(true);
     }
-  }, [location.search]);
+  }, [location.search, canCreate]);
 
   const openCreate = () => {
     setEditCustomer(null);
@@ -133,36 +140,44 @@ export default function CustomersPage() {
     {
       key: 'created_at',
       header: 'Added',
-      width: '10%',
+      width: canUpdate || canDelete ? '10%' : '20%',
       render: (c) => <span className="tax">{formatDate(c.createdAt || c.created_at)}</span>,
     },
-    {
-      key: 'actions',
-      header: 'Actions',
-      width: '10%',
-      align: 'right',
-      render: (c) => (
-        <DataTable.RowActions>
-          <DataTable.ActionButton
-            icon="edit"
-            label={`Edit ${c.name}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              openEdit(c);
-            }}
-          />
-          <DataTable.ActionButton
-            icon="trash"
-            variant="danger"
-            label={`Delete ${c.name}`}
-            onClick={(e) => {
-              e.stopPropagation();
-              setDeleteCustomer(c);
-            }}
-          />
-        </DataTable.RowActions>
-      ),
-    },
+    ...(canUpdate || canDelete
+      ? [
+          {
+            key: 'actions',
+            header: 'Actions',
+            width: '10%',
+            align: 'right',
+            render: (c) => (
+              <DataTable.RowActions>
+                {canUpdate && (
+                  <DataTable.ActionButton
+                    icon="edit"
+                    label={`Edit ${c.name}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openEdit(c);
+                    }}
+                  />
+                )}
+                {canDelete && (
+                  <DataTable.ActionButton
+                    icon="trash"
+                    variant="danger"
+                    label={`Delete ${c.name}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeleteCustomer(c);
+                    }}
+                  />
+                )}
+              </DataTable.RowActions>
+            ),
+          },
+        ]
+      : []),
   ];
 
   return (
@@ -185,9 +200,11 @@ export default function CustomersPage() {
           />
           <DataTable.Actions>
             <DataTable.FilterButton ariaLabel="Filter and sort customers" />
-            <DataTable.NewButton onClick={openCreate}>
-              Add customer
-            </DataTable.NewButton>
+            {canCreate && (
+              <DataTable.NewButton onClick={openCreate}>
+                Add customer
+              </DataTable.NewButton>
+            )}
           </DataTable.Actions>
         </DataTable.Toolbar>
 
@@ -198,8 +215,8 @@ export default function CustomersPage() {
             icon: <Icon name="users" size={28} />,
             title: 'No customers yet',
             description: 'Add your first customer to keep track of contact details and billing.',
-            actionLabel: 'Add Customer',
-            onAction: openCreate,
+            actionLabel: canCreate ? 'Add Customer' : undefined,
+            onAction: canCreate ? openCreate : undefined,
           }}
           columns={columns}
           data={customers}

@@ -4,20 +4,31 @@ const { Invoice, InvoiceItem, Customer } = require('../models');
 const { generateInvoicePDF } = require('../services/pdfGeneratorService');
 const { TEMPLATE_POOLS, PAPER_WIDTHS } = require('../constants/templates');
 const validate = require('../middlewares/validate');
+const { requirePermission, requireAnyPermission } = require('../middlewares/requirePermission');
 const {
   createInvoiceSchema,
   updateInvoiceSchema,
   updateStatusSchema,
 } = require('../validators/invoiceValidator');
 
-router.get('/', invoiceController.list);
-router.post('/', validate(createInvoiceSchema), invoiceController.create);
-router.get('/:invoiceId', invoiceController.getById);
-router.put('/:invoiceId', validate(updateInvoiceSchema), invoiceController.update);
-router.patch('/:invoiceId/status', validate(updateStatusSchema), invoiceController.updateStatus);
+router.get('/', requirePermission('invoice.view'), invoiceController.list);
+router.post('/', requirePermission('invoice.create'), validate(createInvoiceSchema), invoiceController.create);
+router.get('/:invoiceId', requirePermission('invoice.view'), invoiceController.getById);
+router.put(
+  '/:invoiceId',
+  requireAnyPermission('invoice.edit_any', 'invoice.edit_own'),
+  validate(updateInvoiceSchema),
+  invoiceController.update
+);
+router.patch(
+  '/:invoiceId/status',
+  requireAnyPermission('invoice.issue', 'invoice.mark_paid', 'invoice.cancel'),
+  validate(updateStatusSchema),
+  invoiceController.updateStatus
+);
 
 // PDF download / stream
-router.get('/:invoiceId/pdf', async (req, res, next) => {
+router.get('/:invoiceId/pdf', requirePermission('invoice.view'), async (req, res, next) => {
   try {
     const invoice = await Invoice.findOne({
       where: { id: req.params.invoiceId, business_id: req.businessId },

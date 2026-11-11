@@ -3,11 +3,13 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '../../store/slices/authSlice';
 import Icon from '../ui/Icon';
+import { usePermissions } from '../../hooks/usePermissions';
 
 export default function UserMenu({ onOpenUserSettings }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
+  const { roleLabel } = usePermissions();
   const [open, setOpen] = useState(false);
   const containerRef = useRef(null);
 
@@ -33,8 +35,8 @@ export default function UserMenu({ onOpenUserSettings }) {
     };
   }, [open]);
 
-  const name = user?.name || 'Devyash Rasela';
-  const initial = name.charAt(0).toUpperCase() || 'D';
+  const name = user?.name || 'User';
+  const initial = name.charAt(0).toUpperCase() || 'U';
 
   const handleLogout = () => {
     setOpen(false);
@@ -69,7 +71,12 @@ export default function UserMenu({ onOpenUserSettings }) {
             <span className="avatar" aria-hidden="true">
               {initial}
             </span>
-            <span>{name}</span>
+            <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+              <span style={{ fontWeight: 500, color: 'var(--text)' }}>{name}</span>
+              {roleLabel && (
+                <span style={{ fontSize: '11.5px', color: 'var(--muted)' }}>{roleLabel}</span>
+              )}
+            </div>
           </div>
           <div className="pop__sep" />
           <button

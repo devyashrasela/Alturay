@@ -82,7 +82,7 @@ exports.getMe = async (req, res, next) => {
       include: [{
         model: Business,
         as: 'businesses',
-        through: { attributes: ['role'] },
+        through: { attributes: ['role', 'created_at'] },
         attributes: [
           'id',
           'name',
@@ -101,13 +101,35 @@ exports.getMe = async (req, res, next) => {
           'invoice_template_id',
           'bill_template_id',
           'receipt_paper_width',
+          'default_payment_methods',
+          'default_payment_terms',
+          'default_terms_and_conditions',
+          'default_due_days',
+          'default_bill_due_days',
+          'created_at',
         ],
       }],
     });
 
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'NOT_FOUND', message: 'User not found.' },
+      });
+    }
+
+    const userJson = user.toJSON();
+    if (Array.isArray(userJson.businesses)) {
+      userJson.businesses = userJson.businesses.map((b) => ({
+        ...b,
+        role: b.BusinessMember ? b.BusinessMember.role : null,
+        joined_at: b.BusinessMember ? b.BusinessMember.created_at : null,
+      }));
+    }
+
     return res.json({
       success: true,
-      data: { user },
+      data: { user: userJson },
     });
   } catch (error) {
     next(error);

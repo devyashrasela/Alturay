@@ -16,6 +16,7 @@ import {
   useUpdateInvoiceStatusMutation,
 } from '../../store/api/invoiceApi';
 import { addToast } from '../../store/slices/uiSlice';
+import { usePermissions } from '../../hooks/usePermissions';
 import Icon from '../../components/ui/Icon';
 import PageHeader from '../../components/ui/PageHeader/PageHeader';
 import DataTable from '../../components/ui/DataTable';
@@ -39,6 +40,14 @@ export default function InvoicesPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { activeBusinessId, activeBusiness } = useSelector((s) => s.business);
+  const currentUser = useSelector((s) => s.auth.user);
+  const { can } = usePermissions();
+
+  const canCreate = can('invoice.create');
+  const canEditInvoice = (inv) => {
+    if (!inv || inv.status !== 'draft') return false;
+    return can('invoice.edit_any') || (can('invoice.edit_own') && inv.created_by === currentUser?.id);
+  };
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState(searchParams.get('search') || '');
@@ -190,17 +199,21 @@ export default function InvoicesPage() {
 
               <DataTable.Actions>
                 <DataTable.FilterButton ariaLabel="Filter and sort documents" />
-                <button
-                  type="button"
-                  className="dash-btn"
-                  onClick={() => navigate('/invoices/new?type=bill')}
-                >
-                  <Icon name="receipt" size={16} />
-                  <span>New bill</span>
-                </button>
-                <DataTable.NewButton onClick={() => navigate('/invoices/new?type=invoice')}>
-                  New invoice
-                </DataTable.NewButton>
+                {canCreate && (
+                  <>
+                    <button
+                      type="button"
+                      className="dash-btn"
+                      onClick={() => navigate('/invoices/new?type=bill')}
+                    >
+                      <Icon name="receipt" size={16} />
+                      <span>New bill</span>
+                    </button>
+                    <DataTable.NewButton onClick={() => navigate('/invoices/new?type=invoice')}>
+                      New invoice
+                    </DataTable.NewButton>
+                  </>
+                )}
               </DataTable.Actions>
             </DataTable.Toolbar>
 
@@ -211,8 +224,8 @@ export default function InvoicesPage() {
                 icon: <Icon name="file" size={28} />,
                 title: 'No invoices found',
                 description: 'Create your first invoice or bill to get started.',
-                actionLabel: 'New Invoice',
-                onAction: () => navigate('/invoices/new?type=invoice'),
+                actionLabel: canCreate ? 'New Invoice' : undefined,
+                onAction: canCreate ? () => navigate('/invoices/new?type=invoice') : undefined,
               }}
               columns={columns}
               data={invoices}
@@ -257,8 +270,8 @@ export default function InvoicesPage() {
           <aside className="invoices-layout__panel" aria-label="Invoice Details Preview">
             <div className="invoices-panel__topbar">
               <div className="invoices-panel__actions">
-                {/* 1. Edit button: ONLY available for draft invoices */}
-                {selectedInvoice?.status === 'draft' && (
+                {/* 1. Edit button: ONLY available for draft invoices & permitted user */}
+                {selectedInvoice?.status === 'draft' && canEditInvoice(selectedInvoice) && (
                   <button
                     type="button"
                     className="dash-btn"
@@ -270,8 +283,8 @@ export default function InvoicesPage() {
                   </button>
                 )}
 
-                {/* 2. Lifecycle action: Issue if draft */}
-                {selectedInvoice?.status === 'draft' && (
+                {/* 2. Lifecycle action: Issue if draft & permitted */}
+                {selectedInvoice?.status === 'draft' && can('invoice.issue') && (
                   <button
                     type="button"
                     className="dash-btn"
@@ -284,8 +297,8 @@ export default function InvoicesPage() {
                   </button>
                 )}
 
-                {/* 3. Lifecycle action: Mark Paid if issued */}
-                {selectedInvoice?.status === 'issued' && (
+                {/* 3. Lifecycle action: Mark Paid if issued & permitted */}
+                {selectedInvoice?.status === 'issued' && can('invoice.mark_paid') && (
                   <button
                     type="button"
                     className="dash-btn"
@@ -298,10 +311,11 @@ export default function InvoicesPage() {
                   </button>
                 )}
 
-                {/* 4. Cancel action: available for draft or issued. PROHIBITED when paid! */}
+                {/* 4. Cancel action: available for draft or issued & permitted. PROHIBITED when paid! */}
                 {selectedInvoice &&
                   selectedInvoice.status !== 'cancelled' &&
-                  selectedInvoice.status !== 'paid' && (
+                  selectedInvoice.status !== 'paid' &&
+                  can('invoice.cancel') && (
                     <button
                       type="button"
                       className="dash-btn"

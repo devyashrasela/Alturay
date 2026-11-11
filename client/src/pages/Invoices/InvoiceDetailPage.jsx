@@ -4,6 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Download, ArrowLeft, CheckCircle, XCircle, Send, Pencil } from 'lucide-react';
 import { useGetInvoiceQuery, useUpdateInvoiceStatusMutation } from '../../store/api/invoiceApi';
 import { addToast } from '../../store/slices/uiSlice';
+import { usePermissions } from '../../hooks/usePermissions';
 import Button from '../../components/ui/Button/Button';
 import ConfirmDialog from '../../components/ui/Modal/ConfirmDialog';
 import { PageLoader } from '../../components/ui/Loader/Spinner';
@@ -15,6 +16,14 @@ export default function InvoiceDetailPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { activeBusinessId, activeBusiness } = useSelector((s) => s.business);
+  const currentUser = useSelector((s) => s.auth.user);
+  const { can } = usePermissions();
+
+  const canEditInvoice = (inv) => {
+    if (!inv || inv.status !== 'draft') return false;
+    return can('invoice.edit_any') || (can('invoice.edit_own') && inv.created_by === currentUser?.id);
+  };
+
   const { data, isLoading } = useGetInvoiceQuery(
     { businessId: activeBusinessId, invoiceId: id },
     { skip: !activeBusinessId }
@@ -57,8 +66,8 @@ export default function InvoiceDetailPage() {
         </Button>
 
         <div className="invoice-detail__actions" style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          {/* Edit button: ONLY available when draft */}
-          {invoice.status === 'draft' && (
+          {/* Edit button: ONLY available when draft and permitted */}
+          {invoice.status === 'draft' && canEditInvoice(invoice) && (
             <Button
               variant="secondary"
               size="md"
@@ -69,8 +78,8 @@ export default function InvoiceDetailPage() {
             </Button>
           )}
 
-          {/* Issue button: ONLY available when draft */}
-          {invoice.status === 'draft' && (
+          {/* Issue button: ONLY available when draft and permitted */}
+          {invoice.status === 'draft' && can('invoice.issue') && (
             <Button
               variant="secondary"
               size="md"
@@ -82,8 +91,8 @@ export default function InvoiceDetailPage() {
             </Button>
           )}
 
-          {/* Mark Paid button: ONLY available when issued */}
-          {invoice.status === 'issued' && (
+          {/* Mark Paid button: ONLY available when issued and permitted */}
+          {invoice.status === 'issued' && can('invoice.mark_paid') && (
             <Button
               variant="secondary"
               size="md"
@@ -95,8 +104,8 @@ export default function InvoiceDetailPage() {
             </Button>
           )}
 
-          {/* Cancel button: available for draft or issued, STRICTLY PROHIBITED when paid! */}
-          {invoice.status !== 'cancelled' && invoice.status !== 'paid' && (
+          {/* Cancel button: available for draft or issued & permitted, STRICTLY PROHIBITED when paid! */}
+          {invoice.status !== 'cancelled' && invoice.status !== 'paid' && can('invoice.cancel') && (
             <Button
               variant="ghost"
               size="md"

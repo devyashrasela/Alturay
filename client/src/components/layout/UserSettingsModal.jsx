@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { setTheme } from '../../store/slices/themeSlice';
 import Icon from '../ui/Icon';
+import { usePermissions } from '../../hooks/usePermissions';
+import { ROLE_DESCRIPTIONS } from '../../constants/roles';
 
 const TABS = [
   { id: 'profile', label: 'Profile', icon: 'user', sub: 'Manage your name, email and photo.' },
@@ -18,6 +20,7 @@ export default function UserSettingsModal({ isOpen, initialTab = 'profile', onCl
   const { user } = useSelector((state) => state.auth);
   const { activeBusiness } = useSelector((state) => state.business);
   const { currentTheme } = useSelector((state) => state.theme);
+  const { role, roleLabel } = usePermissions();
   const dispatch = useDispatch();
   const [activeTab, setActiveTab] = useState(initialTab);
   const [pendingTheme, setPendingTheme] = useState(null);
@@ -191,10 +194,10 @@ export default function UserSettingsModal({ isOpen, initialTab = 'profile', onCl
                     Role & Permissions
                   </div>
                   <div style={{ fontWeight: 600, fontSize: 16, marginTop: 6, color: 'var(--text)' }}>
-                    Owner / Administrator
+                    {roleLabel || 'Member'}
                   </div>
                   <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 4 }}>
-                    Full access to catalog and billing
+                    {ROLE_DESCRIPTIONS[role] || 'Member of this business'}
                   </div>
                 </div>
               </div>

@@ -9,6 +9,7 @@ import {
 } from '../../store/api/invoiceApi';
 import { useGetProductsQuery } from '../../store/api/productApi';
 import { addToast } from '../../store/slices/uiSlice';
+import { usePermissions } from '../../hooks/usePermissions';
 import Card from '../../components/ui/Card/Card';
 import Button from '../../components/ui/Button/Button';
 import FormField from '../../components/ui/FormField/FormField';
@@ -70,6 +71,8 @@ export default function CreateInvoicePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { activeBusinessId, activeBusiness } = useSelector((s) => s.business);
+  const currentUser = useSelector((s) => s.auth.user);
+  const { can } = usePermissions();
 
   const defaultType = searchParams.get('type') || 'invoice';
 
@@ -143,7 +146,13 @@ export default function CreateInvoicePage() {
     if (existingInvoice && isEditMode) {
       if (existingInvoice.status !== 'draft') {
         dispatch(addToast({ type: 'error', message: 'Only draft invoices can be edited.' }));
-        navigate(`/invoices/${existingInvoice.id}`);
+        navigate(`/invoices/${existingInvoice.id}`, { replace: true });
+        return;
+      }
+
+      if (!can('invoice.edit_any') && existingInvoice.created_by !== currentUser?.id) {
+        dispatch(addToast({ type: 'error', message: 'You can only edit drafts you created.' }));
+        navigate(`/invoices/${existingInvoice.id}`, { replace: true });
         return;
       }
 
@@ -209,7 +218,7 @@ export default function CreateInvoicePage() {
         );
       }
     }
-  }, [existingInvoice, isEditMode, dispatch, navigate]);
+  }, [existingInvoice, isEditMode, dispatch, navigate, can, currentUser]);
 
   const totals = calculateInvoiceTotals(items, {
     discount_amount: form.discount_amount,

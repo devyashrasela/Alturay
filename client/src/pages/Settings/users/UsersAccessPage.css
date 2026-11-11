@@ -1,0 +1,246 @@
+/* ═══════════════════════════════════════════════════════════
+   USERS & ACCESS PAGE
+   ═══════════════════════════════════════════════════════════ */
+
+.users-page {
+  max-width: 1060px;
+  margin: 0 auto;
+  padding-bottom: 48px;
+}
+
+.users-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.users-title {
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  color: var(--text);
+  margin: 0;
+}
+
+.users-sub {
+  margin-top: 4px;
+  color: var(--text-2);
+  font-size: 14px;
+  max-width: 60ch;
+}
+
+.users-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: var(--radius-lg);
+  background: var(--hover);
+  border: 1px solid var(--border);
+  color: var(--text-2);
+  font-size: 13px;
+  margin-bottom: 20px;
+}
+
+.users-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.users-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.users-search-wrap {
+  position: relative;
+  max-width: 320px;
+  width: 100%;
+}
+
+.users-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+}
+
+.users-search-input {
+  width: 100%;
+  height: 36px;
+  padding: 0 12px 0 36px;
+  font-size: 13px;
+  background: var(--hover);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+
+.users-search-input:focus {
+  border-color: var(--accent);
+}
+
+.users-count {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+/* User cell */
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.user-avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-full);
+  background: var(--avatar);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  flex-shrink: 0;
+  text-transform: uppercase;
+}
+
+.user-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.user-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-name {
+  font-weight: 500;
+  color: var(--text);
+  font-size: 13.5px;
+}
+
+.user-chip {
+  padding: 1px 6px;
+  font-size: 10.5px;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  background: var(--hover);
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+
+.user-email {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Action button */
+.btn-icon-danger {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-icon-danger:hover {
+  background: var(--color-danger-light);
+  color: var(--danger);
+}
+
+/* Mobile cards */
+.users-mobile-list {
+  display: none;
+  flex-direction: column;
+  divide-y: 1px solid var(--border);
+}
+
+.user-mobile-card {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.user-mobile-card:last-child {
+  border-bottom: none;
+}
+
+.user-mobile-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* Danger zone */
+.danger-zone {
+  margin-top: 32px;
+  padding: 20px 24px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--danger) 30%, var(--border));
+  background: color-mix(in srgb, var(--danger) 4%, var(--panel));
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.danger-zone__title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.danger-zone__desc {
+  font-size: 13px;
+  color: var(--text-2);
+  max-width: 50ch;
+}
+
+@media (max-width: 760px) {
+  .users-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .users-desktop-table {
+    display: none;
+  }
+
+  .users-mobile-list {
+    display: flex;
+  }
+
+  .danger-zone {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

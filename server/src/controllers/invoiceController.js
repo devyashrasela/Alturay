@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { sequelize, Invoice, InvoiceItem, Business, Product, Customer } = require('../models');
+const { sequelize, Invoice, InvoiceItem, Business, Product, Customer, User } = require('../models');
 const { calculateInvoiceTotals } = require('../services/invoiceCalculator');
 
 exports.list = async (req, res, next) => {
@@ -22,10 +22,17 @@ exports.list = async (req, res, next) => {
       limit: parseInt(limit),
       offset,
       order: [['created_at', 'DESC']],
-      include: [{
-        model: InvoiceItem,
-        as: 'items',
-      }],
+      include: [
+        {
+          model: InvoiceItem,
+          as: 'items',
+        },
+        {
+          model: User,
+          as: 'creator',
+          attributes: ['id', 'name'],
+        },
+      ],
     });
 
     return res.json({
@@ -103,6 +110,7 @@ exports.create = async (req, res, next) => {
     // Create invoice
     const invoice = await Invoice.create({
       business_id: req.businessId,
+      created_by: req.user.id,
       invoice_number: invoiceNumber,
       type,
       customer_id: customer_id || null,
@@ -148,9 +156,12 @@ exports.create = async (req, res, next) => {
 
     await t.commit();
 
-    // Fetch the full invoice with items
+    // Fetch the full invoice with items and creator
     const fullInvoice = await Invoice.findByPk(invoice.id, {
-      include: [{ model: InvoiceItem, as: 'items' }],
+      include: [
+        { model: InvoiceItem, as: 'items' },
+        { model: User, as: 'creator', attributes: ['id', 'name'] },
+      ],
     });
 
     return res.status(201).json({
@@ -177,6 +188,11 @@ exports.getById = async (req, res, next) => {
           model: Customer,
           as: 'customer',
           attributes: ['id', 'name', 'phone', 'email', 'address_line1', 'address_line2', 'city', 'state', 'pincode'],
+        },
+        {
+          model: User,
+          as: 'creator',
+          attributes: ['id', 'name'],
         },
       ],
     });
@@ -216,6 +232,20 @@ exports.update = async (req, res, next) => {
         success: false,
         error: { code: 'BAD_REQUEST', message: 'Only draft invoices can be edited.' },
       });
+    }
+
+    if (!req.can('invoice.edit_any')) {
+      if (invoice.created_by !== req.user.id) {
+        await t.rollback();
+        return res.status(403).json({
+          success: false,
+          error: {
+            code: 'INSUFFICIENT_ROLE',
+            message: 'You can only edit drafts you created.',
+            required: ['invoice.edit_any'],
+          },
+        });
+      }
     }
 
     const { items, ...invoiceData } = req.body;
@@ -276,7 +306,10 @@ exports.update = async (req, res, next) => {
     await t.commit();
 
     const fullInvoice = await Invoice.findByPk(invoice.id, {
-      include: [{ model: InvoiceItem, as: 'items' }],
+      include: [
+        { model: InvoiceItem, as: 'items' },
+        { model: User, as: 'creator', attributes: ['id', 'name'] },
+      ],
     });
 
     return res.json({ success: true, data: { invoice: fullInvoice } });
@@ -304,6 +337,24 @@ exports.updateStatus = async (req, res, next) => {
 
     if (currentStatus === nextStatus) {
       return res.json({ success: true, data: { invoice } });
+    }
+
+    const STATUS_PERMISSIONS = {
+      issued: 'invoice.issue',
+      paid: 'invoice.mark_paid',
+      cancelled: 'invoice.cancel',
+    };
+
+    const requiredPerm = STATUS_PERMISSIONS[nextStatus];
+    if (requiredPerm && !req.can(requiredPerm)) {
+      return res.status(403).json({
+        success: false,
+        error: {
+          code: 'INSUFFICIENT_ROLE',
+          message: `Your role does not allow transitioning an invoice to '${nextStatus}'.`,
+          required: [requiredPerm],
+        },
+      });
     }
 
     // 1. Prohibit any transition from paid

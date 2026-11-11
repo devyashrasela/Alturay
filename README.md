@@ -81,6 +81,12 @@ The following capabilities are verified and implemented directly within the Altu
 - **Strict Data Isolation**: Backend `tenantMiddleware` ensures every request to a business-scoped route verifies membership permissions before querying or mutating data.
 - **Independent Business Profiles**: Configure currency (`INR`, `USD`, `EUR`, etc.), tax IDs (GST/VAT), business address, contact information, and sequential numbering rules per business.
 
+### 👥 Role-Based Access Control & Team Management
+- **Hierarchical Roles**: 4 fixed roles per business: **Owner** (rank 4), **Admin** (rank 3), **Manager** (rank 2), and **Staff** (rank 1).
+- **Server-Enforced Authorization**: Server acts as the single source of truth for authorization (`requirePermission` and field-level update validation).
+- **Users & Access UI**: Manage workspace team members at `/settings/users`, assign roles subject to strict hierarchy boundaries, view permissions matrix, or leave workspaces.
+- **Role-Aware UX**: Navigation, actions, and landing paths adjust per role with route guards and friendly 403 pages.
+
 ### 📄 Invoicing & Bill Creation
 - **Dual Document Support**: Generate outward customer **Invoices** (receivables) or inward vendor **Bills** (payables).
 - **Auto-Sequencing**: Per-business automatic sequence numbering (`INV-0001`, `BILL-0001`) executed with atomic database transactions to eliminate race conditions.
@@ -348,6 +354,17 @@ All API routes are prefixed under `/api`. Public endpoints require no authorizat
 | `GET` | `/api/businesses/:businessId/dashboard/stats` | Tenant | Retrieve aggregated revenue, trends, and product stats. |
 | `GET` | `/api/businesses/:businessId/dashboard/recent` | Tenant | Get the most recent invoices and activities. |
 
+### Team & Access (`/api/businesses/:businessId/members`)
+| Method | Endpoint | Auth | Description |
+| :--- | :--- | :---: | :--- |
+| `GET` | `/api/businesses/:businessId/access` | Tenant | Retrieve active role, permissions catalog, and assignable roles. |
+| `GET` | `/api/businesses/:businessId/roles` | Tenant | Retrieve roles and capabilities catalogue for matrix reference. |
+| `GET` | `/api/businesses/:businessId/members` | Tenant | List team members with management capabilities. |
+| `POST` | `/api/businesses/:businessId/members` | Tenant | Add registered user by email with assignable role (rate-limited). |
+| `PATCH`| `/api/businesses/:businessId/members/:memberId` | Tenant | Update member role subject to hierarchy checks. |
+| `DELETE`| `/api/businesses/:businessId/members/:memberId` | Tenant | Remove a member from the business. |
+| `DELETE`| `/api/businesses/:businessId/members/me` | Tenant | Leave the active business (non-owners). |
+
 ---
 
 ## Database Overview
@@ -361,32 +378,32 @@ Alturay uses a relational data model with strict foreign-key relationships and t
   | id          |              | id                 |              | id             |
   | name        |              | user_id (FK)       |              | name           |
   | email       |              | business_id (FK)   |              | currency       |
-  | password    |              | role (owner/admin) |              | tax_id         |
-  +-------------+              +--------------------+              +----------------+
-                                                                     | 1          | 1
-                                                                     |            |
-                                                                     | *          | *
-                                                           +---------------+  +--------------+
-                                                           |    Product    |  |   Invoice    |
-                                                           |---------------|  |--------------|
-                                                           | id            |  | id           |
-                                                           | business_id   |  | business_id  |
-                                                           | name, sku     |  | type         |
-                                                           | unit_price    |  | status       |
-                                                           | tax_rate      |  | total_amount |
-                                                           +---------------+  +--------------+
-                                                                   | 0..1            | 1
-                                                                   |                 |
-                                                                   | *               | *
-                                                              +-------------------------+
-                                                              |       InvoiceItem       |
-                                                              |-------------------------|
-                                                              | id                      |
-                                                              | invoice_id (FK)         |
-                                                              | product_id (FK, nullable)
-                                                              | quantity, unit_price    |
-                                                              | tax_amount, line_total  |
-                                                              +-------------------------+
+  | password    |              | role (owner/admin/ |              | tax_id         |
+  +-------------+              |  manager/staff)    |              +----------------+
+                               +--------------------+                      | 1          | 1
+                                                                           |            |
+                                                                           | *          | *
+                                                                 +---------------+  +-------------------+
+                                                                 |    Product    |  |      Invoice      |
+                                                                 |---------------|  |-------------------|
+                                                                 | id            |  | id                |
+                                                                 | business_id   |  | business_id       |
+                                                                 | name, sku     |  | created_by (FK)   |
+                                                                 | unit_price    |  | type, status      |
+                                                                 | tax_rate      |  | total_amount      |
+                                                                 +---------------+  +-------------------+
+                                                                         | 0..1            | 1
+                                                                         |                 |
+                                                                         | *               | *
+                                                                    +-------------------------+
+                                                                    |       InvoiceItem       |
+                                                                    |-------------------------|
+                                                                    | id                      |
+                                                                    | invoice_id (FK)         |
+                                                                    | product_id (FK, nullable)
+                                                                    | quantity, unit_price    |
+                                                                    | tax_amount, line_total  |
+                                                                    +-------------------------+
 ```
 
 ### Data Isolation Guarantees
@@ -411,10 +428,14 @@ Alturay uses a relational data model with strict foreign-key relationships and t
 
 ### Running Tests
 
-The frontend includes unit test coverage for authentication mapping and error handling using Node.js's native test runner:
+The application includes automated unit and integration tests using Node.js's native test runner:
 
 ```bash
-npm run test --prefix client
+# Backend tests (roles catalog, hierarchy, member rules)
+npm test --prefix server
+
+# Frontend tests (error messaging, navigation & RBAC filtering)
+npm test --prefix client
 ```
 
 ### Code Quality & Linting
@@ -450,8 +471,9 @@ Alturay is architected to be deployed in a decoupled environment:
 
 The following items represent architectural plans and areas for future expansion:
 
+- [x] **Team & Role-Based Access Control**: 4 roles (Owner, Admin, Manager, Staff), Users & access management UI, hierarchy rules, and server authorization.
+- [ ] **Email Invitations**: Email dispatch infrastructure to invite unregistered members directly.
 - [ ] **Dedicated Customer CRM**: Currently, customer details are captured per invoice; a dedicated customer entity with balances and purchase history is planned.
-- [ ] **Team & Member Invitations**: The backend supports `owner`, `admin`, and `member` roles; an invite-by-email UI is planned.
 - [ ] **Payment Gateway Integration**: Direct payment collection via Stripe or Razorpay links on issued invoices.
 - [ ] **Automated Recurring Invoices**: Scheduled billing intervals for subscription-based businesses.
 - [ ] **Multi-Currency Conversion**: Live exchange rate updates when managing entities across differing currencies.
