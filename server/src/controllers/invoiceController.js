@@ -85,45 +85,18 @@ exports.create = async (req, res, next) => {
     // Calculate totals
     const totals = calculateInvoiceTotals(items, { discount_amount, discount_percent });
 
-    // Use user-provided values; if not provided or empty, fall back to business defaults
-    const resolvedPaymentTerms = (payment_terms && payment_terms.trim())
-      ? payment_terms.trim()
-      : (business.default_payment_terms || null);
+    // Use user-provided values; if field was omitted completely in API payload, fall back to business defaults
+    const resolvedPaymentTerms = payment_terms !== undefined
+      ? (payment_terms && payment_terms.trim() ? payment_terms.trim() : null)
+      : (type === 'invoice' ? (business.default_payment_terms || null) : null);
 
-    const resolvedPaymentMethods = (Array.isArray(accepted_payment_methods) && accepted_payment_methods.length > 0)
-      ? accepted_payment_methods
+    const resolvedPaymentMethods = accepted_payment_methods !== undefined
+      ? (Array.isArray(accepted_payment_methods) && accepted_payment_methods.length > 0 ? accepted_payment_methods : null)
       : (business.default_payment_methods || null);
 
-    const resolvedTermsAndConditions = (terms_and_conditions && terms_and_conditions.trim())
-      ? terms_and_conditions.trim()
-      : (business.default_terms_and_conditions || null);
-
-    // If a different shipping address is not added, consider it the same as the client's address
-    let resolvedShipping = shipping_address;
-    const hasCustomShipping = resolvedShipping && typeof resolvedShipping === 'object'
-      ? Object.values(resolvedShipping).some((v) => Boolean(v && String(v).trim()))
-      : Boolean(resolvedShipping && String(resolvedShipping).trim());
-
-    if (!hasCustomShipping && customer_id) {
-      const customer = await Customer.findOne({
-        where: { id: customer_id, business_id: req.businessId },
-        attributes: ['address_line1', 'address_line2', 'city', 'state', 'pincode'],
-        transaction: t,
-      });
-      if (customer && (customer.address_line1 || customer.address_line2 || customer.city || customer.state || customer.pincode)) {
-        resolvedShipping = {
-          line1: customer.address_line1 || '',
-          line2: customer.address_line2 || '',
-          city: customer.city || '',
-          state: customer.state || '',
-          pincode: customer.pincode || '',
-        };
-      } else {
-        resolvedShipping = null;
-      }
-    } else if (!hasCustomShipping) {
-      resolvedShipping = null;
-    }
+    const resolvedTermsAndConditions = terms_and_conditions !== undefined
+      ? (terms_and_conditions && terms_and_conditions.trim() ? terms_and_conditions.trim() : null)
+      : (type === 'invoice' ? (business.default_terms_and_conditions || null) : null);
 
     let resolvedDueDate = due_date || null;
     if (!resolvedDueDate && issue_date) {
@@ -160,7 +133,7 @@ exports.create = async (req, res, next) => {
       payment_terms: resolvedPaymentTerms,
       accepted_payment_methods: resolvedPaymentMethods,
       terms_and_conditions: resolvedTermsAndConditions,
-      shipping_address: resolvedShipping || null,
+      shipping_address: shipping_address || null,
       status: 'draft',
     }, { transaction: t });
 
@@ -186,15 +159,10 @@ exports.create = async (req, res, next) => {
 
     await t.commit();
 
-    // Fetch the full invoice with items, customer and creator
+    // Fetch the full invoice with items and creator
     const fullInvoice = await Invoice.findByPk(invoice.id, {
       include: [
         { model: InvoiceItem, as: 'items' },
-        {
-          model: Customer,
-          as: 'customer',
-          attributes: ['id', 'name', 'phone', 'email', 'address_line1', 'address_line2', 'city', 'state', 'pincode'],
-        },
         { model: User, as: 'creator', attributes: ['id', 'name'] },
       ],
     });
@@ -342,45 +310,12 @@ exports.update = async (req, res, next) => {
       invoiceData.total_amount = totals.total_amount;
     }
 
-    if ('shipping_address' in invoiceData) {
-      const hasShippingFields = invoiceData.shipping_address && typeof invoiceData.shipping_address === 'object'
-        ? Object.values(invoiceData.shipping_address).some((v) => Boolean(v && String(v).trim()))
-        : Boolean(invoiceData.shipping_address && String(invoiceData.shipping_address).trim());
-
-      const targetCustomerId = invoiceData.customer_id !== undefined ? invoiceData.customer_id : invoice.customer_id;
-      if (!hasShippingFields && targetCustomerId) {
-        const customer = await Customer.findOne({
-          where: { id: targetCustomerId, business_id: req.businessId },
-          attributes: ['address_line1', 'address_line2', 'city', 'state', 'pincode'],
-          transaction: t,
-        });
-        if (customer && (customer.address_line1 || customer.address_line2 || customer.city || customer.state || customer.pincode)) {
-          invoiceData.shipping_address = {
-            line1: customer.address_line1 || '',
-            line2: customer.address_line2 || '',
-            city: customer.city || '',
-            state: customer.state || '',
-            pincode: customer.pincode || '',
-          };
-        } else {
-          invoiceData.shipping_address = null;
-        }
-      } else if (!hasShippingFields) {
-        invoiceData.shipping_address = null;
-      }
-    }
-
     await invoice.update(invoiceData, { transaction: t });
     await t.commit();
 
     const fullInvoice = await Invoice.findByPk(invoice.id, {
       include: [
         { model: InvoiceItem, as: 'items' },
-        {
-          model: Customer,
-          as: 'customer',
-          attributes: ['id', 'name', 'phone', 'email', 'address_line1', 'address_line2', 'city', 'state', 'pincode'],
-        },
         { model: User, as: 'creator', attributes: ['id', 'name'] },
       ],
     });

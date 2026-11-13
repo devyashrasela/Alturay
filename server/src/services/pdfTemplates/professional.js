@@ -72,7 +72,7 @@ const render = (doc, invoice, business) => {
   const custAddress = formatCustomerAddress(invoice.customer);
   if (custAddress) doc.text(custAddress, contentLeft, doc.y, { width: halfW - 20 });
 
-  const shipAddr = formatShippingAddress(invoice.shipping_address, invoice.customer);
+  const shipAddr = formatShippingAddress(invoice.shipping_address);
   if (shipAddr) {
     doc.moveDown(0.4);
     doc.font(FONT.bold).fontSize(8.5).fillColor('#6B7280').text('SHIP TO:', contentLeft, doc.y);

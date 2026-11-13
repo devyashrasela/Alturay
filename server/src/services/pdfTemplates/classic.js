@@ -91,7 +91,7 @@ const render = (doc, invoice, business) => {
     doc.text(custAddress, rightX, doc.y, { width: colWidth - 10 });
   }
 
-  const shipAddr = formatShippingAddress(invoice.shipping_address, invoice.customer);
+  const shipAddr = formatShippingAddress(invoice.shipping_address);
   if (shipAddr) {
     doc.moveDown(0.6);
     doc.font(FONT.bold).fontSize(8.5).fillColor('#111827')

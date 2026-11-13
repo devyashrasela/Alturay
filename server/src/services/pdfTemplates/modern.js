@@ -1,14 +1,4 @@
-const {
-  FONT,
-  numberFmt,
-  moneyFmt,
-  formatDate,
-  totalsOf,
-  formatBusinessAddress,
-  formatCustomerAddress,
-  formatShippingAddress,
-  formatPaymentMethods,
-} = require('./helpers');
+const { FONT, numberFmt, moneyFmt, formatDate, totalsOf, formatBusinessAddress, formatCustomerAddress, formatShippingAddress, formatPaymentMethods } = require('./helpers');
 
 const pageOptions = () => ({
   size: 'A4',
@@ -24,18 +14,11 @@ const render = (doc, invoice, business, ctx = {}) => {
   const cur = business.currency || 'INR';
   const typeLabel = invoice.type === 'bill' ? 'BILL' : 'INVOICE';
 
-  // Fallbacks for terms and related fields from business defaults
-  const paymentTerms = (invoice.payment_terms && invoice.payment_terms.trim()) || business.default_payment_terms || null;
-  const tc = (invoice.terms_and_conditions && invoice.terms_and_conditions.trim()) || business.default_terms_and_conditions || null;
-  const rawMethods = invoice.accepted_payment_methods || business.default_payment_methods;
-  const payMethods = formatPaymentMethods(rawMethods);
-
-  // ── Header: Title & Meta (Left) + Logo (Right) ──
+  // ── Header: Title & Logo ──
   doc.y = margin;
   const headerY = doc.y;
 
-  // Title & Metadata on left (allocated up to 58% of page width)
-  const leftColWidth = pageWidth * 0.58;
+  // Title on left
   doc.font(FONT.bold).fontSize(26).fillColor('#111827')
     .text(typeLabel, margin, headerY);
   doc.font(FONT.regular).fontSize(9.5).fillColor('#4B5563');
@@ -47,37 +30,28 @@ const render = (doc, invoice, business, ctx = {}) => {
   if (invoice.po_number) {
     doc.text(`PO Number: ${invoice.po_number}`);
   }
-  if (paymentTerms) {
-    doc.text(`Payment Terms: ${paymentTerms}`, margin, doc.y, { width: leftColWidth });
-  }
   if (invoice.description) {
     doc.moveDown(0.2);
     doc.font(FONT.regular).fontSize(9).fillColor('#6B7280')
-      .text(invoice.description, margin, doc.y, { width: leftColWidth });
+      .text(invoice.description, margin, doc.y, { width: pageWidth * 0.6 });
   }
-  const leftHeaderBottom = doc.y;
 
-  // Logo / Business mark on right (allocated up to 150pt wide × 56pt high)
-  const logoMaxW = 150;
-  const logoMaxH = 56;
-  const logoX = margin + pageWidth - logoMaxW;
+  // Logo / Business mark on right
+  const logoBoxSize = 56;
+  const logoX = margin + pageWidth - logoBoxSize;
 
   if (ctx.logo) {
     try {
-      doc.image(ctx.logo, logoX, headerY, {
-        fit: [logoMaxW, logoMaxH],
-        align: 'right',
-        valign: 'top',
-      });
+      doc.image(ctx.logo, logoX, headerY, { fit: [logoBoxSize, logoBoxSize], align: 'right' });
     } catch {
-      drawLogoTile(doc, business.name, margin + pageWidth - 50, headerY, 50);
+      drawLogoTile(doc, business.name, logoX, headerY, logoBoxSize);
     }
   } else {
-    drawLogoTile(doc, business.name, margin + pageWidth - 50, headerY, 50);
+    drawLogoTile(doc, business.name, logoX, headerY, logoBoxSize);
   }
 
-  // Ensure next section starts below both the header text and the logo
-  doc.y = Math.max(leftHeaderBottom, headerY + logoMaxH) + 16;
+  doc.y = Math.max(doc.y, headerY + logoBoxSize + 15);
+  doc.moveDown(0.8);
 
   // ── 2 Columns: Business & Bill-To ──
   const partyY = doc.y;
@@ -97,7 +71,7 @@ const render = (doc, invoice, business, ctx = {}) => {
   // Right: Bill To & Ship To
   const rightX = margin + halfW;
   doc.font(FONT.bold).fontSize(10).fillColor('#111827')
-    .text('BILL TO', rightX, partyY);
+    .text(`BILL TO`, rightX, partyY);
   doc.font(FONT.bold).fontSize(11).fillColor('#111827')
     .text(invoice.customer_name || invoice.customer?.name || 'Customer', rightX, doc.y + 2);
   doc.font(FONT.regular).fontSize(9).fillColor('#4B5563');
@@ -111,16 +85,15 @@ const render = (doc, invoice, business, ctx = {}) => {
   const custAddress = formatCustomerAddress(invoice.customer);
   if (custAddress) doc.text(custAddress, rightX, doc.y, { width: halfW });
 
-  const shipAddr = formatShippingAddress(invoice.shipping_address, invoice.customer);
+  const shipAddr = formatShippingAddress(invoice.shipping_address);
   if (shipAddr) {
     doc.moveDown(0.4);
     doc.font(FONT.bold).fontSize(8.5).fillColor('#111827').text('SHIP TO:', rightX, doc.y);
     doc.font(FONT.regular).fontSize(8.5).fillColor('#4B5563').text(shipAddr, rightX, doc.y, { width: halfW });
   }
-  const rightPartyBottom = doc.y;
 
-  const partiesBottom = Math.max(leftPartyBottom, rightPartyBottom, partyY + 50);
-  doc.y = partiesBottom + 16;
+  const partiesBottom = Math.max(leftPartyBottom, doc.y, partyY + 65);
+  doc.y = partiesBottom + 15;
 
   // ── Table ──
   const tableTop = doc.y;
@@ -171,11 +144,34 @@ const render = (doc, invoice, business, ctx = {}) => {
     doc.y = rY + rowH;
   });
 
-  doc.moveDown(0.8);
+  doc.moveDown(1);
 
-  // ── Post Table: Left Info (Payment info & Notes) + Right Totals Grid ──
+  // ── Notes & Terms (Left) & Totals (Right) ──
   const postTableY = doc.y;
   const t = totalsOf(invoice);
+
+  // Left: Notes / Terms / T&C
+  const paymentTerms = invoice.payment_terms;
+  const tc = invoice.terms_and_conditions;
+  const hasLeftNotes = Boolean(paymentTerms || invoice.notes || tc);
+
+  if (hasLeftNotes) {
+    doc.font(FONT.bold).fontSize(9).fillColor('#111827')
+      .text('NOTES & TERMS:', margin, postTableY);
+    doc.font(FONT.regular).fontSize(8.5).fillColor('#4B5563');
+
+    if (paymentTerms) {
+      doc.text(`Terms: ${paymentTerms}`, margin, doc.y + 3, { width: halfW - 20 });
+    }
+    if (invoice.notes) {
+      doc.text(invoice.notes, margin, doc.y + 2, { width: halfW - 20 });
+    }
+    if (tc) {
+      doc.moveDown(0.3);
+      doc.font(FONT.bold).fontSize(8.5).fillColor('#111827').text('Terms & Conditions:', margin, doc.y);
+      doc.font(FONT.regular).fontSize(8).fillColor('#4B5563').text(tc, margin, doc.y, { width: halfW - 20 });
+    }
+  }
 
   // Right: Totals Box (Bordered grid)
   const totalsW = pageWidth * 0.44;
@@ -202,54 +198,22 @@ const render = (doc, invoice, business, ctx = {}) => {
   if (t.tax > 0) drawBorderedTotalRow('Tax', t.tax);
   if (t.discount > 0) drawBorderedTotalRow('Discount', -t.discount);
   drawBorderedTotalRow('Total', t.total, true);
-  const rightTotalsBottom = currentTotY;
 
-  // Left: Payment Methods & Notes
-  let leftInfoY = postTableY;
-  const leftInfoW = halfW - 15;
+  doc.y = Math.max(doc.y, currentTotY + 25);
 
+  // ── Bottom: Payment Method & Prepared By ──
+  const bottomY = Math.max(doc.y, doc.page.height - margin - 70);
+
+  // Left: Payment Method
+  const payMethods = formatPaymentMethods(invoice.accepted_payment_methods);
   if (payMethods) {
     doc.font(FONT.bold).fontSize(9).fillColor('#111827')
-      .text('PAYMENT METHODS', margin, leftInfoY);
+      .text('PAYMENT METHODS', margin, bottomY);
     doc.font(FONT.regular).fontSize(8.5).fillColor('#4B5563');
-    doc.text(`Accepted: ${payMethods}`, margin, doc.y + 2, { width: leftInfoW });
-    leftInfoY = doc.y + 8;
+    doc.text(`Accepted: ${payMethods}`, margin, doc.y + 2, { width: halfW - 20 });
   }
 
-  if (paymentTerms) {
-    doc.font(FONT.bold).fontSize(9).fillColor('#111827')
-      .text('PAYMENT TERMS', margin, leftInfoY);
-    doc.font(FONT.regular).fontSize(8.5).fillColor('#4B5563');
-    doc.text(paymentTerms, margin, doc.y + 2, { width: leftInfoW });
-    leftInfoY = doc.y + 8;
-  }
-
-  if (invoice.notes) {
-    doc.font(FONT.bold).fontSize(9).fillColor('#111827')
-      .text('NOTES', margin, leftInfoY);
-    doc.font(FONT.regular).fontSize(8.5).fillColor('#4B5563');
-    doc.text(invoice.notes, margin, doc.y + 2, { width: leftInfoW });
-    leftInfoY = doc.y + 8;
-  }
-
-  const postTableSectionBottom = Math.max(leftInfoY, rightTotalsBottom);
-  doc.y = postTableSectionBottom + 12;
-
-  // ── Terms & Conditions (Full Width across bottom of table section) ──
-  if (tc) {
-    doc.font(FONT.bold).fontSize(8.5).fillColor('#111827')
-      .text('TERMS & CONDITIONS', margin, doc.y);
-    doc.font(FONT.regular).fontSize(8).fillColor('#4B5563');
-    doc.text(tc, margin, doc.y + 2, { width: pageWidth });
-    doc.y += 10;
-  }
-
-  // ── Bottom Signoff / Prepared By ──
-  const bottomSigHeight = 35;
-  const idealBottomY = doc.page.height - margin - bottomSigHeight;
-  const bottomY = Math.max(doc.y + 8, idealBottomY);
-
-  // Prepared By / Authorized Signatory on right
+  // Right: Prepared By
   doc.font(FONT.bold).fontSize(9).fillColor('#111827')
     .text('PREPARED BY', rightX, bottomY);
   doc.font(FONT.regular).fontSize(8.5).fillColor('#4B5563');

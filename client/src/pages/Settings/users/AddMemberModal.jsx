@@ -3,8 +3,8 @@ import { useDispatch } from 'react-redux';
 import Modal from '../../../components/ui/Modal/Modal';
 import Button from '../../../components/ui/Button/Button';
 import FormField from '../../../components/ui/FormField/FormField';
+import InputField from '../../../components/ui/Input/InputField';
 import SelectDropdown from '../../../components/ui/Select/SelectDropdown';
-import UserEmailSelect from './UserEmailSelect';
 import { useAddMemberMutation } from '../../../store/api/membersApi';
 import { addToast } from '../../../store/slices/uiSlice';
 import { ROLE_LABELS, ROLE_DESCRIPTIONS } from '../../../constants/roles';
@@ -150,19 +150,19 @@ export default function AddMemberModal({
           htmlFor="member-email"
           required
           error={emailError}
-          helper="Search and select a registered Alturay user by email."
+          helper="The person must already have an Alturay account."
         >
-          <UserEmailSelect
+          <InputField
             id="member-email"
-            businessId={businessId}
+            type="email"
+            placeholder="name@company.com"
             value={email}
-            onChange={(newVal) => {
-              setEmail(newVal);
+            onChange={(e) => {
+              setEmail(e.target.value);
               if (emailError) setEmailError('');
             }}
             error={Boolean(emailError)}
             autoFocus
-            disabled={isLoading}
           />
         </FormField>
 

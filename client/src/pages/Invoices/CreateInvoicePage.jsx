@@ -113,11 +113,11 @@ export default function CreateInvoicePage() {
     notes: '',
     description: '',
     po_number: '',
-    payment_terms: activeBusiness?.default_payment_terms || '',
+    payment_terms: defaultType === 'invoice' ? (activeBusiness?.default_payment_terms || '') : '',
     accepted_payment_methods: Array.isArray(activeBusiness?.default_payment_methods)
       ? activeBusiness.default_payment_methods
       : ['cash'],
-    terms_and_conditions: activeBusiness?.default_terms_and_conditions || '',
+    terms_and_conditions: defaultType === 'invoice' ? (activeBusiness?.default_terms_and_conditions || '') : '',
     shipping_address: { ...EMPTY_SHIPPING },
   });
 
@@ -130,8 +130,8 @@ export default function CreateInvoicePage() {
         const dueDays = getDueDaysForType(prev.type, activeBusiness);
         return {
           ...prev,
-          payment_terms: prev.payment_terms || activeBusiness.default_payment_terms || '',
-          terms_and_conditions: prev.terms_and_conditions || activeBusiness.default_terms_and_conditions || '',
+          payment_terms: prev.type === 'invoice' ? (prev.payment_terms || activeBusiness.default_payment_terms || '') : prev.payment_terms,
+          terms_and_conditions: prev.type === 'invoice' ? (prev.terms_and_conditions || activeBusiness.default_terms_and_conditions || '') : prev.terms_and_conditions,
           accepted_payment_methods: (prev.accepted_payment_methods && prev.accepted_payment_methods.length > 0)
             ? prev.accepted_payment_methods
             : (Array.isArray(activeBusiness.default_payment_methods) ? activeBusiness.default_payment_methods : ['cash']),
@@ -230,9 +230,28 @@ export default function CreateInvoicePage() {
     const nextType = e.target.value;
     setForm((f) => {
       const defaultDueDays = getDueDaysForType(nextType, activeBusiness);
+      let nextPaymentTerms = f.payment_terms;
+      let nextTerms = f.terms_and_conditions;
+      if (nextType === 'bill') {
+        if (f.payment_terms === activeBusiness?.default_payment_terms) {
+          nextPaymentTerms = '';
+        }
+        if (f.terms_and_conditions === activeBusiness?.default_terms_and_conditions) {
+          nextTerms = '';
+        }
+      } else if (nextType === 'invoice') {
+        if (!nextPaymentTerms && activeBusiness?.default_payment_terms) {
+          nextPaymentTerms = activeBusiness.default_payment_terms;
+        }
+        if (!nextTerms && activeBusiness?.default_terms_and_conditions) {
+          nextTerms = activeBusiness.default_terms_and_conditions;
+        }
+      }
       return {
         ...f,
         type: nextType,
+        payment_terms: nextPaymentTerms,
+        terms_and_conditions: nextTerms,
         due_date: calculateDueDate(f.issue_date, defaultDueDays),
       };
     });
@@ -281,27 +300,13 @@ export default function CreateInvoicePage() {
     setSelectedCustomer(customer);
     setCustomerError('');
     if (customer) {
-      setForm((f) => {
-        const hasCustomShipping = showShippingAddress && Object.values(f.shipping_address).some((v) => Boolean(v?.trim()));
-        const nextShipping = hasCustomShipping
-          ? f.shipping_address
-          : {
-              line1: customer.address_line1 || '',
-              line2: customer.address_line2 || '',
-              city: customer.city || '',
-              state: customer.state || '',
-              pincode: customer.pincode || '',
-            };
-
-        return {
-          ...f,
-          customer_id: customer.id,
-          customer_name: customer.name,
-          customer_phone: customer.phone || '',
-          customer_email: customer.email || '',
-          shipping_address: nextShipping,
-        };
-      });
+      setForm((f) => ({
+        ...f,
+        customer_id: customer.id,
+        customer_name: customer.name,
+        customer_phone: customer.phone || '',
+        customer_email: customer.email || '',
+      }));
     } else {
       setForm((f) => ({
         ...f,
@@ -309,7 +314,6 @@ export default function CreateInvoicePage() {
         customer_name: '',
         customer_phone: '',
         customer_email: '',
-        shipping_address: showShippingAddress ? f.shipping_address : { ...EMPTY_SHIPPING },
       }));
     }
   };
@@ -379,29 +383,8 @@ export default function CreateInvoicePage() {
     }
 
     try {
-      const hasCustomShipping = showShippingAddress && Object.values(form.shipping_address).some((v) => Boolean(v?.trim()));
-      let resolvedShipping = null;
-      if (hasCustomShipping) {
-        resolvedShipping = form.shipping_address;
-      } else if (selectedCustomer && (selectedCustomer.address_line1 || selectedCustomer.address_line2 || selectedCustomer.city || selectedCustomer.state || selectedCustomer.pincode)) {
-        resolvedShipping = {
-          line1: selectedCustomer.address_line1 || '',
-          line2: selectedCustomer.address_line2 || '',
-          city: selectedCustomer.city || '',
-          state: selectedCustomer.state || '',
-          pincode: selectedCustomer.pincode || '',
-        };
-      } else if (Object.values(form.shipping_address).some((v) => Boolean(v?.trim()))) {
-        resolvedShipping = form.shipping_address;
-      }
-
-      const resolvedPaymentTerms = (form.payment_terms && form.payment_terms.trim())
-        ? form.payment_terms.trim()
-        : (activeBusiness?.default_payment_terms || null);
-
-      const resolvedTermsAndConditions = (form.terms_and_conditions && form.terms_and_conditions.trim())
-        ? form.terms_and_conditions.trim()
-        : (activeBusiness?.default_terms_and_conditions || null);
+      const hasShippingData = showShippingAddress && Object.values(form.shipping_address).some((v) => Boolean(v?.trim()));
+      const resolvedShipping = hasShippingData ? form.shipping_address : null;
 
       const payload = {
         type: form.type,
@@ -413,12 +396,12 @@ export default function CreateInvoicePage() {
         due_date: form.due_date || null,
         discount_amount: parseFloat(form.discount_amount) || 0,
         discount_percent: parseFloat(form.discount_percent) || 0,
-        notes: (form.notes && form.notes.trim()) || null,
-        description: (form.description && form.description.trim()) || null,
-        po_number: (form.po_number && form.po_number.trim()) || null,
-        payment_terms: resolvedPaymentTerms,
+        notes: form.notes || null,
+        description: form.description || null,
+        po_number: form.po_number || null,
+        payment_terms: form.payment_terms || null,
         accepted_payment_methods: form.accepted_payment_methods,
-        terms_and_conditions: resolvedTermsAndConditions,
+        terms_and_conditions: form.terms_and_conditions || null,
         shipping_address: resolvedShipping,
         businessId: activeBusinessId,
         items: items.map((item) => ({

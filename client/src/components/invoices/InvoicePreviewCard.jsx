@@ -33,8 +33,8 @@ export default function InvoicePreviewCard({
     customer?.pincode,
   ].filter(Boolean).join(', ') || '';
 
-  // Format shipping address if present; if not added, consider it the same as the client's address
-  const customShippingAddress = typeof invoice.shipping_address === 'object' && invoice.shipping_address
+  // Format shipping address if present
+  const shippingAddress = typeof invoice.shipping_address === 'object' && invoice.shipping_address
     ? [
         invoice.shipping_address.line1,
         invoice.shipping_address.line2,
@@ -43,17 +43,11 @@ export default function InvoicePreviewCard({
       ].filter(Boolean).join(', ')
     : (typeof invoice.shipping_address === 'string' ? invoice.shipping_address : '');
 
-  const shippingAddress = customShippingAddress || customerAddress;
-
   const customerEmail = invoice.customer_email || customer?.email || '';
 
-  const rawMethods = (Array.isArray(invoice.accepted_payment_methods) && invoice.accepted_payment_methods.length > 0)
+  const paymentMethods = Array.isArray(invoice.accepted_payment_methods) && invoice.accepted_payment_methods.length > 0
     ? invoice.accepted_payment_methods
-    : (Array.isArray(business?.default_payment_methods) ? business.default_payment_methods : []);
-  const paymentMethods = rawMethods;
-
-  const paymentTerms = (invoice.payment_terms && invoice.payment_terms.trim()) || business?.default_payment_terms || '';
-  const termsAndConditions = (invoice.terms_and_conditions && invoice.terms_and_conditions.trim()) || business?.default_terms_and_conditions || '';
+    : [];
 
   const isBill = invoice.type === 'bill';
 
@@ -89,11 +83,6 @@ export default function InvoicePreviewCard({
             {invoice.po_number && (
               <div className="inv-card__date-row">
                 PO Number: <span>{invoice.po_number}</span>
-              </div>
-            )}
-            {paymentTerms && (
-              <div className="inv-card__date-row">
-                Payment Terms: <span>{paymentTerms}</span>
               </div>
             )}
           </div>
@@ -219,17 +208,17 @@ export default function InvoicePreviewCard({
             </div>
           )}
 
-          {paymentTerms && (
+          {invoice.payment_terms && (
             <div className="inv-card__footer-section">
               <div className="inv-card__terms-title">Payment Terms</div>
-              <p className="inv-card__terms-text">{paymentTerms}</p>
+              <p className="inv-card__terms-text">{invoice.payment_terms}</p>
             </div>
           )}
 
-          {termsAndConditions && (
+          {invoice.terms_and_conditions && (
             <div className="inv-card__footer-section">
               <div className="inv-card__terms-title">Terms &amp; Conditions</div>
-              <p className="inv-card__terms-text">{termsAndConditions}</p>
+              <p className="inv-card__terms-text">{invoice.terms_and_conditions}</p>
             </div>
           )}
 

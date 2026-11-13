@@ -20,7 +20,6 @@ const addMemberLimiter = rateLimit({
 });
 
 router.get('/', requirePermission('member.view'), memberController.list);
-router.get('/users/search', requirePermission('member.add'), memberController.searchUsers);
 router.post('/', requirePermission('member.add'), addMemberLimiter, validate(addMemberSchema), memberController.add);
 router.delete('/me', memberController.leave);
 router.patch('/:memberId', requirePermission('member.update_role'), validate(updateMemberRoleSchema), memberController.updateRole);
