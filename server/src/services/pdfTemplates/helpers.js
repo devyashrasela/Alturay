@@ -67,6 +67,15 @@ const isPrivateIp = (ip) =>
 const loadLogo = async (url) => {
   try {
     if (!url) return null;
+    if (typeof url === 'string' && /^data:image\/(png|jpe?g);base64,/i.test(url)) {
+      const base64Data = url.replace(/^data:image\/(png|jpe?g);base64,/i, '');
+      const buf = Buffer.from(base64Data, 'base64');
+      if (buf.length > 2 * 1024 * 1024) return null;
+      const isPng = buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47;
+      const isJpg = buf[0] === 0xff && buf[1] === 0xd8;
+      return isPng || isJpg ? buf : null;
+    }
+
     const u = new URL(url);
     if (u.protocol !== 'https:' && u.protocol !== 'http:') return null;
     const isLocalhost = u.hostname === 'localhost' || u.hostname === '127.0.0.1';
@@ -74,31 +83,42 @@ const loadLogo = async (url) => {
       const { address } = await dns.lookup(u.hostname);
       if (isPrivateIp(address)) return null;
     }
-    const res = await fetch(u, { signal: AbortSignal.timeout(2500), redirect: 'error' });
-    if (!res.ok || !/^image\/(png|jpe?g|webp)/.test(res.headers.get('content-type') || '')) return null;
+    const res = await fetch(u, {
+      signal: AbortSignal.timeout(3000),
+      redirect: 'error',
+      headers: { Accept: 'image/png,image/jpeg;q=0.9,*/*;q=0.5' },
+    });
+    if (!res.ok) return null;
     const buf = Buffer.from(await res.arrayBuffer());
-    return buf.length <= 512 * 1024 ? buf : null;
+    if (buf.length > 2 * 1024 * 1024) return null;
+    const isPng = buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47;
+    const isJpg = buf[0] === 0xff && buf[1] === 0xd8;
+    return isPng || isJpg ? buf : null;
   } catch {
     return null; // skip the logo, never fail the PDF
   }
 };
 
-const formatShippingAddress = (addr) => {
-  if (!addr) return null;
-  if (typeof addr === 'string') {
-    const trimmed = addr.trim();
-    return trimmed.length > 0 ? trimmed : null;
+const formatShippingAddress = (addr, fallbackCustomer = null) => {
+  let res = null;
+  if (addr) {
+    if (typeof addr === 'string') {
+      const trimmed = addr.trim();
+      res = trimmed.length > 0 ? trimmed : null;
+    } else if (typeof addr === 'object') {
+      const parts = [
+        addr.line1,
+        addr.line2,
+        [addr.city, addr.state].filter(Boolean).join(', '),
+        addr.pincode,
+      ].filter(Boolean);
+      res = parts.length > 0 ? parts.join('\n') : null;
+    }
   }
-  if (typeof addr === 'object') {
-    const parts = [
-      addr.line1,
-      addr.line2,
-      [addr.city, addr.state].filter(Boolean).join(', '),
-      addr.pincode,
-    ].filter(Boolean);
-    return parts.length > 0 ? parts.join('\n') : null;
+  if (!res && fallbackCustomer) {
+    res = formatCustomerAddress(fallbackCustomer);
   }
-  return null;
+  return res;
 };
 
 const formatCustomerAddress = (customer) => {

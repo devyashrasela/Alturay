@@ -91,6 +91,59 @@ exports.list = async (req, res, next) => {
   }
 };
 
+exports.searchUsers = async (req, res, next) => {
+  try {
+    const rawQuery = (req.query.q || req.query.email || req.query.search || '').trim();
+
+    if (!rawQuery) {
+      return res.json({
+        success: true,
+        data: {
+          users: [],
+        },
+      });
+    }
+
+    const whereClause = {
+      [Op.or]: [
+        { email: { [Op.like]: `%${rawQuery}%` } },
+        { name: { [Op.like]: `%${rawQuery}%` } },
+      ],
+    };
+
+    const users = await User.findAll({
+      where: whereClause,
+      attributes: ['id', 'name', 'email'],
+      order: [['name', 'ASC'], ['email', 'ASC']],
+      limit: 20,
+    });
+
+    const existingMembers = await BusinessMember.findAll({
+      where: { business_id: req.businessId },
+      attributes: ['user_id', 'role'],
+    });
+
+    const memberMap = new Map(existingMembers.map((m) => [m.user_id, m.role]));
+
+    const formattedUsers = users.map((u) => ({
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      is_already_member: memberMap.has(u.id),
+      current_role: memberMap.get(u.id) || null,
+    }));
+
+    return res.json({
+      success: true,
+      data: {
+        users: formattedUsers,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 exports.add = async (req, res, next) => {
   const t = await sequelize.transaction();
   try {

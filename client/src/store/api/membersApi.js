@@ -14,6 +14,12 @@ export const membersApi = baseApi.injectEndpoints({
       query: (businessId) => `/businesses/${businessId}/members`,
       providesTags: ['Member'],
     }),
+    searchUsers: builder.query({
+      query: ({ businessId, q }) => ({
+        url: `/businesses/${businessId}/members/users/search`,
+        params: q ? { q } : undefined,
+      }),
+    }),
     addMember: builder.mutation({
       query: ({ businessId, email, role }) => ({
         url: `/businesses/${businessId}/members`,
@@ -51,6 +57,8 @@ export const {
   useGetAccessQuery,
   useGetRolesQuery,
   useGetMembersQuery,
+  useSearchUsersQuery,
+  useLazySearchUsersQuery,
   useAddMemberMutation,
   useUpdateMemberRoleMutation,
   useRemoveMemberMutation,
