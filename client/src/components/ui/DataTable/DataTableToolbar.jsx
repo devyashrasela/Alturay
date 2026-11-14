@@ -1,4 +1,4 @@
-import Icon from '../Icon';
+import Icon from '../Icon/Icon';
 
 export function DataTableToolbar({ children, className = '' }) {
   return <div className={`db-bar ${className}`}>{children}</div>;

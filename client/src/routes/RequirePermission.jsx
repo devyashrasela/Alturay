@@ -2,7 +2,7 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { usePermissions } from '../hooks/usePermissions';
 import { PageLoader } from '../components/ui/Loader/Spinner';
-import ForbiddenPage from '../pages/Forbidden/ForbiddenPage';
+import ForbiddenPage from '../pages/Forbidden/ForbiddenPage/ForbiddenPage';
 
 export default function RequirePermission({ permission, anyOf, allOf }) {
   const { can, canAny, permissions, isLoading } = usePermissions();

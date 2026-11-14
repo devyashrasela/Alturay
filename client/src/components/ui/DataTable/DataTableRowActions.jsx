@@ -1,4 +1,4 @@
-import Icon from '../Icon';
+import Icon from '../Icon/Icon';
 
 export function DataTableRowActions({ children, className = '' }) {
   return <div className={`act ${className}`}>{children}</div>;
