@@ -65,7 +65,7 @@ export default function RegisterPage() {
       subtitle="Enter your details to get started with Alturay."
       footer={(
         <>
-          Already have an account?{' '}
+          Already have an account?&nbsp;&nbsp;{' '}
           <Link to="/login" className="auth-panel__link">Sign in</Link>
         </>
       )}

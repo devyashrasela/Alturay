@@ -1,0 +1,540 @@
+/* ═══════════════════════════════════════════════════════════
+   RIGHT DOCK — 3RD COLUMN FOR PREVIEW & CONTEXTUAL HELP
+   ═══════════════════════════════════════════════════════════ */
+
+.dock {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  min-width: 0;
+  overflow: hidden;
+  background: var(--bg);
+  border-left: 1px solid var(--border);
+  visibility: hidden;
+  z-index: 40;
+}
+
+.app.panel .dock {
+  visibility: visible;
+}
+
+.dock-in {
+  width: var(--pwo, clamp(380px, 34vw, 480px));
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.dock-h {
+  height: 49px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px 0 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--panel-2);
+}
+
+.dock-t {
+  font-weight: 600;
+  font-size: 14.5px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.dock-a {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.dock-h .vr {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+  margin: 0 4px;
+}
+
+.dock-btn-icon,
+.ib {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.12s, color 0.12s;
+  flex: none;
+}
+
+.dock-btn-icon:hover,
+.ib:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.ib.danger {
+  color: var(--danger);
+}
+
+.ib.danger:hover {
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
+  color: var(--danger);
+}
+
+.dock-b {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 18px 24px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+/* ── Help Guide View (.hb) ── */
+.hb {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  color: var(--text-2);
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+
+.hb h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0;
+}
+
+.hb p {
+  color: var(--text-2);
+  margin: 0;
+}
+
+.hb .st {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px 0;
+  border-top: 1px solid var(--border-soft);
+}
+
+.hb .st .pill {
+  flex-shrink: 0;
+  min-width: 84px;
+  justify-content: flex-start;
+}
+
+.hb .st b {
+  color: var(--text);
+  font-weight: 600;
+  font-size: 13.5px;
+  display: block;
+}
+
+.hb .st p {
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+/* ── Flat Invoice Details View (.dock-invoice) ── */
+.dock-invoice {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.dock-invoice__header {
+  padding-bottom: 16px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+}
+
+.dock-invoice__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+}
+
+.dock-invoice__brand {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.dock-brand-logo {
+  width: 32px;
+  height: 32px;
+  max-width: 32px;
+  max-height: 32px;
+  object-fit: contain;
+  flex-shrink: 0;
+  display: block;
+  margin-top: 1px;
+}
+
+.dock-brand-logo[src*="alturay"] {
+  filter: invert(1);
+}
+
+[data-theme="light"] .dock-brand-logo[src*="alturay"] {
+  filter: none;
+}
+
+.dock-invoice__identity {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.dock-invoice__title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.dock-invoice__title-row h2 {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.dock-invoice__sub {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 3px;
+  line-height: 1.35;
+}
+
+.dock-invoice__dates {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.dock-invoice__date-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 12px;
+  line-height: 1.45;
+  white-space: nowrap;
+}
+
+.dock-invoice__date-label {
+  color: var(--text-2);
+}
+
+.dock-invoice__date-value {
+  color: var(--text);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+
+.dock-invoice__parties {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 16px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-soft);
+}
+
+.dock-invoice__party {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.dock-invoice__party h5 {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 6px 0;
+}
+
+.dock-invoice__party b {
+  display: block;
+  font-size: 13.5px;
+  color: var(--text);
+  font-weight: 600;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.35;
+}
+
+.dock-invoice__party p {
+  font-size: 12.5px;
+  color: var(--text-2);
+  margin: 2px 0 0 0;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* ── Full-Width Line-Items Table ── */
+.dock-invoice__body {
+  width: 100%;
+}
+
+.dock-invoice__table {
+  width: 100% !important;
+  min-width: 0 !important;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+
+.dock-invoice__table th {
+  background: none;
+  height: 32px;
+  padding: 8px 4px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.dock-invoice__table td {
+  height: auto;
+  padding: 9px 4px;
+  border-bottom: 1px solid var(--border-soft);
+  color: var(--text-2);
+  font-size: 12.5px;
+  line-height: 1.4;
+}
+
+.dock-invoice__table td:first-child {
+  font-weight: 500;
+  color: var(--text);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.dock-invoice__table td.num,
+.dock-invoice__table th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ── Totals Summary ── */
+.dock-invoice__totals {
+  width: 100%;
+  max-width: 240px;
+  margin: 14px 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: var(--text-2);
+  font-size: 12.5px;
+}
+
+.dock-invoice__totals > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.dock-invoice__total-row {
+  font-weight: 600;
+  font-size: 14.5px;
+  color: var(--text);
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+  margin-top: 2px;
+}
+
+.dock-invoice__notes {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-soft);
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+
+.dock-invoice__notes-title {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+
+.dock-invoice__notes p {
+  white-space: pre-wrap;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── Context & Notification Cards (.mini, .kv, .dock-notif, .dock-product) ── */
+.mini {
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 16px 14px;
+  margin-bottom: 14px;
+}
+
+.mini h4 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  color: var(--text);
+}
+
+.mini p {
+  color: var(--text-2);
+  font-size: 13.5px;
+  line-height: 1.45;
+  margin-bottom: 16px;
+}
+
+.kv {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  height: 38px;
+  color: var(--text-2);
+  font-size: 13px;
+}
+
+.kv + .kv {
+  border-top: 1px solid var(--border);
+}
+
+.kv span:last-child {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.kv .i {
+  width: 15px;
+  height: 15px;
+  color: var(--text-2);
+}
+
+.ring {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  display: inline-block;
+  flex: none;
+}
+
+.dock-notif {
+  display: flex;
+  flex-direction: column;
+}
+
+.dock-notif__banner {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 14px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  margin-bottom: 14px;
+}
+
+.dock-notif__banner--warn {
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  border-color: color-mix(in srgb, var(--danger) 25%, transparent);
+}
+
+.dock-notif__icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: var(--panel-2);
+  border: 1px solid var(--border);
+  color: var(--accent);
+  flex: none;
+}
+
+.dock-notif__banner--warn .dock-notif__icon {
+  color: var(--danger);
+}
+
+.dock-notif__heading {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.dock-notif__desc {
+  font-size: 12.5px;
+  color: var(--text-2);
+  line-height: 1.4;
+}
+
+.dock-product {
+  display: flex;
+  flex-direction: column;
+}
+
+
+/* ── Skeleton shimmer for line items loading ── */
+@keyframes dock-shimmer {
+  0% { background-position: -200px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.dock-invoice__skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 0;
+}
+
+.dock-invoice__skeleton-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.dock-invoice__skeleton-bar {
+  height: 14px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--panel-2) 25%, var(--hover) 50%, var(--panel-2) 75%);
+  background-size: 600px 100%;
+  animation: dock-shimmer 1.4s ease-in-out infinite;
+}

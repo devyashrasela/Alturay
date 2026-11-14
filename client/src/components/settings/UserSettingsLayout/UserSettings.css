@@ -5,7 +5,20 @@
 .user-settings {
   --user-settings-sidebar-width: 280px;
   min-height: 100vh;
-  background: var(--color-bg-main);
+  background: var(--bg);
+  color: var(--text);
+  --sidebar-bg: var(--panel-2);
+  --sidebar-border: var(--border);
+  --sidebar-text: var(--text-2);
+  --sidebar-text-strong: var(--text);
+  --sidebar-text-muted: var(--muted);
+  --sidebar-hover-bg: var(--hover);
+  --color-bg-main: var(--bg);
+  --color-bg-card: var(--panel);
+  --color-border: var(--border);
+  --color-text-primary: var(--text);
+  --color-text-secondary: var(--text-2);
+  --color-text-muted: var(--muted);
 }
 
 .settings-sidebar {

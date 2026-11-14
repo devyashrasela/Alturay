@@ -31,8 +31,6 @@ const SETTINGS_ITEMS = [
 
 export default function SettingsSidebar({ open, onClose }) {
   const navigate = useNavigate();
-  const [query, setQuery] = useState('');
-  const searchRef = useRef(null);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -45,18 +43,7 @@ export default function SettingsSidebar({ open, onClose }) {
     return () => document.removeEventListener('keydown', handleKey);
   }, [open, onClose]);
 
-  // Move focus into the drawer when it opens so keyboard users are not left
-  // behind the overlay.
-  useEffect(() => {
-    if (!open) return undefined;
-    const frame = requestAnimationFrame(() => searchRef.current?.focus());
-    return () => cancelAnimationFrame(frame);
-  }, [open]);
-
-  const normalizedQuery = query.trim().toLowerCase();
-  const visibleItems = SETTINGS_ITEMS.filter((item) => (
-    item.label.toLowerCase().includes(normalizedQuery)
-  ));
+  const visibleItems = SETTINGS_ITEMS;
 
   return (
     <>
@@ -90,19 +77,6 @@ export default function SettingsSidebar({ open, onClose }) {
           >
             <X size={18} aria-hidden="true" />
           </button>
-        </div>
-
-        <div className="settings-sidebar__search">
-          <Search size={15} aria-hidden="true" />
-          <input
-            ref={searchRef}
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search"
-            aria-label="Search settings"
-            autoComplete="off"
-          />
         </div>
 
         <div className="settings-sidebar__section-label">Settings</div>

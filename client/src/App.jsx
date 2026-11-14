@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { Provider, useSelector } from 'react-redux';
 import store from './store';
 import AppLayout from './components/layout/AppLayout/AppLayout';
@@ -18,7 +18,6 @@ const DashboardPage = lazy(() => import('./pages/Dashboard/DashboardPage/Dashboa
 const ProductsPage = lazy(() => import('./pages/Products/ProductsPage/ProductsPage'));
 const InvoicesPage = lazy(() => import('./pages/Invoices/InvoicesPage/InvoicesPage'));
 const CreateInvoicePage = lazy(() => import('./pages/Invoices/CreateInvoicePage/CreateInvoicePage'));
-const InvoiceDetailPage = lazy(() => import('./pages/Invoices/InvoiceDetailPage/InvoiceDetailPage'));
 const CustomersPage = lazy(() => import('./pages/Customers/CustomersPage/CustomersPage'));
 const BusinessSettingsPage = lazy(() => import('./pages/Settings/business/BusinessSettingsPage/BusinessSettingsPage'));
 const UsersAccessPage = lazy(() => import('./pages/Settings/users/UsersAccessPage/UsersAccessPage'));
@@ -36,6 +35,11 @@ function AuthenticatedFallback() {
   if (!isAuthenticated) return <Navigate to="/login" replace />;
   if (!activeBusinessId) return <Navigate to="/businesses" replace />;
   return <Navigate to={getHomePath(can)} replace />;
+}
+
+function InvoiceDetailRedirect() {
+  const { id } = useParams();
+  return <Navigate to="/invoices" state={{ selectedInvoiceId: id }} replace />;
 }
 
 function App() {
@@ -86,7 +90,7 @@ function App() {
 
                 <Route element={<RequirePermission permission="invoice.view" />}>
                   <Route path="/invoices" element={<InvoicesPage />} />
-                  <Route path="/invoices/:id" element={<InvoiceDetailPage />} />
+                  <Route path="/invoices/:id" element={<InvoiceDetailRedirect />} />
                 </Route>
 
                 <Route element={<RequirePermission permission="invoice.create" />}>

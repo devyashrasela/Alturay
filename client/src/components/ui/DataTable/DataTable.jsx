@@ -2,6 +2,8 @@ import {
   DataTableToolbar,
   DataTableSearch,
   DataTableTabs,
+  DataTableSegment,
+  DataTableRefreshButton,
   DataTableActions,
   DataTableFilterButton,
   DataTableNewButton,
@@ -30,6 +32,8 @@ export function DataTable({ children, className = '' }) {
 
 DataTable.Toolbar = DataTableToolbar;
 DataTable.Search = DataTableSearch;
+DataTable.Segment = DataTableSegment;
+DataTable.Refresh = DataTableRefreshButton;
 DataTable.Tabs = DataTableTabs;
 DataTable.Actions = DataTableActions;
 DataTable.FilterButton = DataTableFilterButton;

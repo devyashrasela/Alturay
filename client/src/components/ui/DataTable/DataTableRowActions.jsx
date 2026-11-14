@@ -1,7 +1,7 @@
 import Icon from '../Icon/Icon';
 
 export function DataTableRowActions({ children, className = '' }) {
-  return <div className={`act ${className}`}>{children}</div>;
+  return <div className={`act ${className}`.trim()}>{children}</div>;
 }
 
 export function DataTableActionButton({
@@ -9,7 +9,7 @@ export function DataTableActionButton({
   label,
   onClick,
   variant = 'default',
-  size = 16,
+  size = 14,
   className = '',
   disabled = false,
 }) {
@@ -17,7 +17,7 @@ export function DataTableActionButton({
   return (
     <button
       type="button"
-      className={`${isDanger ? 'del' : ''} ${className}`.trim()}
+      className={`act-btn ${isDanger ? 'del' : ''} ${className}`.trim()}
       aria-label={label}
       title={label}
       onClick={onClick}

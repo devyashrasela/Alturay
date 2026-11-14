@@ -44,6 +44,12 @@ export const membersApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Business', 'Access', 'Member'],
     }),
+    searchUsers: builder.query({
+      query: ({ businessId, query }) => ({
+        url: `/businesses/${businessId}/members/search-users`,
+        params: query ? { query } : undefined,
+      }),
+    }),
   }),
 });
 
@@ -55,4 +61,6 @@ export const {
   useUpdateMemberRoleMutation,
   useRemoveMemberMutation,
   useLeaveBusinessMutation,
+  useSearchUsersQuery,
+  useLazySearchUsersQuery,
 } = membersApi;

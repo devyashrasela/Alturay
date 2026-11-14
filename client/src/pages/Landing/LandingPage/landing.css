@@ -19,7 +19,8 @@ body::-webkit-scrollbar {
 
 
 body:has(.landing-page) {
-  background-color: #FFFFFF;
+  background-color: #000000;
+  background: linear-gradient(to bottom, #FFFFFF 0%, #FFFFFF 70%, #000000 100%);
 }
 
 /* Hide scrollbar while keeping page scrolling enabled */
@@ -53,7 +54,7 @@ body:has(.landing-page) {
 
   min-height: 100dvh;
   overflow-x: clip;
-  background: var(--landing-paper);
+  background: #000000;
   color: var(--landing-ink);
   color-scheme: light;
   font-family: var(--font-family);
@@ -359,7 +360,10 @@ body:has(.landing-page) {
 
 .landing-page__content {
   min-height: calc(100dvh - var(--landing-nav-height));
-  background: var(--landing-paper);
+  background: #000000;
+  margin-bottom: 0;
+  padding-bottom: 0;
+  width: 100%;
 }
 
 .landing-hero-sequence {
@@ -2502,20 +2506,42 @@ body:has(.landing-page) {
   background: var(--band-two);
 }
 
+.landing-footer__gap {
+  height: 20px;
+  width: 100%;
+  min-width: 100%;
+  background: #000000;
+  flex: none;
+  pointer-events: none;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 .landing-footer {
   position: sticky;
   bottom: 0;
   z-index: 1;
-  min-height: 50vh;
-  min-height: 50dvh;
-  margin-top: -1vh;
+  width: 100%;
+  min-width: 100%;
+  max-width: 100%;
+  left: 0;
+  right: 0;
+  min-height: calc(50vh + 20px);
+  min-height: calc(50dvh + 20px);
+  margin-top: 0;
+  margin-bottom: 0;
   padding: 0;
-  background: #000;
-  color: #FFF;
+  background: #000000;
+  color: #FFFFFF;
+  box-sizing: border-box;
   scroll-margin-top: calc(var(--landing-nav-height) + 16px);
 }
 
 .landing-footer__sheet {
+  width: 100%;
+  min-width: 100%;
+  max-width: 100%;
   background: none;
   border-radius: 0;
   box-shadow: none;
@@ -2523,9 +2549,13 @@ body:has(.landing-page) {
   min-height: 50dvh;
   position: relative;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
 .landing-footer__inner {
+  width: 100%;
+  min-width: 100%;
+  max-width: 100%;
   min-height: 50vh;
   min-height: 50dvh;
   box-sizing: border-box;
@@ -2648,8 +2678,6 @@ body:has(.landing-page) {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 26px;
-  margin-top: clamp(16px, 3vh, 40px);
 }
 
 .landing-footer__legal {

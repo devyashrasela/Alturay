@@ -180,7 +180,7 @@ Alturay/
 │   │   │   ├── Auth/           # LoginPage, RegisterPage
 │   │   │   ├── Businesses/     # BusinessSelectPage (workspace picker & creation)
 │   │   │   ├── Dashboard/      # Analytics overview & quick stats
-│   │   │   ├── Invoices/       # InvoicesPage, CreateInvoicePage, InvoiceDetailPage
+│   │   │   ├── Invoices/       # InvoicesPage, CreateInvoicePage
 │   │   │   ├── Landing/        # LandingPage & scroll sequence orchestration
 │   │   │   ├── Products/       # ProductsPage (catalog management)
 │   │   │   └── Settings/       # BusinessSettingsPage, PersonalizationPage

@@ -1,49 +1,28 @@
-import { Link, useLocation } from 'react-router-dom';
-import WorkspaceSwitcher from '../WorkspaceSwitcher/WorkspaceSwitcher';
 import UserMenu from '../UserMenu/UserMenu';
-import { NAV_SECTIONS, getActiveSection, filterNavForPermissions, getHomePath } from '../navConfig';
-import { usePermissions } from '../../../hooks/usePermissions';
+import NotificationsMenu from '../NotificationsMenu/NotificationsMenu';
+import Icon from '../../ui/Icon/Icon';
+import './TopNav.css';
 
-export default function TopNav({ onOpenUserSettings }) {
-  const { pathname } = useLocation();
-  const { can } = usePermissions();
-  const activeId = getActiveSection(pathname)?.id;
-  const filteredSections = filterNavForPermissions(NAV_SECTIONS, can);
-  const homePath = getHomePath(can);
-
+export default function TopNav({ onOpenUserSettings, onOpenHelp, onOpenDock, onToggleMobileNav }) {
   return (
     <header className="topbar">
-      <Link className="topbar__brand" to={homePath} aria-label="Alturay home">
-        <img
-          className="topbar__logo"
-          src="/alturay_light.png"
-          width="22"
-          height="22"
-          alt=""
-          draggable="false"
+      {onToggleMobileNav && (
+        <button
+          type="button"
+          className="topbar-menu-btn"
+          onClick={onToggleMobileNav}
+          aria-label="Toggle navigation"
+        >
+          <Icon name="panel" size={18} />
+        </button>
+      )}
+
+      <div className="topbar__right">
+        <NotificationsMenu onOpenDock={onOpenDock} />
+        <UserMenu
+          onOpenUserSettings={onOpenUserSettings}
+          onOpenHelp={onOpenHelp}
         />
-        <span>Alturay</span>
-      </Link>
-
-      <nav className="topbar__links" id="navLinks" aria-label="Main">
-        {filteredSections.map((section) => {
-          const active = section.id === activeId;
-          return (
-            <Link
-              key={section.id}
-              to={section.path}
-              className="topbar__link"
-              aria-current={active ? 'page' : undefined}
-            >
-              {section.label}
-            </Link>
-          );
-        })}
-      </nav>
-
-      <div className="topbar__end">
-        <WorkspaceSwitcher />
-        <UserMenu onOpenUserSettings={onOpenUserSettings} />
       </div>
     </header>
   );

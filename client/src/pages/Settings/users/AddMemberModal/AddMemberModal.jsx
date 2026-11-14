@@ -5,9 +5,10 @@ import Button from '../../../../components/ui/Button/Button';
 import FormField from '../../../../components/ui/FormField/FormField';
 import InputField from '../../../../components/ui/Input/InputField';
 import SelectDropdown from '../../../../components/ui/Select/SelectDropdown/SelectDropdown';
-import { useAddMemberMutation } from '../../../../store/api/membersApi';
+import { useAddMemberMutation, useSearchUsersQuery } from '../../../../store/api/membersApi';
 import { addToast } from '../../../../store/slices/uiSlice';
 import { ROLE_LABELS, ROLE_DESCRIPTIONS } from '../../../../constants/roles';
+import './AddMemberModal.css';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -21,6 +22,7 @@ export default function AddMemberModal({
   const [addMember, { isLoading }] = useAddMemberMutation();
 
   const [email, setEmail] = useState('');
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const [role, setRole] = useState('');
   const [emailError, setEmailError] = useState('');
   const [roleError, setRoleError] = useState('');
@@ -28,11 +30,24 @@ export default function AddMemberModal({
   const [showRoleDetails, setShowRoleDetails] = useState(false);
 
   const submittingRef = useRef(false);
+  const containerRef = useRef(null);
+
+  const trimmedQuery = email.trim();
+
+  // Search only when user types something (does not fetch or show all users from the start)
+  const { data: searchData, isFetching: isSearching } = useSearchUsersQuery(
+    { businessId, query: trimmedQuery },
+    { skip: !isOpen || !businessId || trimmedQuery.length === 0 }
+  );
+
+  const candidateUsers = trimmedQuery.length > 0 ? (searchData?.data?.users || []) : [];
+  const shouldShowDropdown = dropdownOpen && trimmedQuery.length > 0;
 
   // Reset form when modal opens
   useEffect(() => {
     if (isOpen) {
       setEmail('');
+      setDropdownOpen(false);
       setRole(assignableRoles.length === 1 ? assignableRoles[0] : '');
       setEmailError('');
       setRoleError('');
@@ -41,6 +56,32 @@ export default function AddMemberModal({
       submittingRef.current = false;
     }
   }, [isOpen, assignableRoles]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleOutsideClick = (e) => {
+      if (containerRef.current && !containerRef.current.contains(e.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
+
+  const handleSelectUser = (user) => {
+    if (user.is_member) return;
+    // Put selected email into input only (no extra field added)
+    setEmail(user.email);
+    setEmailError('');
+    setDropdownOpen(false);
+  };
+
+  const handleEmailChange = (e) => {
+    const val = e.target.value;
+    setEmail(val);
+    if (emailError) setEmailError('');
+    setDropdownOpen(val.trim().length > 0);
+  };
 
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
@@ -51,11 +92,11 @@ export default function AddMemberModal({
     setRoleError('');
     setGeneralError('');
 
-    const trimmedEmail = email.trim();
-    if (!trimmedEmail) {
+    const targetEmail = email.trim();
+    if (!targetEmail) {
       setEmailError('Email is required.');
       hasClientError = true;
-    } else if (!EMAIL_REGEX.test(trimmedEmail)) {
+    } else if (!EMAIL_REGEX.test(targetEmail)) {
       setEmailError('Please enter a valid email address.');
       hasClientError = true;
     }
@@ -71,7 +112,7 @@ export default function AddMemberModal({
     try {
       await addMember({
         businessId,
-        email: trimmedEmail,
+        email: targetEmail,
         role,
       }).unwrap();
 
@@ -79,7 +120,7 @@ export default function AddMemberModal({
       dispatch(
         addToast({
           type: 'success',
-          message: `${trimmedEmail} added as ${roleName}.`,
+          message: `${targetEmail} added as ${roleName}.`,
         })
       );
       onClose();
@@ -129,7 +170,7 @@ export default function AddMemberModal({
         </>
       }
     >
-      <form onSubmit={handleSubmit} noValidate style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      <form onSubmit={handleSubmit} noValidate className="add-member-form">
         {generalError && (
           <div
             style={{
@@ -150,20 +191,67 @@ export default function AddMemberModal({
           htmlFor="member-email"
           required
           error={emailError}
-          helper="The person must already have an Alturay account."
+          helper="Search by name or email among registered Alturay users."
         >
-          <InputField
-            id="member-email"
-            type="email"
-            placeholder="name@company.com"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              if (emailError) setEmailError('');
-            }}
-            error={Boolean(emailError)}
-            autoFocus
-          />
+          {/* Autocomplete wrapper positioned directly around the input */}
+          <div className="add-member-autocomplete" ref={containerRef}>
+            <InputField
+              id="member-email"
+              type="text"
+              placeholder="Type name or email (e.g. alex@example.com)..."
+              value={email}
+              onChange={handleEmailChange}
+              onFocus={() => {
+                if (trimmedQuery.length > 0) setDropdownOpen(true);
+              }}
+              error={Boolean(emailError)}
+              autoFocus
+              autoComplete="off"
+            />
+
+            {/* Dropdown sits right below the input bar */}
+            {shouldShowDropdown && (
+              <div className="add-member-dropdown" role="listbox">
+                <div className="add-member-dropdown__header">
+                  {isSearching ? 'Searching users…' : 'Matching Alturay Users'}
+                </div>
+
+                {candidateUsers.length > 0 ? (
+                  candidateUsers.map((user) => {
+                    const initial = (user.name || user.email || 'U').charAt(0).toUpperCase();
+
+                    return (
+                      <button
+                        key={user.id}
+                        type="button"
+                        role="option"
+                        disabled={user.is_member}
+                        className="add-member-dropdown__item"
+                        onClick={() => handleSelectUser(user)}
+                      >
+                        <span className="add-member-dropdown__avatar">{initial}</span>
+                        <div className="add-member-dropdown__info">
+                          <span className="add-member-dropdown__name">{user.name}</span>
+                          <span className="add-member-dropdown__email">{user.email}</span>
+                        </div>
+                        {user.is_member && (
+                          <span className="add-member-dropdown__badge">
+                            {ROLE_LABELS[user.current_role] || 'Already added'}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="add-member-dropdown__empty">
+                    {isSearching
+                      ? 'Loading…'
+                      : `No registered users found matching "${trimmedQuery}"`}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </FormField>
 
         <FormField

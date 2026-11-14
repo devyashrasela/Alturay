@@ -63,7 +63,7 @@ export default function LoginPage() {
       subtitle="Enter to get unlimited access to data & information."
       footer={(
         <>
-          Don&apos;t have an account?{' '}
+          Don&apos;t have an account?&nbsp;&nbsp;{' '}
           <Link to="/register" className="auth-panel__link">Register here</Link>
         </>
       )}

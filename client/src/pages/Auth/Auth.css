@@ -26,7 +26,7 @@
   display: grid;
   grid-template-rows: auto 1fr auto;
   padding: clamp(28px, 3.5vw, 52px) clamp(24px, 5vw, 72px) clamp(24px, 3vw, 40px);
-  background: var(--color-bg-card);
+  background: var(--bg);
   color: var(--color-text-primary);
 }
 

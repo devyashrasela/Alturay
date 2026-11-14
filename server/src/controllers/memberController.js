@@ -369,3 +369,58 @@ exports.leave = async (req, res, next) => {
     next(error);
   }
 };
+
+exports.searchUsers = async (req, res, next) => {
+  try {
+    const rawQuery = String(req.query.query || req.query.q || '').trim();
+
+    let whereClause = {};
+    if (rawQuery) {
+      whereClause = {
+        [Op.or]: [
+          { email: { [Op.like]: `%${rawQuery}%` } },
+          { name: { [Op.like]: `%${rawQuery}%` } },
+        ],
+      };
+    }
+
+    const users = await User.findAll({
+      where: whereClause,
+      attributes: ['id', 'name', 'email'],
+      limit: 20,
+      order: [['name', 'ASC']],
+    });
+
+    const userIds = users.map((u) => u.id);
+    let existingMemberships = [];
+    if (userIds.length > 0) {
+      existingMemberships = await BusinessMember.findAll({
+        where: {
+          business_id: req.businessId,
+          user_id: { [Op.in]: userIds },
+        },
+        attributes: ['user_id', 'role'],
+      });
+    }
+
+    const memberMap = new Map();
+    existingMemberships.forEach((m) => {
+      memberMap.set(m.user_id, m.role);
+    });
+
+    const result = users.map((u) => ({
+      id: u.id,
+      name: u.name,
+      email: u.email,
+      is_member: memberMap.has(u.id),
+      current_role: memberMap.get(u.id) || null,
+    }));
+
+    return res.json({
+      success: true,
+      data: { users: result },
+    });
+  } catch (error) {
+    next(error);
+  }
+};

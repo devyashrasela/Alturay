@@ -16,6 +16,7 @@ export function DataTableContent({
   data = [],
   renderRow = null,
   onRowClick = null,
+  selectedId = null,
   children,
 }) {
   if (isLoading) {
@@ -29,14 +30,17 @@ export function DataTableContent({
   if (isEmpty) {
     if (!emptyState) return null;
     return (
-      <div style={{ marginTop: 20 }}>
-        <EmptyState
-          icon={emptyState.icon}
-          title={emptyState.title}
-          description={emptyState.description}
-          actionLabel={emptyState.actionLabel}
-          onAction={emptyState.onAction}
-        />
+      <div className="card empty">
+        {emptyState.icon ? (
+          <div className="ico">{emptyState.icon}</div>
+        ) : null}
+        <h3>{emptyState.title}</h3>
+        {emptyState.description && <p>{emptyState.description}</p>}
+        {emptyState.actionLabel && emptyState.onAction && (
+          <button type="button" className="btn primary" onClick={emptyState.onAction}>
+            {emptyState.actionLabel}
+          </button>
+        )}
       </div>
     );
   }
@@ -56,9 +60,14 @@ export function DataTableContent({
           }
 
           const handleRowClick = onRowClick ? () => onRowClick(item, index) : undefined;
+          const isSelected = selectedId && (item.id === selectedId || item._id === selectedId);
 
           return (
-            <DataTableRow key={item.id || index} onClick={handleRowClick}>
+            <DataTableRow
+              key={item.id || index}
+              onClick={handleRowClick}
+              className={isSelected ? 'sel' : ''}
+            >
               {columns.map((col, colIdx) => {
                 const cellValue = col.render
                   ? col.render(item, index)

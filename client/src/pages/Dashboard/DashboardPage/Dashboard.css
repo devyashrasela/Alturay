@@ -116,7 +116,7 @@
 }
 
 .kpi__top,
-.dh {
+.dcard .dh {
   display: flex;
   align-items: center;
   justify-content: space-between;

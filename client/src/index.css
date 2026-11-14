@@ -19,22 +19,28 @@
 :root {
   color-scheme: dark;
 
-  /* Sampled reference tokens (alturay-shell-reference (1).html) */
-  --bg: #191919;          /* page + top bar */
-  --panel: #202020;       /* sidebar + popups */
-  --border: #383836;
-  --hover: #2C2C2C;       /* active / hover fill (rows, pills, nav link) */
-  --chip: #333332;
-  --text: #F0EFED;        /* primary text */
-  --text-2: #BCBAB6;      /* item text */
-  --icon: #ACA9A4;
-  --muted: #7C7A76;       /* labels, chevrons */
+  /* Sampled reference tokens (Alturay_UI_redesign.html & Alturay_Create_business.html) */
+  --bg: #000000;          /* pitch-black background */
+  --panel: #141414;       /* elevated surface */
+  --panel-2: #0b0b0b;     /* secondary surface */
+  --border: #2b2b2b;      /* crisp geometric border */
+  --border-soft: #1f1f1f;
+  --hover: #1e1e1e;       /* active / hover fill (rows, pills, nav link) */
+  --chip: #262626;
+  --text: #f5f5f5;        /* primary crisp text */
+  --text-2: #b0b0b0;      /* item text */
+  --icon: #aca9a4;
+  --muted: #8a8a8a;       /* labels, chevrons */
   --avatar: #71269C;
-  --fab: #D3D3D3;
+  --fab: #d3d3d3;
   --fab-icon: #020203;
-  --accent: #3B7FDB;      /* primary button, sampled from the database reference */
-  --danger: #E5645C;      /* delete icon, sampled from the products screenshot */
+  --accent: #3B7FDB;      /* primary accent blue */
+  --danger: #E5645C;      /* danger red */
+  --success: #4ADE80;     /* success green */
+  --warn: #FBBF24;        /* warning yellow */
+  --ring: rgba(59, 127, 219, 0.35);
   --font-family: 'Mona Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font: 'Mona Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
   /* Brand & action */
   --color-primary: var(--accent);
@@ -125,10 +131,11 @@
   /* Layout */
   --content-max-width: 1320px;
 
-  /* Sidebar */
-  --sidebar-width: 271px;
-  --sidebar-collapsed-width: 52px;
-  --header-height: 44px;
+  /* Sidebar & Header */
+  --sidebar-width: 228px;
+  --sidebar-collapsed-width: 64px;
+  --header-height: 49px;
+  --footer-height: 42px;
   --sidebar-bg: var(--panel);
   --sidebar-bg-elevated: var(--panel);
   --sidebar-border: var(--border);
@@ -169,21 +176,26 @@
 [data-theme="light"] {
   color-scheme: light;
 
-  /* Raw design tokens — light */
-  --bg: #F7F7F8;
-  --panel: #FFFFFF;
-  --border: #E5E7EB;
-  --hover: #F1F2F4;
-  --chip: #E5E7EB;
+  /* Raw design tokens — light (Alturay_UI_redesign.html) */
+  --bg: #ffffff;
+  --panel: #fafafa;
+  --panel-2: #ffffff;
+  --border: #e3e3e6;
+  --border-soft: #efeff1;
+  --hover: #f1f1f3;
+  --chip: #e9e9ec;
   --text: #171717;
-  --text-2: #525252;
+  --text-2: #52525b;
   --icon: #6F6F6F;
-  --muted: #9CA3AF;
+  --muted: #8b8b94;
   --avatar: #7C3AED;
   --fab: #171717;
   --fab-icon: #FFFFFF;
-  --accent: #2563EB;
-  --danger: #DC2626;
+  --accent: #3B7FDB;
+  --danger: #E5645C;
+  --success: #4ADE80;
+  --warn: #FBBF24;
+  --ring: rgba(59, 127, 219, 0.25);
 
   /* Brand & action */
   --color-primary: #2563EB;

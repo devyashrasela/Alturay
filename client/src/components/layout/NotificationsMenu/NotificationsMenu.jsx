@@ -1,16 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { Bell, CheckCircle2, ChevronRight, Clock3, FileText } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { useGetRecentInvoicesQuery } from '../../../store/api/dashboardApi';
 import { formatCurrency } from '../../../utils/formatCurrency';
 import { formatDate } from '../../../utils/formatDate';
 import { isOverdue } from '../../../utils/invoiceStatus';
+import Icon from '../../ui/Icon/Icon';
+import './NotificationsMenu.css';
 
-/* Outstanding-invoice notifications, moved out of the old Header unchanged
-   in behaviour: overdue first, then by due date, max five. */
-export default function NotificationsMenu() {
-  const navigate = useNavigate();
+export default function NotificationsMenu({ onOpenDock }) {
   const location = useLocation();
   const { activeBusinessId, activeBusiness } = useSelector((state) => state.business);
   const [open, setOpen] = useState(false);
@@ -49,37 +47,60 @@ export default function NotificationsMenu() {
     };
   }, [open]);
 
+  const handleNotificationClick = (inv) => {
+    setOpen(false);
+    const overdue = isOverdue(inv);
+    onOpenDock?.('notification', {
+      ...inv,
+      overdue,
+      business: activeBusiness,
+    });
+  };
+
   return (
-    <div className="header__menu-anchor" ref={anchorRef}>
+    <div className="notif-anchor" ref={anchorRef}>
       <button
         type="button"
-        className={`header__icon-btn ${notifications.length ? 'header__icon-btn--dot' : ''}`}
+        className={`notif-btn ${notifications.length ? 'notif-btn--dot' : ''}`}
         onClick={() => setOpen((v) => !v)}
         aria-label="Notifications"
         aria-haspopup="dialog"
         aria-expanded={open}
       >
-        <Bell size={18} />
+        <Icon name="help" size={17} style={{ display: 'none' }} />
+        <svg
+          className="ic"
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M6 9a6 6 0 1 1 12 0c0 6 2 7 2 7H4s2-1 2-7" />
+          <path d="M10 20a2 2 0 0 0 4 0" />
+        </svg>
       </button>
 
       {open && (
-        <div className="header__menu header__menu--wide" role="dialog" aria-label="Notifications">
-          <div className="header__menu-head">
+        <div className="notif-pop" role="dialog" aria-label="Notifications">
+          <div className="notif-head">
             <span>Notifications</span>
             {overdueCount > 0 && (
-              <span style={{ color: 'var(--color-warning-strong)', fontWeight: 600, fontSize: 12 }}>
+              <span className="notif-head__badge">
                 {overdueCount} overdue
               </span>
             )}
           </div>
-          <div className="header__menu-list">
+          <div className="notif-list">
             {notifications.length === 0 ? (
-              <div className="header__menu-empty">
-                <CheckCircle2 size={22} color="var(--color-success)" />
+              <div className="notif-empty">
+                <Icon name="check" size={20} />
                 <span>You're all caught up</span>
-                <span style={{ fontSize: 12, color: 'var(--color-text-muted)' }}>
-                  No outstanding invoices
-                </span>
+                <span style={{ fontSize: 12 }}>No outstanding invoices</span>
               </div>
             ) : (
               notifications.map((inv) => {
@@ -88,36 +109,28 @@ export default function NotificationsMenu() {
                   <button
                     type="button"
                     key={inv.id}
-                    className="header__menu-item"
-                    onClick={() => { setOpen(false); navigate(`/invoices/${inv.id}`); }}
+                    className="notif-item"
+                    onClick={() => handleNotificationClick(inv)}
                   >
-                    <div className="icon-tile icon-tile--amber" style={{ width: 32, height: 32 }}>
-                      {overdue ? <Clock3 size={16} /> : <FileText size={16} />}
+                    <div className={`notif-tile ${overdue ? 'notif-tile--warn' : ''}`}>
+                      <Icon name="file" size={16} />
                     </div>
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 600, fontSize: 13.5 }}>{inv.invoice_number}</div>
-                      <div className="header__menu-sub">
-                        {inv.customer_name} · {formatCurrency(inv.total_amount, activeBusiness?.currency)}
+                    <div className="notif-body">
+                      <div className="notif-title">{inv.invoice_number}</div>
+                      <div className="notif-sub">
+                        {inv.customer_name || 'Customer'} &middot; {formatCurrency(inv.total_amount, activeBusiness?.currency)}
                       </div>
                     </div>
-                    <span className={`badge badge--${overdue ? 'danger' : 'info'}`} style={{ flexShrink: 0 }}>
-                      <span className="badge__dot" />
-                      {overdue ? 'Overdue' : `Due ${formatDate(inv.due_date)}`}
-                    </span>
+                    {overdue && (
+                      <span className="soon" style={{ color: 'var(--danger)', background: 'color-mix(in srgb, var(--danger) 15%, transparent)' }}>
+                        OVERDUE
+                      </span>
+                    )}
                   </button>
                 );
               })
             )}
           </div>
-          <button
-            type="button"
-            className="card-footer-link"
-            style={{ width: '100%', padding: '12px 20px' }}
-            onClick={() => { setOpen(false); navigate('/invoices'); }}
-          >
-            View all invoices
-            <ChevronRight size={14} />
-          </button>
         </div>
       )}
     </div>

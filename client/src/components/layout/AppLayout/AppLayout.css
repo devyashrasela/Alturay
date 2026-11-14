@@ -1,109 +1,86 @@
 /* ═══════════════════════════════════════════════════════════
-   LAYOUT SYSTEM
+   APP SHELL — 3-COLUMN RESPONSIVE GRID
+   Exact structure matching Alturay_UI_redesign.html
    ═══════════════════════════════════════════════════════════ */
 
-.app-layout {
-  display: flex;
+.app {
+  --sw: 228px;
+  --pw: 0px;
+  --pwo: clamp(380px, 34vw, 480px);
+  display: grid;
+  grid-template-columns: var(--sw) minmax(0, 1fr) var(--pw);
   min-height: 100vh;
+  background: var(--bg);
+  transition: grid-template-columns 0.2s ease;
 }
 
-.app-layout__sidebar {
-  width: var(--sidebar-width);
-  min-height: 100vh;
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 40;
-  transition: width var(--transition-slow);
+.app.collapsed {
+  --sw: 64px;
 }
 
-.app-layout__sidebar--collapsed {
-  width: var(--sidebar-collapsed-width);
+.app.panel {
+  --pw: var(--pwo);
 }
 
-.app-layout__main {
-  flex: 1;
-  margin-left: var(--sidebar-width);
-  min-height: 100vh;
+.app.panel.wide {
+  --pwo: 62vw;
+}
+
+/* ── Center Content Column (.right / .main-col) ── */
+.main-col,
+.right {
   display: flex;
   flex-direction: column;
-  transition: margin-left var(--transition-slow);
+  min-width: 0;
+  min-height: 100vh;
 }
 
-.app-layout__sidebar--collapsed+.app-layout__main,
-.app-layout__main--sidebar-collapsed {
-  margin-left: var(--sidebar-collapsed-width);
-}
-
-.app-layout__header {
-  height: var(--header-height);
-  position: sticky;
-  top: 0;
-  z-index: 30;
-}
-
-.app-layout__content {
+.main {
   flex: 1;
-  padding: var(--space-8);
-  max-width: var(--content-max-width);
-  width: 100%;
-  margin: 0 auto;
+  padding: 36px 20px 64px 28px;
+  min-width: 0;
 }
 
-
-
-/* ═══════════════════════════════════════════════════════════
-   MOBILE OVERLAY (drawer backdrop)
-   ═══════════════════════════════════════════════════════════ */
-
-.app-layout__overlay {
-  position: fixed;
-  inset: 0;
-  background: var(--color-overlay-soft);
-  z-index: 39;
-  display: none;
-  animation: fade-in 150ms ease;
-  border: none;
-  padding: 0;
+/* ── Minimalist Footer ── */
+.app-footer,
+footer {
+  height: 42px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-top: 1px solid var(--border);
+  font-size: 12.5px;
+  color: var(--muted);
+  background: var(--bg);
 }
 
-@media (max-width: 768px) {
-  .app-layout__overlay--visible {
-    display: block;
+/* ── Responsive Breakpoints from Alturay_UI_redesign.html line 284 ── */
+@media (max-width: 1000px) {
+  .app {
+    grid-template-columns: 1fr;
   }
-}
-
-
-
-/* ═══════════════════════════════════════════════════════════
-   RESPONSIVE — APP LAYOUT
-   ═══════════════════════════════════════════════════════════ */
-
-@media (max-width: 1024px) {
-  .app-layout__content {
-    padding: var(--space-6);
+  .app .side {
+    display: none;
   }
-}
-
-@media (max-width: 768px) {
-  .app-layout__sidebar {
-    transform: translateX(-100%);
-    z-index: 40;
-    width: var(--sidebar-width);
-    max-width: 86vw;
-    box-shadow: var(--shadow-xl);
+  .app.mobile-nav-open .side {
+    display: flex;
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: 260px;
+    z-index: 100;
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.7);
   }
-
-  .app-layout__sidebar--open {
-    transform: translateX(0);
+  .dock {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    height: auto;
   }
-
-  .app-layout__main,
-  .app-layout__main--sidebar-collapsed {
-    margin-left: 0;
+  .dock-in {
+    width: 100%;
   }
-
-  .app-layout__content {
-    padding: var(--space-4);
+  .main {
+    padding: 24px 16px 48px;
   }
 }

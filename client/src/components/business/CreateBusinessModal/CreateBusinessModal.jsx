@@ -248,7 +248,7 @@ export default function CreateBusinessModal({ isOpen, onClose, onSuccess }) {
             <div className="logo-upload-content">
               <p className="logo-upload-content__label">Business Logo (Optional)</p>
               <p className="logo-upload-content__sub">
-                Upload your brand logo for invoices and bills. Powered by Cloudinary.
+                Upload your brand logo for invoices and bills. 
               </p>
               <div className="logo-upload-actions">
                 <input

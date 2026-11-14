@@ -1,21 +1,26 @@
 import '../Badge/Badge.css';
-const STATUS_MAP = {
-  paid:      { variant: 'success', label: 'Paid' },
-  issued:    { variant: 'info',    label: 'Issued' },
-  draft:     { variant: 'default', label: 'Draft' },
-  cancelled: { variant: 'danger',  label: 'Cancelled' },
-  pending:   { variant: 'warning', label: 'Pending' },
-  overdue:   { variant: 'danger',  label: 'Overdue' },
-  active:    { variant: 'success', label: 'Active' },
-  inactive:  { variant: 'default', label: 'Inactive' },
+
+const PILL_MAP = {
+  paid:      { cls: 'ok',   label: 'Paid' },
+  issued:    { cls: 'info', label: 'Issued' },
+  pending:   { cls: 'warn', label: 'Pending' },
+  overdue:   { cls: 'bad',  label: 'Overdue' },
+  cancelled: { cls: 'bad',  label: 'Cancelled' },
+  draft:     { cls: '',     label: 'Draft' },
+  active:    { cls: 'ok',   label: 'Active' },
+  inactive:  { cls: '',     label: 'Inactive' },
 };
 
-export default function StatusBadge({ status }) {
-  const config = STATUS_MAP[status?.toLowerCase()] || { variant: 'default', label: status };
+export default function StatusBadge({ status, className = '' }) {
+  const normalized = status?.toLowerCase() || '';
+  const item = PILL_MAP[normalized] || {
+    cls: '',
+    label: status ? status.charAt(0).toUpperCase() + status.slice(1) : '',
+  };
+
   return (
-    <span className={`badge badge--${config.variant}`}>
-      <span className="badge__dot" />
-      {config.label}
+    <span className={`pill ${item.cls} ${className}`.trim()}>
+      {item.label}
     </span>
   );
 }

@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import Icon from '../../../components/ui/Icon/Icon';
 import { formatCurrency } from '../../../utils/formatCurrency';
+import './DashboardHeader.css';
 
 export default function DashboardHeader({
   greeting,
@@ -103,108 +104,67 @@ export default function DashboardHeader({
               </button>
               {monthMenuOpen && (
                 <div
-                  className="pop"
+                  className="pop dash-month-pop"
                   style={{
-                    position: 'absolute',
-                    top: 38,
-                    right: 0,
-                    minWidth: menuView === 'custom' ? 280 : 230,
-                    zIndex: 70,
+                    minWidth: menuView === 'custom' ? 280 : 250,
                   }}
                 >
                   {menuView === 'months' ? (
                     <>
                       <div className="pop__label">Select Month</div>
-                      {series.map((m) => {
-                        const isSelected = !isCustomActive && (activeMonthKey || series.at(-1)?.month) === m.month;
-                        return (
-                          <button
-                            key={m.month}
-                            type="button"
-                            className="pop__item"
-                            style={{
-                              justifyContent: 'space-between',
-                              fontWeight: isSelected ? 600 : 400,
-                              color: isSelected ? 'var(--text)' : 'var(--text-2)',
-                              background: isSelected ? 'var(--hover)' : 'transparent',
-                            }}
-                            onClick={() => handleSelectMonth(m.month)}
-                          >
-                            <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                              {isSelected && <Check size={13} style={{ color: 'var(--accent)' }} />}
-                              <span>{m.label} {m.month.split('-')[0]}</span>
-                            </span>
-                            {m.revenue > 0 && (
-                              <span style={{ fontSize: 12, color: 'var(--accent)', fontWeight: 600 }}>
-                                {formatCurrency(m.revenue, currency)}
+                      <div className="dash-month-list">
+                        {series.map((m) => {
+                          const isSelected = !isCustomActive && (activeMonthKey || series.at(-1)?.month) === m.month;
+                          return (
+                            <button
+                              key={m.month}
+                              type="button"
+                              className={`pop__item dash-month-item ${isSelected ? 'dash-month-item--selected' : ''}`}
+                              onClick={() => handleSelectMonth(m.month)}
+                            >
+                              <span className="dash-month-item__left">
+                                <span className="dash-month-item__check">
+                                  {isSelected && <Check size={13} />}
+                                </span>
+                                <span>{m.label} {m.month.split('-')[0]}</span>
                               </span>
-                            )}
-                          </button>
-                        );
-                      })}
+                              {m.revenue > 0 && (
+                                <span className="dash-month-item__rev">
+                                  {formatCurrency(m.revenue, currency)}
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
 
                       <div className="pop__sep" />
 
                       <button
                         type="button"
-                        className="pop__item"
-                        style={{
-                          justifyContent: 'space-between',
-                          fontWeight: isCustomActive ? 600 : 500,
-                          color: isCustomActive ? 'var(--accent)' : 'var(--text)',
-                          background: isCustomActive ? 'var(--hover)' : 'transparent',
-                        }}
+                        className={`pop__item dash-month-item ${isCustomActive ? 'dash-month-item--selected' : ''}`}
                         onClick={() => setMenuView('custom')}
                       >
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <CalendarRange size={14} style={{ color: isCustomActive ? 'var(--accent)' : 'var(--icon)' }} />
+                        <span className="dash-month-item__left">
+                          <span className="dash-month-item__check">
+                            <CalendarRange size={14} className="dash-month-item__icon" />
+                          </span>
                           <span>Custom range...</span>
                         </span>
                         {isCustomActive && (
-                          <span
-                            style={{
-                              fontSize: 10,
-                              fontWeight: 700,
-                              letterSpacing: '0.04em',
-                              textTransform: 'uppercase',
-                              padding: '2px 6px',
-                              borderRadius: 4,
-                              background: 'color-mix(in srgb, var(--accent) 18%, transparent)',
-                              color: 'var(--accent)',
-                            }}
-                          >
+                          <span className="dash-month-item__badge">
                             Active
                           </span>
                         )}
                       </button>
                     </>
                   ) : (
-                    <div style={{ padding: '4px 6px' }}>
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          paddingBottom: 8,
-                          marginBottom: 10,
-                          borderBottom: '1px solid var(--border)',
-                        }}
-                      >
+                    <div className="dash-custom-box">
+                      <div className="dash-custom-head">
                         <button
                           type="button"
+                          className="dash-back-btn"
                           onClick={() => setMenuView('months')}
-                          style={{
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: 4,
-                            background: 'none',
-                            border: 'none',
-                            color: 'var(--text-2)',
-                            cursor: 'pointer',
-                            fontSize: 12,
-                            fontWeight: 500,
-                            padding: 0,
-                          }}
                         >
                           <ArrowLeft size={13} />
                           <span>Back</span>

@@ -1,10 +1,11 @@
 import React from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useOutletContext } from 'react-router-dom';
 import { usePermissions } from '../hooks/usePermissions';
 import { PageLoader } from '../components/ui/Loader/Spinner';
 import ForbiddenPage from '../pages/Forbidden/ForbiddenPage/ForbiddenPage';
 
 export default function RequirePermission({ permission, anyOf, allOf }) {
+  const context = useOutletContext();
   const { can, canAny, permissions, isLoading } = usePermissions();
 
   if (isLoading) {
@@ -29,5 +30,5 @@ export default function RequirePermission({ permission, anyOf, allOf }) {
     return <ForbiddenPage />;
   }
 
-  return <Outlet />;
+  return <Outlet context={context} />;
 }

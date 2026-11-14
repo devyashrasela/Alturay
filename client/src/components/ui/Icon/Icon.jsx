@@ -20,9 +20,45 @@ const ICONS = {
       <path d="m6 9 6 6 6-6" />
     </>
   ),
+  chevd: (
+    <>
+      <path d="m6 9 6 6 6-6" />
+    </>
+  ),
+  right: (
+    <>
+      <path d="m9 6 6 6-6 6" />
+    </>
+  ),
   dchev: (
     <>
       <path d="m6 17 5-5-5-5M13 17l5-5-5-5" />
+    </>
+  ),
+  dright: (
+    <>
+      <path d="m6 17 5-5-5-5M13 17l5-5-5-5" />
+    </>
+  ),
+  updown: (
+    <>
+      <path d="m8 9 4-4 4 4M8 15l4 4 4-4" />
+    </>
+  ),
+  refresh: (
+    <>
+      <path d="M20 11a8 8 0 0 0-14-4L4 9M4 4v5h5M4 13a8 8 0 0 0 14 4l2-2M20 20v-5h-5" />
+    </>
+  ),
+  panel: (
+    <>
+      <rect x="3" y="4" width="18" height="16" rx="3" />
+      <path d="M9 4v16" />
+    </>
+  ),
+  home: (
+    <>
+      <path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" />
     </>
   ),
   check: (
@@ -177,9 +213,40 @@ const ICONS = {
       <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
     </>
   ),
+  pencil: (
+    <>
+      <path d="M4 20h4L19 9l-4-4L4 16zM13.5 6.5l4 4" />
+    </>
+  ),
+  send: (
+    <>
+      <path d="M22 2 11 13M22 2l-7 20-4-9-9-4z" />
+    </>
+  ),
+  download: (
+    <>
+      <path d="M12 4v11M7 11l5 5 5-5M5 20h14" />
+    </>
+  ),
+  cancel: (
+    <>
+      <circle cx="12" cy="12" r="9" />
+      <path d="m9 9 6 6M15 9l-6 6" />
+    </>
+  ),
+  expand: (
+    <>
+      <path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7" />
+    </>
+  ),
+  shrink: (
+    <>
+      <path d="M20 10h-6V4M4 14h6v6M14 10l7-7M3 21l7-7" />
+    </>
+  ),
 };
 
-export default function Icon({ name, size = 16, className = '', strokeWidth = 1.8, style = {} }) {
+export default function Icon({ name, size = 16, className = '', strokeWidth = 1.5, style = {} }) {
   const content = ICONS[name];
   if (!content) return null;
 

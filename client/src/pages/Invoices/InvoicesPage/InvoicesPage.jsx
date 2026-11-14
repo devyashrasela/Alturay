@@ -1,28 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import {
-  Pencil,
-  Send,
-  CheckCircle,
-  XCircle,
-  Download,
-  Maximize2,
-  X,
-} from 'lucide-react';
+import { useNavigate, useSearchParams, useLocation } from 'react-router-dom';
 import {
   useGetInvoicesQuery,
-  useGetInvoiceQuery,
   useUpdateInvoiceStatusMutation,
 } from '../../../store/api/invoiceApi';
-import { addToast } from '../../../store/slices/uiSlice';
+import { addToast, openDock, closeDock } from '../../../store/slices/uiSlice';
 import { usePermissions } from '../../../hooks/usePermissions';
 import Icon from '../../../components/ui/Icon/Icon';
-import PageHeader from '../../../components/ui/PageHeader/PageHeader';
 import DataTable from '../../../components/ui/DataTable';
+import StatusBadge from '../../../components/ui/StatusBadge/StatusBadge';
 import ConfirmDialog from '../../../components/ui/ConfirmDialog/ConfirmDialog';
-import { PageLoader } from '../../../components/ui/Loader/Spinner';
-import InvoicePreviewCard from '../../../components/invoices/InvoicePreviewCard/InvoicePreviewCard';
 import { formatCurrency } from '../../../utils/formatCurrency';
 import { formatDate } from '../../../utils/formatDate';
 import { effectiveStatus } from '../../../utils/invoiceStatus';
@@ -39,9 +27,13 @@ export default function InvoicesPage() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const { activeBusinessId, activeBusiness } = useSelector((s) => s.business);
   const currentUser = useSelector((s) => s.auth.user);
+  const { dock } = useSelector((s) => s.ui);
   const { can } = usePermissions();
+
+  const selectedInvoiceId = dock?.open && dock?.type === 'invoice' ? dock.data?.id : null;
 
   const canCreate = can('invoice.create');
   const canEditInvoice = (inv) => {
@@ -50,38 +42,59 @@ export default function InvoicesPage() {
   };
 
   const [page, setPage] = useState(1);
-  const [search, setSearch] = useState(searchParams.get('search') || '');
   const [typeFilter, setTypeFilter] = useState('');
-  const [selectedInvoiceId, setSelectedInvoiceId] = useState(null);
   const [confirmCancel, setConfirmCancel] = useState(false);
 
   // Sync when search parameter changes in URL
-  const [lastParams, setLastParams] = useState(searchParams);
-  if (searchParams !== lastParams) {
-    setLastParams(searchParams);
-    setSearch(searchParams.get('search') || '');
-  }
+  const urlSearch = searchParams.get('search') || '';
+  const [search, setSearch] = useState(urlSearch);
+
+  useEffect(() => {
+    setSearch(urlSearch);
+  }, [urlSearch]);
 
   // Invoices list
-  const { data, isLoading } = useGetInvoicesQuery(
+  const { data, isLoading, refetch } = useGetInvoicesQuery(
     { businessId: activeBusinessId, page, search, type: typeFilter },
     { skip: !activeBusinessId }
-  );
-
-  // Selected invoice for side preview panel
-  const { data: selectedData, isLoading: loadingSelected } = useGetInvoiceQuery(
-    { businessId: activeBusinessId, invoiceId: selectedInvoiceId },
-    { skip: !activeBusinessId || !selectedInvoiceId }
   );
 
   const [updateStatus, { isLoading: updatingStatus }] = useUpdateInvoiceStatusMutation();
 
   const invoices = data?.data?.invoices || [];
   const meta = data?.meta || {};
-  const selectedInvoice = selectedData?.data?.invoice;
+  const selectedInvoice = dock?.data;
+
+  // Auto-open dock when redirected from edit/create with a selected invoice
+  const handledTargetRef = useRef(null);
+  useEffect(() => {
+    const targetId = location.state?.selectedInvoiceId;
+    if (targetId && activeBusiness && handledTargetRef.current !== targetId) {
+      handledTargetRef.current = targetId;
+      const summary = invoices.find((inv) => inv.id === targetId);
+      dispatch(
+        openDock({
+          type: 'invoice',
+          data: summary ? { ...summary, business: activeBusiness } : { id: targetId, business: activeBusiness },
+        })
+      );
+    }
+  }, [location.state?.selectedInvoiceId, activeBusiness, invoices, dispatch]);
 
   const handleRowClick = (inv) => {
-    setSelectedInvoiceId((prev) => (prev === inv.id ? null : inv.id));
+    if (selectedInvoiceId === inv.id) {
+      dispatch(closeDock());
+    } else {
+      dispatch(
+        openDock({
+          type: 'invoice',
+          data: {
+            ...inv,
+            business: activeBusiness,
+          },
+        })
+      );
+    }
   };
 
   const handleStatusChange = async (status) => {
@@ -93,6 +106,7 @@ export default function InvoicesPage() {
         status,
       }).unwrap();
       dispatch(addToast({ type: 'success', message: `Invoice marked as ${status}.` }));
+      refetch?.();
     } catch (err) {
       dispatch(
         addToast({
@@ -103,277 +117,181 @@ export default function InvoicesPage() {
     }
   };
 
-  const handleDownloadPdf = () => {
-    if (!selectedInvoiceId) return;
-    openPdf(`/businesses/${activeBusinessId}/invoices/${selectedInvoiceId}/pdf`)
-      .catch(() => dispatch(addToast({ type: 'error', message: 'Could not load PDF.' })));
+  const handleDownloadPdf = async (inv) => {
+    const target = inv || selectedInvoice;
+    if (!target) return;
+    try {
+      await openPdf(`/businesses/${activeBusinessId}/invoices/${target.id}/pdf`);
+    } catch (err) {
+      dispatch(addToast({ type: 'error', message: err?.message || 'Failed to download PDF.' }));
+    }
   };
 
   const columns = [
     {
       key: 'invoice_number',
       header: 'Document',
-      width: selectedInvoiceId ? '22%' : '15%',
-      render: (inv) => inv.invoice_number,
+      width: '18%',
+      render: (inv) => (
+        <span style={{ fontWeight: 600, color: 'var(--text)' }}>
+          {inv.invoice_number}
+        </span>
+      ),
     },
     {
       key: 'type',
       header: 'Type',
-      width: selectedInvoiceId ? '16%' : '12%',
-      render: (inv) => <span style={{ textTransform: 'capitalize' }}>{inv.type}</span>,
+      width: '12%',
+      render: (inv) => (
+        <span style={{ textTransform: 'capitalize', color: 'var(--text-2)' }}>
+          {inv.type}
+        </span>
+      ),
     },
     {
       key: 'customer_name',
-      header: 'Customer / Vendor',
-      width: selectedInvoiceId ? '28%' : '25%',
-      render: (inv) => inv.customer_name || '—',
+      header: 'Customer',
+      width: '26%',
+      render: (inv) => inv.customer_name || 'Walk-in customer',
     },
     {
       key: 'issue_date',
-      header: 'Issue Date',
-      width: '14%',
-      tax: true,
-      render: (inv) => formatDate(inv.issue_date),
+      header: 'Issue date',
+      width: '16%',
+      render: (inv) => <span className="tax">{formatDate(inv.issue_date)}</span>,
     },
-    ...(!selectedInvoiceId
-      ? [
-          {
-            key: 'due_date',
-            header: 'Due Date',
-            width: '14%',
-            tax: true,
-            render: (inv) => formatDate(inv.due_date),
-          },
-        ]
-      : []),
+    {
+      key: 'due_date',
+      header: 'Due date',
+      width: '16%',
+      render: (inv) => <span className="tax">{formatDate(inv.due_date)}</span>,
+    },
     {
       key: 'total_amount',
       header: 'Amount',
-      width: selectedInvoiceId ? '18%' : '12%',
+      width: '16%',
       align: 'right',
       price: true,
-      render: (inv) => formatCurrency(inv.total_amount, activeBusiness?.currency),
+      render: (inv) => (
+        <span className="num price">
+          {formatCurrency(inv.total_amount, activeBusiness?.currency)}
+        </span>
+      ),
     },
     {
       key: 'status',
       header: 'Status',
-      width: selectedInvoiceId ? '16%' : '8%',
+      width: '14%',
       render: (inv) => {
         const status = effectiveStatus(inv);
-        const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
-        return <span className={`sc sc-${status.toLowerCase()}`}>{statusLabel}</span>;
+        return <StatusBadge status={status} />;
       },
     },
   ];
 
   return (
     <div>
-      <PageHeader
-        title="Invoices & Bills"
-        description={`Track and manage all your billing for ${activeBusiness?.name || 'your business'}`}
-      />
-
-      <div className="invoices-layout">
-        {/* Left Side: Table (Shrinks when an invoice is clicked) */}
-        <div className={`invoices-layout__table ${selectedInvoiceId ? 'invoices-layout__table--split' : ''}`}>
-          <DataTable>
-            <DataTable.Toolbar>
-              <DataTable.Search
-                placeholder="Search invoices…"
-                ariaLabel="Search invoices"
-                value={search}
-                onChange={(val) => {
-                  setSearch(val);
-                  setPage(1);
-                }}
-              />
-
-              <DataTable.Tabs
-                tabs={TABS}
-                activeTab={typeFilter}
-                onTabChange={(tabVal) => {
-                  setTypeFilter(tabVal);
-                  setPage(1);
-                }}
-              />
-
-              <DataTable.Actions>
-                <DataTable.FilterButton ariaLabel="Filter and sort documents" />
-                {canCreate && (
-                  <>
-                    <button
-                      type="button"
-                      className="dash-btn"
-                      onClick={() => navigate('/invoices/new?type=bill')}
-                    >
-                      <Icon name="receipt" size={16} />
-                      <span>New bill</span>
-                    </button>
-                    <DataTable.NewButton onClick={() => navigate('/invoices/new?type=invoice')}>
-                      New invoice
-                    </DataTable.NewButton>
-                  </>
-                )}
-              </DataTable.Actions>
-            </DataTable.Toolbar>
-
-            <DataTable.Content
-              isLoading={isLoading}
-              isEmpty={invoices.length === 0}
-              emptyState={{
-                icon: <Icon name="file" size={28} />,
-                title: 'No invoices found',
-                description: 'Create your first invoice or bill to get started.',
-                actionLabel: canCreate ? 'New Invoice' : undefined,
-                onAction: canCreate ? () => navigate('/invoices/new?type=invoice') : undefined,
-              }}
-              columns={columns}
-              data={invoices}
-              renderRow={(inv) => {
-                const isSelected = selectedInvoiceId === inv.id;
-                const status = effectiveStatus(inv);
-                const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
-
-                return (
-                  <DataTable.Row
-                    key={inv.id}
-                    onClick={() => handleRowClick(inv)}
-                    className={isSelected ? 'invoices-row--selected' : ''}
-                  >
-                    <td>{inv.invoice_number}</td>
-                    <td style={{ textTransform: 'capitalize' }}>{inv.type}</td>
-                    <td>{inv.customer_name || '—'}</td>
-                    <td className="tax">{formatDate(inv.issue_date)}</td>
-                    {!selectedInvoiceId && <td className="tax">{formatDate(inv.due_date)}</td>}
-                    <td className="num price">
-                      {formatCurrency(inv.total_amount, activeBusiness?.currency)}
-                    </td>
-                    <td>
-                      <span className={`sc sc-${status.toLowerCase()}`}>{statusLabel}</span>
-                    </td>
-                  </DataTable.Row>
-                );
-              }}
-            />
-
-            <DataTable.Pagination
-              page={page}
-              meta={meta}
-              onPageChange={setPage}
-              limit={20}
-            />
-          </DataTable>
+      {/* ── Page Header matching Alturay_UI_redesign.html .ph ── */}
+      <div className="ph">
+        <div>
+          <h1>
+            <Icon name="file" size={24} />
+            <span>Invoices &amp; Bills</span>
+          </h1>
+          <p>Create, track and manage billing for {activeBusiness?.name || 'your business'}.</p>
         </div>
-
-        {/* Right Side: Preview Panel (Slides in when an invoice is clicked) */}
-        {selectedInvoiceId && (
-          <aside className="invoices-layout__panel" aria-label="Invoice Details Preview">
-            <div className="invoices-panel__topbar">
-              <div className="invoices-panel__actions">
-                {/* 1. Edit button: ONLY available for draft invoices & permitted user */}
-                {selectedInvoice?.status === 'draft' && canEditInvoice(selectedInvoice) && (
-                  <button
-                    type="button"
-                    className="dash-btn"
-                    onClick={() => navigate(`/invoices/${selectedInvoice.id}/edit`)}
-                    title="Edit draft invoice"
-                  >
-                    <Pencil size={14} />
-                    <span>Edit</span>
-                  </button>
-                )}
-
-                {/* 2. Lifecycle action: Issue if draft & permitted */}
-                {selectedInvoice?.status === 'draft' && can('invoice.issue') && (
-                  <button
-                    type="button"
-                    className="dash-btn"
-                    onClick={() => handleStatusChange('issued')}
-                    disabled={updatingStatus}
-                    title="Confirm & Issue invoice"
-                  >
-                    <Send size={14} />
-                    <span>Issue</span>
-                  </button>
-                )}
-
-                {/* 3. Lifecycle action: Mark Paid if issued & permitted */}
-                {selectedInvoice?.status === 'issued' && can('invoice.mark_paid') && (
-                  <button
-                    type="button"
-                    className="dash-btn"
-                    onClick={() => handleStatusChange('paid')}
-                    disabled={updatingStatus}
-                    title="Mark as paid"
-                  >
-                    <CheckCircle size={14} />
-                    <span>Mark Paid</span>
-                  </button>
-                )}
-
-                {/* 4. Cancel action: available for draft or issued & permitted. PROHIBITED when paid! */}
-                {selectedInvoice &&
-                  selectedInvoice.status !== 'cancelled' &&
-                  selectedInvoice.status !== 'paid' &&
-                  can('invoice.cancel') && (
-                    <button
-                      type="button"
-                      className="dash-btn"
-                      style={{ color: 'var(--color-danger)' }}
-                      onClick={() => setConfirmCancel(true)}
-                      disabled={updatingStatus}
-                      title="Cancel invoice"
-                    >
-                      <XCircle size={14} />
-                      <span>Cancel</span>
-                    </button>
-                  )}
-
-                {/* 5. Download PDF */}
-                <button
-                  type="button"
-                  className="dash-btn"
-                  onClick={handleDownloadPdf}
-                  title="Download PDF"
-                >
-                  <Download size={14} />
-                  <span>PDF</span>
-                </button>
-              </div>
-
-              {/* Navigation icons (Maximize & Close) */}
-              <div className="invoices-panel__navs">
-                <button
-                  type="button"
-                  className="invoices-panel__icon-btn"
-                  title="Open full page"
-                  onClick={() => navigate(`/invoices/${selectedInvoiceId}`)}
-                  aria-label="Maximize preview"
-                >
-                  <Maximize2 size={15} />
-                </button>
-                <button
-                  type="button"
-                  className="invoices-panel__icon-btn"
-                  title="Close preview"
-                  onClick={() => setSelectedInvoiceId(null)}
-                  aria-label="Close preview"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-            </div>
-
-            {loadingSelected ? (
-              <div style={{ padding: 48, display: 'flex', justifyContent: 'center' }}>
-                <PageLoader />
-              </div>
-            ) : selectedInvoice ? (
-              <InvoicePreviewCard invoice={selectedInvoice} business={activeBusiness} />
-            ) : null}
-          </aside>
-        )}
+        <div className="actions">
+          {canCreate && (
+            <>
+              <button
+                type="button"
+                className="btn"
+                onClick={() => navigate('/invoices/new?type=bill')}
+              >
+                New bill
+              </button>
+              <button
+                type="button"
+                className="btn primary"
+                onClick={() => navigate('/invoices/new?type=invoice')}
+              >
+                New invoice
+              </button>
+            </>
+          )}
+        </div>
       </div>
+
+      <DataTable>
+        <DataTable.Toolbar>
+          <DataTable.Search
+            placeholder="Search invoices"
+            ariaLabel="Search invoices"
+            value={search}
+            onChange={(val) => {
+              setSearch(val);
+              setPage(1);
+            }}
+          />
+
+          <DataTable.Tabs
+            tabs={TABS}
+            activeTab={typeFilter}
+            onTabChange={(tabVal) => {
+              setTypeFilter(tabVal);
+              setPage(1);
+            }}
+          />
+        </DataTable.Toolbar>
+
+        <DataTable.Content
+          isLoading={isLoading}
+          isEmpty={invoices.length === 0}
+          emptyState={{
+            icon: <Icon name="file" size={32} />,
+            title: 'No invoices found',
+            description: 'You have not created any invoices yet.',
+            actionLabel: canCreate ? 'New invoice' : undefined,
+            onAction: canCreate ? () => navigate('/invoices/new?type=invoice') : undefined,
+          }}
+          columns={columns}
+          data={invoices}
+          onRowClick={handleRowClick}
+          selectedId={selectedInvoiceId}
+          renderRow={(inv) => {
+            const isSelected = selectedInvoiceId === inv.id;
+            const status = effectiveStatus(inv);
+
+            return (
+              <DataTable.Row
+                key={inv.id}
+                onClick={() => handleRowClick(inv)}
+                className={isSelected ? 'sel invoices-row--selected' : ''}
+                data-id={inv.id}
+              >
+                <td>{inv.invoice_number}</td>
+                <td style={{ textTransform: 'capitalize' }}>{inv.type}</td>
+                <td>{inv.customer_name || 'Walk-in customer'}</td>
+                <td className="tax">{formatDate(inv.issue_date)}</td>
+                <td className="tax">{formatDate(inv.due_date)}</td>
+                <td className="num price">
+                  {formatCurrency(inv.total_amount, activeBusiness?.currency)}
+                </td>
+                <td>
+                  <StatusBadge status={status} />
+                </td>
+              </DataTable.Row>
+            );
+          }}
+        />
+
+        <DataTable.Pagination
+          page={page}
+          meta={meta}
+          onPageChange={setPage}
+          limit={20}
+        />
+      </DataTable>
 
       {/* Cancel Confirmation Dialog */}
       <ConfirmDialog

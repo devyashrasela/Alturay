@@ -1,80 +1,119 @@
 /* ═══════════════════════════════════════════════════════════
-   STATUS BADGES
+   STATUS PILLS & BADGES
+   Source of truth: Alturay_UI_redesign.html lines 272-277
    ═══════════════════════════════════════════════════════════ */
 
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 99px;
+  font-size: 12.5px;
+  font-weight: 500;
+  background: var(--chip);
+  color: var(--text-2);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.pill::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+.pill.ok {
+  color: var(--success);
+  background: color-mix(in srgb, var(--success) 14%, transparent);
+}
+
+.pill.info {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.pill.bad {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 15%, transparent);
+}
+
+.pill.warn {
+  color: var(--warn);
+  background: color-mix(in srgb, var(--warn) 14%, transparent);
+}
+
+/* ── Legacy .badge & .sc compatibility wrappers ── */
 .badge {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 3px 9px;
-  border-radius: var(--radius-full);
-  font-size: 11.5px;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 99px;
+  font-size: 12.5px;
   font-weight: 500;
-  line-height: 1.45;
-  white-space: nowrap;
+  background: var(--chip);
+  color: var(--text-2);
 }
 
 .badge__dot {
-  width: 5px;
-  height: 5px;
-  border-radius: var(--radius-full);
-  flex-shrink: 0;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
 }
 
 .badge--success {
-  background: var(--color-success-light);
-  color: var(--color-success);
-}
-
-.badge--success .badge__dot {
-  background: var(--color-success);
-}
-
-.badge--warning {
-  background: var(--color-warning-light);
-  color: var(--color-warning);
-}
-
-.badge--warning .badge__dot {
-  background: var(--color-warning);
-}
-
-.badge--danger {
-  background: var(--color-danger-light);
-  color: var(--color-danger);
-}
-
-.badge--danger .badge__dot {
-  background: var(--color-danger);
+  color: var(--success);
+  background: color-mix(in srgb, var(--success) 14%, transparent);
 }
 
 .badge--info {
-  background: var(--color-info-light);
-  color: var(--color-info);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
 }
 
-.badge--info .badge__dot {
-  background: var(--color-info);
+.badge--danger {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 15%, transparent);
+}
+
+.badge--warning {
+  color: var(--warn);
+  background: color-mix(in srgb, var(--warn) 14%, transparent);
 }
 
 .badge--default {
-  background: var(--color-bg-muted);
-  color: var(--color-text-secondary);
+  background: var(--chip);
+  color: var(--text-2);
 }
 
-.badge--default .badge__dot {
-  background: var(--color-text-muted);
-}
-
-
-
-/* ── Compact Status Pills (.sc) ── */
 .sc {
-  display: inline-block;
-  padding: 3px 9px;
-  border-radius: 6px;
-  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 99px;
+  font-size: 12.5px;
   font-weight: 500;
+  background: var(--chip);
+  color: var(--text-2);
+}
+
+.sc::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
 }
 
 .sc-draft {
@@ -83,21 +122,26 @@
 }
 
 .sc-issued {
-  background: color-mix(in srgb, var(--accent) 18%, transparent);
   color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
 }
 
 .sc-paid {
-  background: var(--accent);
-  color: #fff;
+  color: var(--success);
+  background: color-mix(in srgb, var(--success) 14%, transparent);
 }
 
 .sc-cancelled {
-  background: color-mix(in srgb, var(--danger) 16%, transparent);
   color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 15%, transparent);
 }
 
 .sc-overdue {
-  background: color-mix(in srgb, var(--danger) 18%, transparent);
   color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 15%, transparent);
+}
+
+.sc-pending {
+  color: var(--warn);
+  background: color-mix(in srgb, var(--warn) 14%, transparent);
 }

@@ -3,13 +3,12 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { logout } from '../../../store/slices/authSlice';
 import Icon from '../../ui/Icon/Icon';
-import { usePermissions } from '../../../hooks/usePermissions';
+import './UserMenu.css';
 
-export default function UserMenu({ onOpenUserSettings }) {
+export default function UserMenu({ onOpenUserSettings, onOpenHelp }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
-  const { roleLabel } = usePermissions();
   const [open, setOpen] = useState(false);
   const containerRef = useRef(null);
 
@@ -36,6 +35,7 @@ export default function UserMenu({ onOpenUserSettings }) {
   }, [open]);
 
   const name = user?.name || 'User';
+  const email = user?.email || '';
   const initial = name.charAt(0).toUpperCase() || 'U';
 
   const handleLogout = () => {
@@ -49,6 +49,11 @@ export default function UserMenu({ onOpenUserSettings }) {
     onOpenUserSettings?.(tab);
   };
 
+  const handleOpenHelp = () => {
+    setOpen(false);
+    onOpenHelp?.();
+  };
+
   return (
     <div className="um" ref={containerRef}>
       <button
@@ -58,7 +63,6 @@ export default function UserMenu({ onOpenUserSettings }) {
         aria-label="Account menu"
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-controls="umMenu"
         onClick={() => setOpen((prev) => !prev)}
       >
         {initial}
@@ -66,21 +70,17 @@ export default function UserMenu({ onOpenUserSettings }) {
 
       {open && (
         <div className="pop" id="umMenu" role="menu" aria-label="Account">
-          <div className="pop__label">Account</div>
-          <div className="pop__user">
-            <span className="avatar" aria-hidden="true">
-              {initial}
+          <div className="lab">Account</div>
+          <div className="who">
+            <span className="avatar">{initial}</span>
+            <span>
+              <b>{name}</b>
+              <small>{email}</small>
             </span>
-            <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-              <span style={{ fontWeight: 500, color: 'var(--text)' }}>{name}</span>
-              {roleLabel && (
-                <span style={{ fontSize: '11.5px', color: 'var(--muted)' }}>{roleLabel}</span>
-              )}
-            </div>
           </div>
-          <div className="pop__sep" />
+          <hr />
           <button
-            className="pop__item"
+            className="mi"
             role="menuitem"
             type="button"
             onClick={() => handleOpenSettings('profile')}
@@ -89,17 +89,18 @@ export default function UserMenu({ onOpenUserSettings }) {
             <span>Settings</span>
           </button>
           <button
-            className="pop__item"
+            className="mi"
+            id="helpItem"
             role="menuitem"
             type="button"
-            onClick={() => handleOpenSettings('help')}
+            onClick={handleOpenHelp}
           >
             <Icon name="help" size={16} />
             <span>Help</span>
           </button>
-          <div className="pop__sep" />
+          <hr />
           <button
-            className="pop__item"
+            className="mi out"
             role="menuitem"
             type="button"
             onClick={handleLogout}

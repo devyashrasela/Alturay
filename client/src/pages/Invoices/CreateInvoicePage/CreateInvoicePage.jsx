@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams, Link } from 'react-router-dom';
 import { Plus, Trash2, Truck } from 'lucide-react';
 import {
   useCreateInvoiceMutation,
@@ -124,6 +124,8 @@ export default function CreateInvoicePage() {
 
   const [items, setItems] = useState([{ ...EMPTY_ITEM }]);
 
+  const populatedForId = useRef(null);
+
   // Sync defaults when activeBusiness loads (if in create mode and fields not yet customized)
   useEffect(() => {
     if (!isEditMode && activeBusiness) {
@@ -145,17 +147,22 @@ export default function CreateInvoicePage() {
   // Populate data when editing an existing invoice
   useEffect(() => {
     if (existingInvoice && isEditMode) {
+      if (!isEditMode || !existingInvoice) return;
+      if (populatedForId.current === existingInvoice.id) return; // already populated
+
       if (existingInvoice.status !== 'draft') {
         dispatch(addToast({ type: 'error', message: 'Only draft invoices can be edited.' }));
-        navigate(`/invoices/${existingInvoice.id}`, { replace: true });
+        navigate('/invoices', { replace: true });
         return;
       }
 
       if (!can('invoice.edit_any') && existingInvoice.created_by !== currentUser?.id) {
         dispatch(addToast({ type: 'error', message: 'You can only edit drafts you created.' }));
-        navigate(`/invoices/${existingInvoice.id}`, { replace: true });
+        navigate('/invoices', { replace: true });
         return;
       }
+
+      populatedForId.current = existingInvoice.id;
 
       let parsedShipping = { ...EMPTY_SHIPPING };
       let hasShipping = false;
@@ -424,7 +431,7 @@ export default function CreateInvoicePage() {
           ...payload,
         }).unwrap();
         dispatch(addToast({ type: 'success', message: `${typeLabel} updated!` }));
-        navigate(`/invoices/${id}`);
+        navigate('/invoices', { state: { selectedInvoiceId: id } });
       } else {
         const result = await createInvoice(payload).unwrap();
         dispatch(
@@ -433,7 +440,7 @@ export default function CreateInvoicePage() {
             message: `${typeLabel} ${result.data.invoice.invoice_number} created!`,
           })
         );
-        navigate(`/invoices/${result.data.invoice.id}`);
+        navigate('/invoices', { state: { selectedInvoiceId: result.data.invoice.id } });
       }
     } catch (err) {
       dispatch(
@@ -443,6 +450,14 @@ export default function CreateInvoicePage() {
         })
       );
     }
+  };
+
+  const handleCancel = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    navigate('/invoices');
   };
 
   const isBill = form.type === 'bill';
@@ -464,7 +479,7 @@ export default function CreateInvoicePage() {
             <h2 className="page-header__title">
               {isEditMode ? `Edit ${typeLabel} (${existingInvoice?.invoice_number || ''})` : `Create ${typeLabel}`}
             </h2>
-            <span
+            {/* <span
               style={{
                 fontSize: 12,
                 fontWeight: 600,
@@ -476,14 +491,19 @@ export default function CreateInvoicePage() {
               }}
             >
               {isBill ? 'Cash / POS Bill' : 'Credit Invoice'}
-            </span>
+            </span> */}
           </div>
           <p className="page-header__sub">for {activeBusiness?.name}</p>
         </div>
         <div className="page-header__actions">
-          <Button variant="secondary" size="md" onClick={() => navigate(isEditMode ? `/invoices/${id}` : '/invoices')}>
+          <button
+            type="button"
+            className="btn btn--secondary btn--md"
+            id="cancel-edit-invoice-top-btn"
+            onClick={handleCancel}
+          >
             Cancel
-          </Button>
+          </button>
         </div>
       </div>
 
@@ -967,14 +987,14 @@ export default function CreateInvoicePage() {
         </div>
 
         <div className="create-inv__actions">
-          <Button
+          <button
             type="button"
-            variant="secondary"
-            size="lg"
-            onClick={() => navigate(isEditMode ? `/invoices/${id}` : '/invoices')}
+            className="btn btn--secondary btn--lg"
+            id="cancel-edit-invoice-btn"
+            onClick={handleCancel}
           >
             Cancel
-          </Button>
+          </button>
           <Button
             type="submit"
             variant="primary"

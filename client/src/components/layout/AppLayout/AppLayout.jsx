@@ -1,20 +1,26 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import Sidebar from '../Sidebar/Sidebar';
 import TopNav from '../TopNav/TopNav';
-import SecondarySidebar from '../SecondarySidebar/SecondarySidebar';
-import QuickActions from '../QuickActions/QuickActions';
+import RightDock from '../RightDock/RightDock';
 import UserSettingsModal from '../UserSettingsModal/UserSettingsModal';
 import Toast from '../../ui/Toast/Toast';
-import { NAV_SECTIONS, filterNavForPermissions } from '../navConfig';
 import { useGetMeQuery } from '../../../store/api/authApi';
 import { setUser } from '../../../store/slices/authSlice';
 import { setBusinesses, setActiveBusiness, clearBusiness } from '../../../store/slices/businessSlice';
-import { usePermissions } from '../../../hooks/usePermissions';
-import './appShell.css';
+import { useUpdateInvoiceStatusMutation } from '../../../store/api/invoiceApi';
+import { openPdf } from '../../../utils/openPdf';
+import {
+  addToast,
+  openDock,
+  closeDock,
+  toggleDockWide,
+  updateDockData,
+} from '../../../store/slices/uiSlice';
 import './AppLayout.css';
 
-const COLLAPSE_KEY = 'alturay_secnav_collapsed';
+const COLLAPSE_KEY = 'alturay-sidebar';
 
 const readCollapsed = () => {
   try {
@@ -26,30 +32,23 @@ const readCollapsed = () => {
 
 export default function AppLayout() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const location = useLocation();
   const { isAuthenticated } = useSelector((state) => state.auth);
   const { activeBusinessId } = useSelector((state) => state.business);
-  const { can } = usePermissions();
+  const { dock } = useSelector((state) => state.ui);
 
   const [collapsed, setCollapsed] = useState(readCollapsed);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [userSettingsOpen, setUserSettingsOpen] = useState(false);
   const [userSettingsTab, setUserSettingsTab] = useState('profile');
 
-  const filteredSections = filterNavForPermissions(NAV_SECTIONS, can);
-  const section = filteredSections.find((s) => s.match(location.pathname)) || null;
-  const hasSidebar = Boolean(section?.sidebar && (section.sidebar.pill || section.sidebar.groups?.length > 0));
+  // Track previous values for auto-close logic
+  const prevPathnameRef = useRef(location.pathname);
+  const prevBusinessIdRef = useRef(activeBusinessId);
 
   const { data: meData } = useGetMeQuery(undefined, { skip: !isAuthenticated });
-
-  // Body classes to coordinate layout margin transitions
-  useEffect(() => {
-    document.body.classList.toggle('has-sb', Boolean(hasSidebar && !collapsed));
-    document.body.classList.toggle('has-rail', Boolean(hasSidebar && collapsed));
-
-    return () => {
-      document.body.classList.remove('has-sb', 'has-rail');
-    };
-  }, [hasSidebar, collapsed]);
+  const [updateStatus] = useUpdateInvoiceStatusMutation();
 
   // Identity + business restore
   useEffect(() => {
@@ -91,25 +90,138 @@ export default function AppLayout() {
     setUserSettingsOpen(false);
   }, []);
 
-  return (
-    <>
-      <TopNav onOpenUserSettings={handleOpenUserSettings} />
+  const handleOpenDock = useCallback((type, data = null) => {
+    dispatch(openDock({ type, data }));
+  }, [dispatch]);
 
-      <SecondarySidebar
-        section={section}
-        collapsed={hasSidebar && collapsed}
+  const handleCloseDock = useCallback(() => {
+    dispatch(closeDock());
+  }, [dispatch]);
+
+  const handleToggleWide = useCallback(() => {
+    dispatch(toggleDockWide());
+  }, [dispatch]);
+
+  // Keyboard escape for dock
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape' && dock?.open && !userSettingsOpen) {
+        handleCloseDock();
+      }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [dock?.open, userSettingsOpen, handleCloseDock]);
+
+  // Auto-close dock on route change
+  useEffect(() => {
+    if (prevPathnameRef.current !== location.pathname && dock?.open) {
+      dispatch(closeDock());
+    }
+    prevPathnameRef.current = location.pathname;
+  }, [location.pathname, dock?.open, dispatch]);
+
+  // Auto-close dock on workspace switch
+  useEffect(() => {
+    if (prevBusinessIdRef.current != null && prevBusinessIdRef.current !== activeBusinessId && dock?.open) {
+      dispatch(closeDock());
+    }
+    prevBusinessIdRef.current = activeBusinessId;
+  }, [activeBusinessId, dock?.open, dispatch]);
+
+  // Dock actions
+  const handleDockEdit = (invoice) => {
+    handleCloseDock();
+    navigate(`/invoices/${invoice.id}/edit`);
+  };
+
+  const handleDockIssue = async (invoice) => {
+    if (!activeBusinessId || !invoice?.id) return;
+    try {
+      await updateStatus({
+        businessId: activeBusinessId,
+        invoiceId: invoice.id,
+        status: 'issued',
+      }).unwrap();
+      dispatch(updateDockData({ status: 'issued' }));
+      dispatch(addToast({ type: 'success', message: 'Invoice issued successfully.' }));
+    } catch (err) {
+      dispatch(addToast({ type: 'error', message: err?.data?.error?.message || 'Failed to issue invoice.' }));
+    }
+  };
+
+  const handleDockCancel = async (invoice) => {
+    if (!activeBusinessId || !invoice?.id) return;
+    try {
+      await updateStatus({
+        businessId: activeBusinessId,
+        invoiceId: invoice.id,
+        status: 'cancelled',
+      }).unwrap();
+      dispatch(updateDockData({ status: 'cancelled' }));
+      dispatch(addToast({ type: 'success', message: 'Invoice cancelled.' }));
+    } catch (err) {
+      dispatch(addToast({ type: 'error', message: err?.data?.error?.message || 'Failed to cancel invoice.' }));
+    }
+  };
+
+  const handleDockPdf = async (invoice) => {
+    if (!activeBusinessId || !invoice?.id) return;
+    try {
+      await openPdf(`/businesses/${activeBusinessId}/invoices/${invoice.id}/pdf`);
+    } catch (err) {
+      dispatch(addToast({ type: 'error', message: err?.message || 'Failed to download PDF.' }));
+    }
+  };
+
+  return (
+    <div
+      className={`app ${collapsed ? 'collapsed' : ''} ${dock?.open ? 'panel' : ''} ${dock?.wide ? 'wide' : ''} ${mobileNavOpen ? 'mobile-nav-open' : ''}`}
+    >
+      <Sidebar
+        collapsed={collapsed}
         onToggleCollapse={toggleCollapsed}
       />
 
-      <main className="main" id="main">
-        <Outlet />
-      </main>
+      <div className="main-col right">
+        <TopNav
+          onOpenUserSettings={handleOpenUserSettings}
+          onOpenHelp={() => handleOpenDock('help')}
+          onOpenDock={handleOpenDock}
+          onToggleMobileNav={() => setMobileNavOpen((prev) => !prev)}
+        />
 
-      <QuickActions />
+        <main className="main" id="main">
+          <Outlet
+            context={{
+              openDock: handleOpenDock,
+              closeDock: handleCloseDock,
+              isDockOpen: Boolean(dock?.open),
+              dockData: dock?.data,
+            }}
+          />
+        </main>
+
+        <footer className="app-footer">
+          <span>&copy; 2026 Alturay. All rights reserved.</span>
+        </footer>
+      </div>
+
+      <RightDock
+        open={Boolean(dock?.open)}
+        wide={Boolean(dock?.wide)}
+        type={dock?.type}
+        data={dock?.data}
+        onToggleWide={handleToggleWide}
+        onClose={handleCloseDock}
+        onEdit={handleDockEdit}
+        onIssue={handleDockIssue}
+        onCancel={handleDockCancel}
+        onDownloadPdf={handleDockPdf}
+      />
 
       {userSettingsOpen && (
         <UserSettingsModal
-          key={userSettingsTab}
           isOpen={userSettingsOpen}
           initialTab={userSettingsTab}
           onClose={handleCloseUserSettings}
@@ -117,6 +229,6 @@ export default function AppLayout() {
       )}
 
       <Toast />
-    </>
+    </div>
   );
 }

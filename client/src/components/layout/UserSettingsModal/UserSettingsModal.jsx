@@ -4,7 +4,7 @@ import { setTheme } from '../../../store/slices/themeSlice';
 import Icon from '../../ui/Icon/Icon';
 import { usePermissions } from '../../../hooks/usePermissions';
 import { ROLE_DESCRIPTIONS } from '../../../constants/roles';
-import '../../settings/UserSettingsLayout/UserSettings.css';
+import './UserSettingsModal.css';
 
 const TABS = [
   { id: 'profile', label: 'Profile', icon: 'user', sub: 'Manage your name, email and photo.' },
@@ -13,8 +13,8 @@ const TABS = [
 ];
 
 const THEME_OPTIONS = [
-  { id: 'dark', label: 'Dark', desc: 'Low-strain dark surfaces' },
-  { id: 'light', label: 'Light', desc: 'Clean, bright interface' },
+  { id: 'dark', label: 'Dark', desc: 'Low-strain pitch-dark surfaces' },
+  { id: 'light', label: 'Light', desc: 'Clean, crisp bright interface' },
 ];
 
 export default function UserSettingsModal({ isOpen, initialTab = 'profile', onClose }) {
@@ -56,11 +56,11 @@ export default function UserSettingsModal({ isOpen, initialTab = 'profile', onCl
   };
 
   return (
-    <div className="us-backdrop" id="us" onClick={handleBackdropClick}>
+    <div className="us-backdrop" id="us" onClick={handleBackdropClick} role="presentation">
       <div className="us" role="dialog" aria-modal="true" aria-labelledby="usTitle">
         <aside className="us__nav">
           <div className="us__label">Account</div>
-          <div id="usList" role="tablist" aria-orientation="vertical" aria-label="Account settings">
+          <div className="us__list" role="tablist" aria-orientation="vertical" aria-label="Account settings">
             {TABS.map((t) => {
               const isSelected = t.id === currentTab.id;
               return (
@@ -88,92 +88,42 @@ export default function UserSettingsModal({ isOpen, initialTab = 'profile', onCl
           <p className="us__sub">{currentTab.sub}</p>
 
           {currentTab.id === 'profile' && (
-            <div style={{ marginTop: 32, display: 'flex', flexDirection: 'column', gap: 24 }}>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 18,
-                  background: 'var(--panel)',
-                  border: '1px solid var(--border)',
-                  borderRadius: 12,
-                  padding: '20px 24px',
-                }}
-              >
-                <span className="avatar" style={{ width: 52, height: 52, fontSize: 20 }}>
+            <div>
+              <div className="us-user-banner">
+                <span className="us-user-avatar">
                   {user?.name?.charAt(0)?.toUpperCase() || 'D'}
                 </span>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 600, fontSize: 18, color: 'var(--text)' }}>
+                <div className="us-user-info">
+                  <div className="us-user-name">
                     {user?.name || 'Devyash Rasela'}
                   </div>
-                  <div style={{ color: 'var(--text-2)', fontSize: 14, marginTop: 2 }}>
+                  <div className="us-user-email">
                     {user?.email || 'Signed in'}
                   </div>
                 </div>
-                <span className="sc sc-issued" style={{ fontSize: 12 }}>
+                <span className="us-badge-active">
                   Active Account
                 </span>
               </div>
 
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-                  gap: 16,
-                }}
-              >
-                <div
-                  style={{
-                    background: 'var(--panel)',
-                    border: '1px solid var(--border)',
-                    borderRadius: 10,
-                    padding: '16px 18px',
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 500,
-                      color: 'var(--muted)',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.04em',
-                    }}
-                  >
-                    Workspace
-                  </div>
-                  <div style={{ fontWeight: 600, fontSize: 16, marginTop: 6, color: 'var(--text)' }}>
+              <div className="us-cards-grid">
+                <div className="us-card">
+                  <div className="us-card__label">Workspace</div>
+                  <div className="us-card__value">
                     {activeBusiness?.name || 'Alturay Studio'}
                   </div>
-                  <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 4 }}>
+                  <div className="us-card__desc">
                     Primary organization
                   </div>
                 </div>
 
-                <div
-                  style={{
-                    background: 'var(--panel)',
-                    border: '1px solid var(--border)',
-                    borderRadius: 10,
-                    padding: '16px 18px',
-                  }}
-                >
-                  <div
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 500,
-                      color: 'var(--muted)',
-                      textTransform: 'uppercase',
-                      letterSpacing: '0.04em',
-                    }}
-                  >
-                    Role & Permissions
+                <div className="us-card">
+                  <div className="us-card__label">Role &amp; Permissions</div>
+                  <div className="us-card__value">
+                    {roleLabel || 'Owner'}
                   </div>
-                  <div style={{ fontWeight: 600, fontSize: 16, marginTop: 6, color: 'var(--text)' }}>
-                    {roleLabel || 'Member'}
-                  </div>
-                  <div style={{ fontSize: 13, color: 'var(--muted)', marginTop: 4 }}>
-                    {ROLE_DESCRIPTIONS[role] || 'Member of this business'}
+                  <div className="us-card__desc">
+                    {ROLE_DESCRIPTIONS[role] || 'Full control of the business, including identity settings and Admins.'}
                   </div>
                 </div>
               </div>
@@ -181,30 +131,16 @@ export default function UserSettingsModal({ isOpen, initialTab = 'profile', onCl
           )}
 
           {currentTab.id === 'personal' && (
-            <div style={{ marginTop: 32, display: 'flex', flexDirection: 'column', gap: 20 }}>
-              <div
-                style={{
-                  background: 'var(--panel)',
-                  border: '1px solid var(--border)',
-                  borderRadius: 12,
-                  padding: '24px',
-                }}
-              >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <div className="us-card">
                 <div style={{ fontWeight: 600, fontSize: 16, color: 'var(--text)' }}>
-                  Appearance & Theme
+                  Appearance &amp; Theme
                 </div>
-                <div
-                  style={{
-                    color: 'var(--text-2)',
-                    fontSize: 14,
-                    marginTop: 4,
-                    lineHeight: 1.5,
-                    maxWidth: 560,
-                  }}
-                >
+                <div style={{ color: 'var(--muted)', fontSize: 13.5, marginTop: 4, lineHeight: 1.5 }}>
                   Choose how Alturay looks for you. Select a theme and confirm to apply.
                 </div>
-                <div style={{ display: 'flex', gap: 12, marginTop: 20 }}>
+
+                <div style={{ display: 'flex', gap: 12, marginTop: 20, flexWrap: 'wrap' }}>
                   {THEME_OPTIONS.map((t) => {
                     const selected = (pendingTheme ?? currentTheme) === t.id;
                     return (
@@ -215,7 +151,7 @@ export default function UserSettingsModal({ isOpen, initialTab = 'profile', onCl
                         style={{
                           display: 'flex',
                           alignItems: 'center',
-                          gap: 10,
+                          gap: 12,
                           padding: '12px 18px',
                           borderRadius: 10,
                           border: selected
@@ -227,7 +163,7 @@ export default function UserSettingsModal({ isOpen, initialTab = 'profile', onCl
                           fontSize: 14,
                           cursor: 'pointer',
                           fontFamily: 'inherit',
-                          minWidth: 170,
+                          minWidth: 180,
                           textAlign: 'left',
                           transition: 'border-color 0.15s, background 0.15s',
                         }}
@@ -244,14 +180,7 @@ export default function UserSettingsModal({ isOpen, initialTab = 'profile', onCl
                         />
                         <span>
                           <span style={{ display: 'block', fontWeight: 600 }}>{t.label}</span>
-                          <span
-                            style={{
-                              display: 'block',
-                              fontSize: 12,
-                              color: 'var(--muted)',
-                              marginTop: 2,
-                            }}
-                          >
+                          <span style={{ display: 'block', fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>
                             {t.desc}
                           </span>
                         </span>
@@ -261,7 +190,7 @@ export default function UserSettingsModal({ isOpen, initialTab = 'profile', onCl
                 </div>
 
                 {pendingTheme && pendingTheme !== currentTheme && (
-                  <div style={{ display: 'flex', gap: 10, marginTop: 16 }}>
+                  <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
                     <button
                       type="button"
                       onClick={handleConfirmTheme}
@@ -305,30 +234,15 @@ export default function UserSettingsModal({ isOpen, initialTab = 'profile', onCl
           )}
 
           {currentTab.id === 'help' && (
-            <div style={{ marginTop: 32, display: 'flex', flexDirection: 'column', gap: 20 }}>
-              <div
-                style={{
-                  background: 'var(--panel)',
-                  border: '1px solid var(--border)',
-                  borderRadius: 12,
-                  padding: '24px',
-                }}
-              >
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+              <div className="us-card">
                 <div style={{ fontWeight: 600, fontSize: 16, color: 'var(--text)' }}>
-                  Help & Documentation
+                  Help &amp; Documentation
                 </div>
-                <div
-                  style={{
-                    color: 'var(--text-2)',
-                    fontSize: 14,
-                    marginTop: 4,
-                    lineHeight: 1.5,
-                    maxWidth: 560,
-                  }}
-                >
+                <div style={{ color: 'var(--muted)', fontSize: 13.5, marginTop: 4, lineHeight: 1.5 }}>
                   Need assistance with invoices, inventories, or business accounts?
                 </div>
-                <div style={{ display: 'flex', gap: 12, marginTop: 20, flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', gap: 12, marginTop: 18, flexWrap: 'wrap' }}>
                   <a
                     href="mailto:support@alturay.com"
                     className="dash-btn"
@@ -340,31 +254,11 @@ export default function UserSettingsModal({ isOpen, initialTab = 'profile', onCl
                 </div>
               </div>
 
-              <div
-                style={{
-                  background: 'var(--panel)',
-                  border: '1px solid var(--border)',
-                  borderRadius: 12,
-                  padding: '24px',
-                }}
-              >
-                <div
-                  style={{
-                    fontWeight: 600,
-                    fontSize: 16,
-                    color: 'var(--text)',
-                    marginBottom: 16,
-                  }}
-                >
+              <div className="us-card">
+                <div style={{ fontWeight: 600, fontSize: 16, color: 'var(--text)', marginBottom: 16 }}>
                   Keyboard Shortcuts
                 </div>
-                <div
-                  style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-                    gap: 12,
-                  }}
-                >
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
                   <div
                     style={{
                       display: 'flex',
@@ -376,7 +270,7 @@ export default function UserSettingsModal({ isOpen, initialTab = 'profile', onCl
                       border: '1px solid var(--border)',
                     }}
                   >
-                    <span style={{ color: 'var(--text-2)', fontSize: 13 }}>Close modal</span>
+                    <span style={{ color: 'var(--text-2)', fontSize: 13 }}>Close dialog</span>
                     <kbd
                       style={{
                         padding: '2px 6px',
@@ -400,7 +294,7 @@ export default function UserSettingsModal({ isOpen, initialTab = 'profile', onCl
                       border: '1px solid var(--border)',
                     }}
                   >
-                    <span style={{ color: 'var(--text-2)', fontSize: 13 }}>Inspect revenue chart</span>
+                    <span style={{ color: 'var(--text-2)', fontSize: 13 }}>Search records</span>
                     <span style={{ display: 'flex', gap: 4 }}>
                       <kbd
                         style={{
@@ -411,18 +305,7 @@ export default function UserSettingsModal({ isOpen, initialTab = 'profile', onCl
                           fontSize: 12,
                         }}
                       >
-                        ←
-                      </kbd>
-                      <kbd
-                        style={{
-                          padding: '2px 6px',
-                          background: 'var(--chip)',
-                          color: 'var(--text)',
-                          borderRadius: 4,
-                          fontSize: 12,
-                        }}
-                      >
-                        →
+                        ⌘K
                       </kbd>
                     </span>
                   </div>

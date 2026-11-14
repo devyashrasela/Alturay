@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useOutletContext } from 'react-router-dom';
 import {
   useGetProductsQuery,
   useCreateProductMutation,
@@ -10,7 +10,6 @@ import {
 import { addToast } from '../../../store/slices/uiSlice';
 import { usePermissions } from '../../../hooks/usePermissions';
 import Icon from '../../../components/ui/Icon/Icon';
-import PageHeader from '../../../components/ui/PageHeader/PageHeader';
 import DataTable from '../../../components/ui/DataTable';
 import Modal from '../../../components/ui/Modal/Modal';
 import ConfirmDialog from '../../../components/ui/ConfirmDialog/ConfirmDialog';
@@ -18,6 +17,7 @@ import FormField from '../../../components/ui/FormField/FormField';
 import InputField from '../../../components/ui/Input/InputField';
 import Button from '../../../components/ui/Button/Button';
 import { formatCurrency } from '../../../utils/formatCurrency';
+import './ProductsPage.css';
 
 const EMPTY_FORM = {
   name: '',
@@ -31,6 +31,9 @@ const EMPTY_FORM = {
 export default function ProductsPage() {
   const dispatch = useDispatch();
   const location = useLocation();
+  const outletCtx = useOutletContext() || {};
+  const { openDock, closeDock, isDockOpen } = outletCtx;
+
   const { activeBusinessId, activeBusiness } = useSelector((s) => s.business);
   const { can } = usePermissions();
 
@@ -45,7 +48,7 @@ export default function ProductsPage() {
   const [deleteProduct, setDeleteProduct] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
 
-  const { data, isLoading } = useGetProductsQuery(
+  const { data, isLoading, refetch } = useGetProductsQuery(
     { businessId: activeBusinessId, page, search },
     { skip: !activeBusinessId }
   );
@@ -128,14 +131,13 @@ export default function ProductsPage() {
     {
       key: 'name',
       header: 'Product',
-      width: '30%',
+      width: '32%',
       render: (p) => (
-        <div>
-          <div>{p.name}</div>
+        <div className="products-name-cell">
+          <div className="products-name-title">{p.name}</div>
           {p.description ? (
-            <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 2 }}>
-              {p.description.slice(0, 50)}
-              {p.description.length > 50 ? '…' : ''}
+            <div className="products-name-desc" title={p.description}>
+              {p.description}
             </div>
           ) : null}
         </div>
@@ -164,7 +166,7 @@ export default function ProductsPage() {
     {
       key: 'tax_rate',
       header: 'Tax %',
-      width: canUpdate || canDelete ? '12%' : '26%',
+      width: canUpdate || canDelete ? '12%' : '24%',
       tax: true,
       render: (p) => `${p.tax_rate}%`,
     },
@@ -173,7 +175,7 @@ export default function ProductsPage() {
           {
             key: 'actions',
             header: 'Actions',
-            width: '14%',
+            width: '12%',
             align: 'right',
             render: (p) => (
               <DataTable.RowActions>
@@ -181,7 +183,10 @@ export default function ProductsPage() {
                   <DataTable.ActionButton
                     icon="edit"
                     label={`Edit ${p.name}`}
-                    onClick={() => openEdit(p)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openEdit(p);
+                    }}
                   />
                 )}
                 {canDelete && (
@@ -189,7 +194,10 @@ export default function ProductsPage() {
                     icon="trash"
                     variant="danger"
                     label={`Delete ${p.name}`}
-                    onClick={() => setDeleteProduct(p)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setDeleteProduct(p);
+                    }}
                   />
                 )}
               </DataTable.RowActions>
@@ -200,16 +208,30 @@ export default function ProductsPage() {
   ];
 
   return (
-    <div>
-      <PageHeader
-        title="Products"
-        description={`Manage your product catalog for ${activeBusiness?.name || 'your business'}`}
-      />
+    <div className="products-page">
+      <div className="ph">
+        <div className="ph-left">
+          <h1>Products</h1>
+          <p>Manage your product catalog for {activeBusiness?.name || 'your business'}.</p>
+        </div>
+
+        <div className="actions">
+          {canCreate && (
+            <button
+              type="button"
+              className="btn primary"
+              onClick={openCreate}
+            >
+              Add product
+            </button>
+          )}
+        </div>
+      </div>
 
       <DataTable>
         <DataTable.Toolbar>
           <DataTable.Search
-            placeholder="Search products…"
+            placeholder="Search products"
             ariaLabel="Search products"
             value={search}
             onChange={(val) => {
@@ -217,24 +239,26 @@ export default function ProductsPage() {
               setPage(1);
             }}
           />
-          <DataTable.Actions>
-            <DataTable.FilterButton ariaLabel="Filter and sort products" />
-            {canCreate && (
-              <DataTable.NewButton onClick={openCreate}>
-                Add product
-              </DataTable.NewButton>
-            )}
-          </DataTable.Actions>
+          <DataTable.Segment
+            label="Show all"
+            icon="updown"
+            onClick={() => {}}
+          />
+          <DataTable.Segment
+            label="Last modified"
+            icon="updown"
+            onClick={() => {}}
+          />
         </DataTable.Toolbar>
 
         <DataTable.Content
           isLoading={isLoading}
           isEmpty={products.length === 0}
           emptyState={{
-            icon: <Icon name="pkg" size={28} />,
+            icon: <Icon name="pkg" size={36} />,
             title: 'No products yet',
             description: 'Add your first product to start creating invoices and bills.',
-            actionLabel: canCreate ? 'Add Product' : undefined,
+            actionLabel: canCreate ? 'Add product' : undefined,
             onAction: canCreate ? openCreate : undefined,
           }}
           columns={columns}

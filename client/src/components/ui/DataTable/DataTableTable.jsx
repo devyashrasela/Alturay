@@ -5,17 +5,19 @@ export function DataTableTable({
   tableClassName = '',
 }) {
   return (
-    <div className={`db-wrap ${className}`.trim()}>
-      <table className={`db ${tableClassName}`.trim()}>
-        {columns.length > 0 && (
-          <colgroup>
-            {columns.map((col, idx) => (
-              <col key={col.key || idx} style={col.width ? { width: col.width } : undefined} />
-            ))}
-          </colgroup>
-        )}
-        {children}
-      </table>
+    <div className={`card tbl ${className}`.trim()}>
+      <div className="scroll db-wrap">
+        <table className={`db ${tableClassName}`.trim()}>
+          {columns.length > 0 && (
+            <colgroup>
+              {columns.map((col, idx) => (
+                <col key={col.key || idx} style={col.width ? { width: col.width } : undefined} />
+              ))}
+            </colgroup>
+          )}
+          {children}
+        </table>
+      </div>
     </div>
   );
 }
