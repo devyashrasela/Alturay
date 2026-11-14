@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { setTheme } from '../../store/slices/themeSlice';
 import Icon from '../ui/Icon';
 import { usePermissions } from '../../hooks/usePermissions';
 import { ROLE_DESCRIPTIONS } from '../../constants/roles';
+import '../settings/UserSettings.css';
 
 const TABS = [
   { id: 'profile', label: 'Profile', icon: 'user', sub: 'Manage your name, email and photo.' },
@@ -24,12 +25,6 @@ export default function UserSettingsModal({ isOpen, initialTab = 'profile', onCl
   const dispatch = useDispatch();
   const [activeTab, setActiveTab] = useState(initialTab);
   const [pendingTheme, setPendingTheme] = useState(null);
-  const [search, setSearch] = useState('');
-  const searchInputRef = useRef(null);
-
-  useEffect(() => {
-    searchInputRef.current?.focus();
-  }, []);
 
   useEffect(() => {
     if (!isOpen) return undefined;
@@ -45,8 +40,6 @@ export default function UserSettingsModal({ isOpen, initialTab = 'profile', onCl
 
   if (!isOpen) return null;
 
-  const q = search.trim().toLowerCase();
-  const filteredTabs = TABS.filter((t) => t.label.toLowerCase().includes(q));
   const currentTab = TABS.find((t) => t.id === activeTab) || TABS[0];
 
   const handleBackdropClick = (e) => {
@@ -66,42 +59,25 @@ export default function UserSettingsModal({ isOpen, initialTab = 'profile', onCl
     <div className="us-backdrop" id="us" onClick={handleBackdropClick}>
       <div className="us" role="dialog" aria-modal="true" aria-labelledby="usTitle">
         <aside className="us__nav">
-          <label className="us__search">
-            <Icon name="search" size={16} />
-            <input
-              ref={searchInputRef}
-              id="usSearch"
-              type="search"
-              placeholder="Search settings"
-              aria-label="Search settings"
-              autoComplete="off"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </label>
           <div className="us__label">Account</div>
           <div id="usList" role="tablist" aria-orientation="vertical" aria-label="Account settings">
-            {filteredTabs.length > 0 ? (
-              filteredTabs.map((t) => {
-                const isSelected = t.id === currentTab.id;
-                return (
-                  <button
-                    key={t.id}
-                    type="button"
-                    role="tab"
-                    className="us__item"
-                    data-t={t.id}
-                    aria-selected={isSelected}
-                    onClick={() => setActiveTab(t.id)}
-                  >
-                    <Icon name={t.icon} size={16} />
-                    <span>{t.label}</span>
-                  </button>
-                );
-              })
-            ) : (
-              <div className="us__none">No results</div>
-            )}
+            {TABS.map((t) => {
+              const isSelected = t.id === currentTab.id;
+              return (
+                <button
+                  key={t.id}
+                  type="button"
+                  role="tab"
+                  className="us__item"
+                  data-t={t.id}
+                  aria-selected={isSelected}
+                  onClick={() => setActiveTab(t.id)}
+                >
+                  <Icon name={t.icon} size={16} />
+                  <span>{t.label}</span>
+                </button>
+              );
+            })}
           </div>
         </aside>
 

@@ -22,6 +22,7 @@ import { PAYMENT_METHODS } from '../../constants/paymentMethods';
 import { formatCurrency } from '../../utils/formatCurrency';
 import { calculateInvoiceTotals } from '../../utils/calculateInvoiceTotals';
 import { PageLoader } from '../../components/ui/Loader/Spinner';
+import './CreateInvoice.css';
 
 const EMPTY_ITEM = {
   product_id: null,

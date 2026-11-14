@@ -22,6 +22,7 @@ import {
 
 import { DataTableContent } from './DataTableContent';
 import { DataTablePagination } from './DataTablePagination';
+import './DataTable.css';
 
 export function DataTable({ children, className = '' }) {
   return <div className={`datatable-root ${className}`.trim()}>{children}</div>;

@@ -1,0 +1,211 @@
+/* ═══════════════════════════════════════════════════════════
+   FORM GRIDS & CREATE-INVOICE LAYOUT
+   ═══════════════════════════════════════════════════════════ */
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.form-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.create-inv {
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.create-inv__cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.create-inv__card {
+  margin-bottom: var(--space-4);
+}
+
+.create-inv__items-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-4);
+}
+
+.create-inv__item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.create-inv__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+  margin-top: var(--space-5);
+}
+
+.form-section__title {
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-4);
+}
+
+.form-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.settings-page {
+  max-width: 640px;
+}
+
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.settings-form__actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: var(--space-2);
+}
+
+.inv-item-field {
+  min-width: 0;
+}
+
+.inv-item-field__label {
+  display: none;
+}
+
+.inv-item__total {
+  text-align: right;
+  font-weight: 600;
+  font-size: var(--font-size-md);
+  font-variant-numeric: tabular-nums;
+  align-self: center;
+  white-space: nowrap;
+}
+
+.section-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.inv-item-grid {
+  display: grid;
+  grid-template-columns: minmax(170px, 2fr) minmax(170px, 2fr) 95px 65px 65px 65px 95px 36px;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+.inv-item-grid--head {
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.summary-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-muted);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  margin-top: var(--space-2);
+}
+
+.summary-total__label {
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.summary-total__value {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  letter-spacing: var(--letter-spacing-tight);
+  color: var(--color-text-primary);
+  font-variant-numeric: tabular-nums;
+}
+
+.summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  padding: 4px 0;
+}
+
+.summary-row__value {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-primary);
+}
+
+.summary-row__value--neg {
+  color: var(--color-danger);
+}
+
+
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE — CREATE INVOICE
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  .create-inv__cols {
+    grid-template-columns: 1fr;
+  }
+
+  .inv-item-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-3) var(--space-2);
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md, 6px);
+  }
+
+  .inv-item-grid > :nth-child(1),
+  .inv-item-grid > :nth-child(2) {
+    grid-column: 1 / -1;
+  }
+
+  .inv-item-grid--head {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .inv-item-field__label {
+    display: block;
+    font-size: 11px;
+    color: var(--color-text-muted);
+    margin-bottom: 4px;
+  }
+
+  .inv-item__total {
+    text-align: left;
+  }
+
+  .create-inv__actions .btn {
+    flex: 1 1 auto;
+  }
+}

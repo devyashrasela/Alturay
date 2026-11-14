@@ -1,6 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { Check } from 'lucide-react';
 import { setTheme } from '../../store/slices/themeSlice';
+import '../../components/settings/UserSettings.css';
 
 const THEME_OPTIONS = [
   { value: 'light', label: 'Light', hint: 'Bright surfaces and dark text' },

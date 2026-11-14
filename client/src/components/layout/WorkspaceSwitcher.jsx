@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { setActiveBusiness } from '../../store/slices/businessSlice';
 import Icon from '../ui/Icon';
 import RoleBadge from '../ui/Badge/RoleBadge';
+import './BusinessSwitcher.css';
 
 export default function WorkspaceSwitcher() {
   const dispatch = useDispatch();

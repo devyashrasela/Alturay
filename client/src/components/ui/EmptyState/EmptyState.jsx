@@ -1,4 +1,5 @@
 import Button from '../Button/Button';
+import './EmptyState.css';
 
 export default function EmptyState({ icon, title, description, actionLabel, onAction }) {
   return (

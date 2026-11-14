@@ -15,6 +15,7 @@ import DashboardKpiStrip from './DashboardKpiStrip';
 import DashboardRecentTable from './DashboardRecentTable';
 import RevenueOverviewChart from './RevenueOverviewChart';
 import InvoiceStatusDonut from './InvoiceStatusDonut';
+import './Dashboard.css';
 
 function getGreeting() {
   const hour = new Date().getHours();

@@ -1,0 +1,109 @@
+/* ═══════════════════════════════════════════════════════════
+   LAYOUT SYSTEM
+   ═══════════════════════════════════════════════════════════ */
+
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.app-layout__sidebar {
+  width: var(--sidebar-width);
+  min-height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 40;
+  transition: width var(--transition-slow);
+}
+
+.app-layout__sidebar--collapsed {
+  width: var(--sidebar-collapsed-width);
+}
+
+.app-layout__main {
+  flex: 1;
+  margin-left: var(--sidebar-width);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  transition: margin-left var(--transition-slow);
+}
+
+.app-layout__sidebar--collapsed+.app-layout__main,
+.app-layout__main--sidebar-collapsed {
+  margin-left: var(--sidebar-collapsed-width);
+}
+
+.app-layout__header {
+  height: var(--header-height);
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+.app-layout__content {
+  flex: 1;
+  padding: var(--space-8);
+  max-width: var(--content-max-width);
+  width: 100%;
+  margin: 0 auto;
+}
+
+
+
+/* ═══════════════════════════════════════════════════════════
+   MOBILE OVERLAY (drawer backdrop)
+   ═══════════════════════════════════════════════════════════ */
+
+.app-layout__overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--color-overlay-soft);
+  z-index: 39;
+  display: none;
+  animation: fade-in 150ms ease;
+  border: none;
+  padding: 0;
+}
+
+@media (max-width: 768px) {
+  .app-layout__overlay--visible {
+    display: block;
+  }
+}
+
+
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE — APP LAYOUT
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 1024px) {
+  .app-layout__content {
+    padding: var(--space-6);
+  }
+}
+
+@media (max-width: 768px) {
+  .app-layout__sidebar {
+    transform: translateX(-100%);
+    z-index: 40;
+    width: var(--sidebar-width);
+    max-width: 86vw;
+    box-shadow: var(--shadow-xl);
+  }
+
+  .app-layout__sidebar--open {
+    transform: translateX(0);
+  }
+
+  .app-layout__main,
+  .app-layout__main--sidebar-collapsed {
+    margin-left: 0;
+  }
+
+  .app-layout__content {
+    padding: var(--space-4);
+  }
+}

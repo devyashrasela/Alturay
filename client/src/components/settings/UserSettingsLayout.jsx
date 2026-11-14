@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { PanelLeft } from 'lucide-react';
 import SettingsSidebar from './SettingsSidebar';
+import './UserSettings.css';
 
 export default function UserSettingsLayout() {
   const location = useLocation();

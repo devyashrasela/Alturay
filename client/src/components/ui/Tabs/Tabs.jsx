@@ -1,3 +1,4 @@
+import './Tabs.css';
 export default function Tabs({ tabs, activeTab, onChange }) {
   return (
     <div className="tabs">

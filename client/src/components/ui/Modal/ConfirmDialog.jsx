@@ -1,6 +1,7 @@
 import Modal from './Modal';
 import Button from '../Button/Button';
 import { AlertTriangle } from 'lucide-react';
+import './Modal.css';
 
 export default function ConfirmDialog({ isOpen, onClose, onConfirm, title, message, confirmLabel = 'Delete', loading = false }) {
   return (

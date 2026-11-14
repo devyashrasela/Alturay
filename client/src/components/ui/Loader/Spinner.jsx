@@ -1,3 +1,4 @@
+import './Loader.css';
 export function Spinner({ size = 'md' }) {
   return <div className={`spinner ${size === 'lg' ? 'spinner--lg' : ''}`} />;
 }

@@ -1,5 +1,6 @@
 import { Search, X } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
+import './SearchInput.css';
 
 export default function SearchInput({ value, onChange, placeholder = 'Search…', className = '', style, label = 'Search' }) {
   const [internal, setInternal] = useState(value || '');

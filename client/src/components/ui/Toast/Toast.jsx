@@ -2,6 +2,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { CheckCircle, XCircle, AlertTriangle, Info, X } from 'lucide-react';
 import { removeToast } from '../../../store/slices/uiSlice';
 import { useEffect } from 'react';
+import './Toast.css';
 
 const icons = {
   success: <CheckCircle size={18} color="var(--color-success)" aria-hidden="true" />,

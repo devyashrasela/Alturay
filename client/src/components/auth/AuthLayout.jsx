@@ -1,3 +1,4 @@
+import '../../pages/Auth/Auth.css';
 export default function AuthLayout({ title, subtitle, children, footer }) {
   return (
     <div className="auth-screen">

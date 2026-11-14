@@ -11,6 +11,7 @@ import FormField from '../../components/ui/FormField/FormField';
 import InputField from '../../components/ui/Input/InputField';
 import AuthLayout from '../../components/auth/AuthLayout';
 import PasswordInput from '../../components/auth/PasswordInput';
+import './Auth.css';
 
 export default function RegisterPage() {
   const dispatch = useDispatch();

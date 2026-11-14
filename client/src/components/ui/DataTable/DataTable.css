@@ -1,0 +1,372 @@
+/* ═══════════════════════════════════════════════════════════
+   DATABASE TABLES
+   ═══════════════════════════════════════════════════════════ */
+
+/* ── Database table (Products / Invoices) ── */
+
+.db-bar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.db-pills {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 3px;
+}
+
+.db-pill {
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+  background: none;
+  border: 0;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+}
+
+.db-pill:hover {
+  color: var(--text);
+  background: var(--hover);
+}
+
+.db-pill[aria-selected="true"] {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.db-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 32px;
+  width: 240px;
+  padding: 0 10px;
+  border-radius: 8px;
+  color: var(--muted);
+  border: 1px solid var(--border);
+  background: var(--panel);
+}
+
+.db-search:focus-within {
+  background: var(--hover);
+  border-color: var(--icon);
+  box-shadow: 0 0 0 1px var(--icon);
+}
+
+.db-search input {
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: 0;
+  outline: 0;
+  color: var(--text);
+  font: inherit;
+}
+
+.db-search input::placeholder {
+  color: var(--muted);
+}
+
+.db-end {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.db-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  color: var(--icon);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.db-icon:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.db-new {
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 6px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  border: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
+.db-new:hover {
+  filter: brightness(1.12);
+}
+
+.db-wrap {
+  margin-top: 16px;
+  overflow-x: auto;
+}
+
+.db {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.db th {
+  height: 36px;
+  padding: 0 12px;
+  text-align: left;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+  white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+}
+
+.db td {
+  height: 37px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-2);
+}
+
+.db th:first-child,
+.db td:first-child {
+  padding-left: 14px;
+}
+
+.db td:first-child {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.db tbody tr:hover td {
+  background: var(--panel);
+}
+
+.db .num {
+  text-align: right;
+}
+
+.db td.price {
+  color: var(--text);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.db td.tax {
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.act {
+  display: flex;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.act button {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  color: var(--icon);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.act button:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.act .del,
+.act .del:hover {
+  color: var(--danger);
+}
+
+@media (max-width: 1100px) {
+  .drow {
+    grid-template-columns: 1fr;
+  }
+  .kpis {
+    grid-template-columns: 1fr 1fr;
+  }
+  .kpi:nth-child(odd) {
+    border-left: 0;
+  }
+  .kpi:nth-child(n + 3) {
+    border-top: 1px solid var(--border);
+  }
+}
+
+@media (max-width: 560px) {
+  .kpis {
+    grid-template-columns: 1fr;
+  }
+  .kpi + .kpi {
+    border-left: 0;
+    border-top: 1px solid var(--border);
+  }
+  .rv-plot {
+    margin-left: 48px;
+  }
+  .rv-yl {
+    right: calc(100% + 6px);
+  }
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TABLES
+   ═══════════════════════════════════════════════════════════ */
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.data-table th {
+  text-align: left;
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 10px var(--space-4);
+  background: transparent;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--font-size-md);
+  color: var(--color-text-primary);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.data-table tbody tr {
+  transition: background-color var(--transition-fast);
+}
+
+.data-table tr:hover td {
+  background: var(--color-bg-hover);
+}
+
+.data-table tr:last-child td {
+  border-bottom: none;
+}
+
+
+
+/* ═══════════════════════════════════════════════════════════
+   TABLES — EXTRAS (numeric alignment, clickable rows)
+   ═══════════════════════════════════════════════════════════ */
+
+.data-table td {
+  vertical-align: middle;
+}
+
+.data-table .num,
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.table-row-link td {
+  cursor: pointer;
+}
+
+/* Primary identifier inside a table row */
+.table-link {
+  font-weight: 600;
+  color: var(--color-link);
+}
+
+.table-row-link:hover .table-link {
+  color: var(--color-link-hover);
+}
+
+.table-type {
+  color: var(--color-text-secondary);
+  text-transform: capitalize;
+}
+
+.table-date {
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.products-search {
+  width: 300px;
+  max-width: 100%;
+}
+
+.product-name {
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.product-description {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.table-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-1);
+}
+
+
+
+/* ═══════════════════════════════════════════════════════════
+   RESPONSIVE — DATA TABLE
+   ═══════════════════════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  /* Keep dense tables readable by letting them scroll horizontally
+     inside their existing overflow wrappers. */
+  .data-table {
+    min-width: 680px;
+  }
+}

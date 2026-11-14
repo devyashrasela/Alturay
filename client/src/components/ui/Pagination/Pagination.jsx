@@ -1,4 +1,5 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import './Pagination.css';
 
 export default function Pagination({ page, totalPages, total, limit, onPageChange }) {
   if (totalPages <= 1) return null;

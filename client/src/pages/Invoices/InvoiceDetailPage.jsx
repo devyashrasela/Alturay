@@ -10,6 +10,7 @@ import ConfirmDialog from '../../components/ui/Modal/ConfirmDialog';
 import { PageLoader } from '../../components/ui/Loader/Spinner';
 import InvoicePreviewCard from '../../components/invoices/InvoicePreviewCard';
 import { openPdf } from '../../utils/openPdf';
+import './InvoiceDetail.css';
 
 export default function InvoiceDetailPage() {
   const { id } = useParams();

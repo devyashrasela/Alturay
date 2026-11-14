@@ -12,6 +12,7 @@ import { useEffect, useState } from 'react';
 import { toggleSidebar, setSidebarOpen } from '../../store/slices/uiSlice';
 import SidebarNavItem from './SidebarNavItem';
 import UserMenu from './UserMenu';
+import './Sidebar.css';
 
 const navItems = [
   { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },

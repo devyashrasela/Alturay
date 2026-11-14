@@ -1,5 +1,6 @@
 import React from 'react';
 import { ROLE_LABELS } from '../../../constants/roles';
+import './Badge.css';
 
 export default function RoleBadge({ role, size = 'md', className = '' }) {
   const normalized = (role || '').toLowerCase();

@@ -1,3 +1,4 @@
+import './Badge.css';
 const STATUS_MAP = {
   paid:      { variant: 'success', label: 'Paid' },
   issued:    { variant: 'info',    label: 'Issued' },

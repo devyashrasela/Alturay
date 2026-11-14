@@ -1,3 +1,4 @@
+import './Card.css';
 export default function StatCard({ label, value, icon, iconVariant = 'orange', sub, trend }) {
   return (
     <div className="stat-card">

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useId, useRef } from 'react';
 import { X } from 'lucide-react';
+import './Modal.css';
 
 export default function Modal({ isOpen, onClose, title, size = '', children, footer }) {
   const overlayRef = useRef(null);

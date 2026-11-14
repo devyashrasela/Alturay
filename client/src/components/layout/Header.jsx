@@ -15,6 +15,8 @@ import { formatCurrency } from '../../utils/formatCurrency';
 import { formatDate } from '../../utils/formatDate';
 import { isOverdue } from '../../utils/invoiceStatus';
 import WorkspaceSwitcher from './WorkspaceSwitcher';
+import './Header.css';
+import './BusinessSwitcher.css';
 
 const pageTitles = {
   '/dashboard': 'Dashboard',

@@ -12,6 +12,7 @@ import { setUser } from '../../store/slices/authSlice';
 import { setBusinesses, setActiveBusiness, clearBusiness } from '../../store/slices/businessSlice';
 import { usePermissions } from '../../hooks/usePermissions';
 import './appShell.css';
+import './AppLayout.css';
 
 const COLLAPSE_KEY = 'alturay_secnav_collapsed';
 

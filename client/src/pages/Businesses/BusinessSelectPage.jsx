@@ -10,6 +10,7 @@ import { businessAccent } from '../../utils/businessAccent';
 import { PageLoader } from '../../components/ui/Loader/Spinner';
 import RoleBadge from '../../components/ui/Badge/RoleBadge';
 import CreateBusinessModal from '../../components/business/CreateBusinessModal';
+import './BusinessSelect.css';
 
 export default function BusinessSelectPage() {
   const dispatch = useDispatch();
