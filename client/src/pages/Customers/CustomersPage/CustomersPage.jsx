@@ -8,6 +8,7 @@ import {
 import { addToast } from '../../../store/slices/uiSlice';
 import { usePermissions } from '../../../hooks/usePermissions';
 import Icon from '../../../components/ui/Icon/Icon';
+import Button from '../../../components/ui/Button/Button';
 import PageHeader from '../../../components/ui/PageHeader/PageHeader';
 import DataTable from '../../../components/ui/DataTable';
 import ConfirmDialog from '../../../components/ui/ConfirmDialog/ConfirmDialog';
@@ -181,10 +182,21 @@ export default function CustomersPage() {
   ];
 
   return (
-    <div>
+    <div className="customers-page" style={{ width: '100%' }}>
       <PageHeader
         title="Customers"
         description={`Manage your customer directory and billing profiles for ${activeBusiness?.name || 'your business'}`}
+        actions={
+          canCreate && (
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={openCreate}
+            >
+              Add customer
+            </Button>
+          )
+        }
       />
 
       <DataTable>
@@ -200,11 +212,6 @@ export default function CustomersPage() {
           />
           <DataTable.Actions>
             <DataTable.FilterButton ariaLabel="Filter and sort customers" />
-            {canCreate && (
-              <DataTable.NewButton onClick={openCreate}>
-                Add customer
-              </DataTable.NewButton>
-            )}
           </DataTable.Actions>
         </DataTable.Toolbar>
 
