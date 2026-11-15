@@ -375,33 +375,6 @@
   margin-right: 8px;
 }
 
-.dtbl {
-  margin-top: 16px;
-  overflow: hidden;
-}
-
-.dtbl .db-wrap {
-  margin: 14px -20px -20px;
-  border-radius: 0 0 12px 12px;
-}
-
-.dtbl .db th {
-  background: var(--hover);
-}
-
-.dtbl .db th:first-child,
-.dtbl .db td:first-child {
-  padding-left: 20px;
-}
-
-.dtbl .db th:last-child,
-.dtbl .db td:last-child {
-  padding-right: 20px;
-}
-
-.dtbl .db tr:last-child td {
-  border-bottom: 0;
-}
 
 /* ═══════════════════════════════════════════════════════════
    DASHBOARD

@@ -1,7 +1,9 @@
 import Icon from '../../../components/ui/Icon/Icon';
+import StatusBadge from '../../../components/ui/StatusBadge/StatusBadge';
 import { formatDate } from '../../../utils/formatDate';
 import { formatCurrency } from '../../../utils/formatCurrency';
 import { effectiveStatus } from '../../../utils/invoiceStatus';
+import './DashboardRecentTable.css';
 
 export default function DashboardRecentTable({
   title = 'Recent invoices / bills',
@@ -46,7 +48,6 @@ export default function DashboardRecentTable({
             {invoices.length > 0 ? (
               invoices.map((inv) => {
                 const statusKey = effectiveStatus(inv);
-                const scClass = `sc sc-${statusKey.toLowerCase()}`;
                 const isDraft = inv.status === 'draft';
                 const dateStr = inv.due_date ? formatDate(inv.due_date) : (inv.issue_date ? formatDate(inv.issue_date) : '—');
                 const customerName = inv.customer_name || inv.customer?.name || '—';
@@ -61,7 +62,7 @@ export default function DashboardRecentTable({
                     <td>{inv.invoice_number}</td>
                     <td>{customerName}</td>
                     <td>
-                      <span className={scClass}>{statusKey.charAt(0).toUpperCase() + statusKey.slice(1)}</span>
+                      <StatusBadge status={statusKey} />
                     </td>
                     <td>{dateStr}</td>
                     <td className="num price">{formattedAmount}</td>

@@ -1,0 +1,207 @@
+/* ═══════════════════════════════════════════════════════════
+   DASHBOARD RECENT TABLE — ALTURAY DESIGN SYSTEM
+   Co-located component styles for DashboardRecentTable
+   ═══════════════════════════════════════════════════════════ */
+
+.dtbl {
+  margin-top: 16px;
+  overflow: hidden;
+}
+
+.dtbl .dh {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.dtbl .dh h2 {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--text);
+  margin: 0;
+}
+
+.dtbl .dmore {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  color: var(--muted);
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.12s;
+}
+
+.dtbl .dmore:hover {
+  color: var(--text);
+  background: var(--hover);
+  border-color: var(--border);
+}
+
+/* ── Table Container & Wrapper ── */
+.dtbl .db-wrap {
+  margin: 14px -20px -20px;
+  border-radius: 0 0 12px 12px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+/* ── Table Base ── */
+.dtbl .db {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 560px;
+  font-size: 13px;
+  text-align: left;
+}
+
+/* ── Table Header Cells ── */
+.dtbl .db th {
+  height: 42px;
+  padding: 0 14px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  background: var(--hover);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.dtbl .db th:first-child,
+.dtbl .db td:first-child {
+  padding-left: 20px;
+}
+
+.dtbl .db th:last-child,
+.dtbl .db td:last-child {
+  padding-right: 20px;
+}
+
+/* ── Table Body Cells & Rows ── */
+.dtbl .db td {
+  height: 50px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--border-soft, var(--border));
+  color: var(--text-2);
+  font-size: 13px;
+  vertical-align: middle;
+  transition: background 0.1s ease;
+}
+
+.dtbl .db td:first-child {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.dtbl .db tr:last-child td {
+  border-bottom: 0;
+}
+
+.dtbl .db tbody tr:hover td {
+  background: var(--hover);
+}
+
+.dtbl .db th.num,
+.dtbl .db td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.dtbl .db td.price {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ── Action Buttons ── */
+.dtbl .act {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.dtbl .act button {
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text-2);
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.12s ease;
+}
+
+.dtbl .act button:hover {
+  background: var(--hover);
+  color: var(--text);
+  border-color: #4a4a4a;
+}
+
+.dtbl .act button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Status badge fallback rules ── */
+.dtbl .sc {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 24px;
+  padding: 0 10px;
+  border-radius: 99px;
+  font-size: 12.5px;
+  font-weight: 500;
+  background: var(--chip);
+  color: var(--text-2);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.dtbl .sc::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+
+.dtbl .sc-draft {
+  background: var(--chip);
+  color: var(--text-2);
+}
+
+.dtbl .sc-issued {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
+
+.dtbl .sc-paid {
+  color: var(--success);
+  background: color-mix(in srgb, var(--success) 14%, transparent);
+}
+
+.dtbl .sc-cancelled,
+.dtbl .sc-overdue {
+  color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 15%, transparent);
+}
+
+.dtbl .sc-pending {
+  color: var(--warn);
+  background: color-mix(in srgb, var(--warn) 14%, transparent);
+}
