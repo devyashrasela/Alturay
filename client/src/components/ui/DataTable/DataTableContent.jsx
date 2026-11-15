@@ -1,5 +1,4 @@
 import { PageLoader } from '../Loader/Spinner';
-import EmptyState from '../EmptyState/EmptyState';
 import {
   DataTableTable,
   DataTableHead,

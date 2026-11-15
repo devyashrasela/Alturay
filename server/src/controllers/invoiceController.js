@@ -77,7 +77,11 @@ exports.create = async (req, res, next) => {
     } = req.body;
 
     // Atomic sequence numbering with row-level lock
-    const business = await Business.findByPk(req.businessId, { lock: true, transaction: t });
+    const business = await Business.findOne({
+      where: { id: req.businessId },
+      lock: true,
+      transaction: t,
+    });
     const seqField = type === 'invoice' ? 'next_invoice_seq' : 'next_bill_seq';
     const prefix = type === 'invoice' ? 'INV' : 'BILL';
     const invoiceNumber = `${prefix}-${String(business[seqField]).padStart(3, '0')}`;
@@ -160,7 +164,8 @@ exports.create = async (req, res, next) => {
     await t.commit();
 
     // Fetch the full invoice with items and creator
-    const fullInvoice = await Invoice.findByPk(invoice.id, {
+    const fullInvoice = await Invoice.findOne({
+      where: { id: invoice.id, business_id: req.businessId },
       include: [
         { model: InvoiceItem, as: 'items' },
         { model: User, as: 'creator', attributes: ['id', 'name'] },
@@ -313,7 +318,8 @@ exports.update = async (req, res, next) => {
     await invoice.update(invoiceData, { transaction: t });
     await t.commit();
 
-    const fullInvoice = await Invoice.findByPk(invoice.id, {
+    const fullInvoice = await Invoice.findOne({
+      where: { id: invoice.id, business_id: req.businessId },
       include: [
         { model: InvoiceItem, as: 'items' },
         { model: User, as: 'creator', attributes: ['id', 'name'] },
@@ -328,12 +334,16 @@ exports.update = async (req, res, next) => {
 };
 
 exports.updateStatus = async (req, res, next) => {
+  const t = await sequelize.transaction();
   try {
     const invoice = await Invoice.findOne({
       where: { id: req.params.invoiceId, business_id: req.businessId },
+      transaction: t,
+      lock: t.LOCK.UPDATE,
     });
 
     if (!invoice) {
+      await t.rollback();
       return res.status(404).json({
         success: false,
         error: { code: 'NOT_FOUND', message: 'Invoice not found.' },
@@ -344,6 +354,7 @@ exports.updateStatus = async (req, res, next) => {
     const nextStatus = req.body.status;
 
     if (currentStatus === nextStatus) {
+      await t.rollback();
       return res.json({ success: true, data: { invoice } });
     }
 
@@ -355,6 +366,7 @@ exports.updateStatus = async (req, res, next) => {
 
     const requiredPerm = STATUS_PERMISSIONS[nextStatus];
     if (requiredPerm && !req.can(requiredPerm)) {
+      await t.rollback();
       return res.status(403).json({
         success: false,
         error: {
@@ -367,6 +379,7 @@ exports.updateStatus = async (req, res, next) => {
 
     // 1. Prohibit any transition from paid
     if (currentStatus === 'paid') {
+      await t.rollback();
       return res.status(400).json({
         success: false,
         error: {
@@ -378,6 +391,7 @@ exports.updateStatus = async (req, res, next) => {
 
     // 2. Prohibit any transition from cancelled
     if (currentStatus === 'cancelled') {
+      await t.rollback();
       return res.status(400).json({
         success: false,
         error: {
@@ -389,6 +403,7 @@ exports.updateStatus = async (req, res, next) => {
 
     // 3. Draft can only transition to 'issued' or 'cancelled'
     if (currentStatus === 'draft' && !['issued', 'cancelled'].includes(nextStatus)) {
+      await t.rollback();
       return res.status(400).json({
         success: false,
         error: {
@@ -400,6 +415,7 @@ exports.updateStatus = async (req, res, next) => {
 
     // 4. Issued can only transition to 'paid' or 'cancelled'
     if (currentStatus === 'issued' && !['paid', 'cancelled'].includes(nextStatus)) {
+      await t.rollback();
       return res.status(400).json({
         success: false,
         error: {
@@ -409,9 +425,11 @@ exports.updateStatus = async (req, res, next) => {
       });
     }
 
-    await invoice.update({ status: nextStatus });
+    await invoice.update({ status: nextStatus }, { transaction: t });
+    await t.commit();
     return res.json({ success: true, data: { invoice } });
   } catch (error) {
+    if (!t.finished) await t.rollback();
     next(error);
   }
 };

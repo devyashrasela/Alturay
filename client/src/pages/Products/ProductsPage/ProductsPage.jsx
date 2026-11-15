@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useLocation, useOutletContext } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import {
   useGetProductsQuery,
   useCreateProductMutation,
@@ -31,9 +31,6 @@ const EMPTY_FORM = {
 export default function ProductsPage() {
   const dispatch = useDispatch();
   const location = useLocation();
-  const outletCtx = useOutletContext() || {};
-  const { openDock, closeDock, isDockOpen } = outletCtx;
-
   const { activeBusinessId, activeBusiness } = useSelector((s) => s.business);
   const { can } = usePermissions();
 
@@ -48,7 +45,7 @@ export default function ProductsPage() {
   const [deleteProduct, setDeleteProduct] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
 
-  const { data, isLoading, refetch } = useGetProductsQuery(
+  const { data, isLoading } = useGetProductsQuery(
     { businessId: activeBusinessId, page, search },
     { skip: !activeBusinessId }
   );

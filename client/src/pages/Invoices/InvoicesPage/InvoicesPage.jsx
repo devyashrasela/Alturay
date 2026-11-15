@@ -14,7 +14,6 @@ import ConfirmDialog from '../../../components/ui/ConfirmDialog/ConfirmDialog';
 import { formatCurrency } from '../../../utils/formatCurrency';
 import { formatDate } from '../../../utils/formatDate';
 import { effectiveStatus } from '../../../utils/invoiceStatus';
-import { openPdf } from '../../../utils/openPdf';
 import './InvoicesPage.css';
 
 const TABS = [
@@ -29,18 +28,12 @@ export default function InvoicesPage() {
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const { activeBusinessId, activeBusiness } = useSelector((s) => s.business);
-  const currentUser = useSelector((s) => s.auth.user);
   const { dock } = useSelector((s) => s.ui);
   const { can } = usePermissions();
 
   const selectedInvoiceId = dock?.open && dock?.type === 'invoice' ? dock.data?.id : null;
 
   const canCreate = can('invoice.create');
-  const canEditInvoice = (inv) => {
-    if (!inv || inv.status !== 'draft') return false;
-    return can('invoice.edit_any') || (can('invoice.edit_own') && inv.created_by === currentUser?.id);
-  };
-
   const [page, setPage] = useState(1);
   const [typeFilter, setTypeFilter] = useState('');
   const [confirmCancel, setConfirmCancel] = useState(false);
@@ -114,16 +107,6 @@ export default function InvoicesPage() {
           message: err?.data?.error?.message || 'Failed to update invoice status.',
         })
       );
-    }
-  };
-
-  const handleDownloadPdf = async (inv) => {
-    const target = inv || selectedInvoice;
-    if (!target) return;
-    try {
-      await openPdf(`/businesses/${activeBusinessId}/invoices/${target.id}/pdf`);
-    } catch (err) {
-      dispatch(addToast({ type: 'error', message: err?.message || 'Failed to download PDF.' }));
     }
   };
 

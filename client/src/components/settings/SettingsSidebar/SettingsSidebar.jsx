@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -7,7 +7,6 @@ import {
   CircleUserRound,
   Database,
   Palette,
-  Search,
   ShieldCheck,
   SlidersHorizontal,
   Sparkles,

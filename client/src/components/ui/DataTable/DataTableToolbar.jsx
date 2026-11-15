@@ -54,7 +54,6 @@ export function DataTableTabs({
   tabs = [],
   activeTab = '',
   onTabChange,
-  ariaLabel = 'Filter documents',
 }) {
   return (
     <>

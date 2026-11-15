@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { Search, ChevronDown, Check, X, Plus, User, MapPin, Phone, Mail } from 'lucide-react';
+import { Search, ChevronDown, Check, Plus } from 'lucide-react';
 import { useGetCustomersQuery } from '../../../store/api/customerApi';
 import CustomerModal from '../CustomerModal/CustomerModal';
 import Button from '../../ui/Button/Button';
@@ -11,7 +11,6 @@ export default function CustomerSelectDropdown({
   onChange,
   error,
   placeholder = 'Select or search customer…',
-  required = false,
   showCard = true,
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -161,7 +160,6 @@ export default function CustomerSelectDropdown({
             ) : (
               customers.map((c) => {
                 const isSelected = selectedCustomer?.id === c.id;
-                const addr = formatAddress(c);
                 return (
                   <li
                     key={c.id}

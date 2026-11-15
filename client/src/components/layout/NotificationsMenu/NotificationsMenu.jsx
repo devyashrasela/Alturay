@@ -3,7 +3,6 @@ import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router-dom';
 import { useGetRecentInvoicesQuery } from '../../../store/api/dashboardApi';
 import { formatCurrency } from '../../../utils/formatCurrency';
-import { formatDate } from '../../../utils/formatDate';
 import { isOverdue } from '../../../utils/invoiceStatus';
 import Icon from '../../ui/Icon/Icon';
 import './NotificationsMenu.css';

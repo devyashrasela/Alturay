@@ -48,7 +48,7 @@ export default function RightDock({
     'dark';
 
   const invoiceId = type === 'invoice' ? data?.id : null;
-  const { data: detailData, isFetching: isInvoiceFetching } = useGetInvoiceQuery(
+  const { data: detailData } = useGetInvoiceQuery(
     { businessId: activeBusinessId, invoiceId },
     { skip: !activeBusinessId || !invoiceId }
   );
@@ -70,7 +70,6 @@ export default function RightDock({
       : null;
 
   // Line items are only available once the full detail response arrives for this invoice
-  const hasLineItems = detailMatchesCurrent && Array.isArray(fullInvoice.items) && fullInvoice.items.length > 0;
   const isLoadingItems = type === 'invoice' && invoiceId && !detailMatchesCurrent;
 
   const handleEditProduct = onEditProduct || data?.onEdit;
