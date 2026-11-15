@@ -8,6 +8,8 @@ export const normalizeTheme = (value) => (THEMES.includes(value) ? value : DEFAU
 
 export const applyTheme = (value) => {
   const theme = normalizeTheme(value);
+  if (typeof document === 'undefined') return theme;
+
   document.documentElement.setAttribute('data-theme', theme);
 
   const themeColor = document.querySelector('meta[name="theme-color"]');

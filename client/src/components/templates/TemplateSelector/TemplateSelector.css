@@ -98,6 +98,39 @@
 
 .template-selector__btn-group {
   display: flex;
+  justify-content: flex-end;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
+}
+
+.template-selector__action-button {
+  min-width: 154px;
+  height: 40px;
+  flex: 0 0 auto;
+}
+
+.template-selector__action-button .btn__text {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .template-selector__actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .template-selector__btn-group {
+    width: 100%;
+  }
+
+  .template-selector__action-button {
+    min-width: 0;
+    flex: 1 1 0;
+  }
 }

@@ -1,5 +1,6 @@
 import UserMenu from '../UserMenu/UserMenu';
 import NotificationsMenu from '../NotificationsMenu/NotificationsMenu';
+import QuickActions from '../QuickActions/QuickActions';
 import Icon from '../../ui/Icon/Icon';
 import './TopNav.css';
 
@@ -18,6 +19,7 @@ export default function TopNav({ onOpenUserSettings, onOpenHelp, onOpenDock, onT
       )}
 
       <div className="topbar__right">
+        <QuickActions />
         <NotificationsMenu onOpenDock={onOpenDock} />
         <UserMenu
           onOpenUserSettings={onOpenUserSettings}

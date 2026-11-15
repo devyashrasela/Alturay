@@ -6,10 +6,12 @@ import TopNav from '../TopNav/TopNav';
 import RightDock from '../RightDock/RightDock';
 import UserSettingsModal from '../UserSettingsModal/UserSettingsModal';
 import Toast from '../../ui/Toast/Toast';
+import ConfirmDialog from '../../ui/ConfirmDialog/ConfirmDialog';
 import { useGetMeQuery } from '../../../store/api/authApi';
 import { setUser } from '../../../store/slices/authSlice';
 import { setBusinesses, setActiveBusiness, clearBusiness } from '../../../store/slices/businessSlice';
 import { useUpdateInvoiceStatusMutation } from '../../../store/api/invoiceApi';
+import { usePermissions } from '../../../hooks/usePermissions';
 import { openPdf } from '../../../utils/openPdf';
 import {
   addToast,
@@ -37,18 +39,20 @@ export default function AppLayout() {
   const { isAuthenticated } = useSelector((state) => state.auth);
   const { activeBusinessId } = useSelector((state) => state.business);
   const { dock } = useSelector((state) => state.ui);
+  const { can } = usePermissions();
 
   const [collapsed, setCollapsed] = useState(readCollapsed);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [userSettingsOpen, setUserSettingsOpen] = useState(false);
   const [userSettingsTab, setUserSettingsTab] = useState('profile');
+  const [confirmAction, setConfirmAction] = useState(null);
 
   // Track previous values for auto-close logic
   const prevPathnameRef = useRef(location.pathname);
   const prevBusinessIdRef = useRef(activeBusinessId);
 
   const { data: meData } = useGetMeQuery(undefined, { skip: !isAuthenticated });
-  const [updateStatus] = useUpdateInvoiceStatusMutation();
+  const [updateStatus, { isLoading: updatingStatus }] = useUpdateInvoiceStatusMutation();
 
   // Identity + business restore
   useEffect(() => {
@@ -135,34 +139,40 @@ export default function AppLayout() {
     navigate(`/invoices/${invoice.id}/edit`);
   };
 
-  const handleDockIssue = async (invoice) => {
-    if (!activeBusinessId || !invoice?.id) return;
+  const handleDockStatusChange = async () => {
+    const invoice = confirmAction?.invoice;
+    const status = confirmAction?.type === 'issue'
+      ? 'issued'
+      : confirmAction?.type === 'paid'
+        ? 'paid'
+        : 'cancelled';
+    if (!activeBusinessId || !invoice?.id || !confirmAction) return;
     try {
       await updateStatus({
         businessId: activeBusinessId,
         invoiceId: invoice.id,
-        status: 'issued',
+        status,
       }).unwrap();
-      dispatch(updateDockData({ status: 'issued' }));
-      dispatch(addToast({ type: 'success', message: 'Invoice issued successfully.' }));
+      dispatch(updateDockData({ status }));
+      dispatch(addToast({
+        type: 'success',
+        message: status === 'issued'
+          ? 'Invoice issued successfully.'
+          : status === 'paid'
+            ? 'Invoice marked as paid.'
+            : 'Invoice cancelled.',
+      }));
+      setConfirmAction(null);
     } catch (err) {
-      dispatch(addToast({ type: 'error', message: err?.data?.error?.message || 'Failed to issue invoice.' }));
+      dispatch(addToast({
+        type: 'error',
+        message: err?.data?.error?.message || `Failed to ${status === 'issued' ? 'issue' : status === 'paid' ? 'mark the invoice as paid' : 'cancel'} invoice.`,
+      }));
     }
   };
 
-  const handleDockCancel = async (invoice) => {
-    if (!activeBusinessId || !invoice?.id) return;
-    try {
-      await updateStatus({
-        businessId: activeBusinessId,
-        invoiceId: invoice.id,
-        status: 'cancelled',
-      }).unwrap();
-      dispatch(updateDockData({ status: 'cancelled' }));
-      dispatch(addToast({ type: 'success', message: 'Invoice cancelled.' }));
-    } catch (err) {
-      dispatch(addToast({ type: 'error', message: err?.data?.error?.message || 'Failed to cancel invoice.' }));
-    }
+  const requestDockStatusChange = (type) => (invoice) => {
+    setConfirmAction({ type, invoice });
   };
 
   const handleDockPdf = async (invoice) => {
@@ -183,7 +193,7 @@ export default function AppLayout() {
         onToggleCollapse={toggleCollapsed}
       />
 
-      <div className="main-col right">
+      <div className="app-layout__main-col">
         <TopNav
           onOpenUserSettings={handleOpenUserSettings}
           onOpenHelp={() => handleOpenDock('help')}
@@ -191,7 +201,7 @@ export default function AppLayout() {
           onToggleMobileNav={() => setMobileNavOpen((prev) => !prev)}
         />
 
-        <main className="main" id="main">
+        <main className="app-layout__main" id="main">
           <Outlet
             context={{
               openDock: handleOpenDock,
@@ -214,10 +224,42 @@ export default function AppLayout() {
         data={dock?.data}
         onToggleWide={handleToggleWide}
         onClose={handleCloseDock}
-        onEdit={handleDockEdit}
-        onIssue={handleDockIssue}
-        onCancel={handleDockCancel}
+        onEdit={can('invoice.edit_any') || can('invoice.edit_own') ? handleDockEdit : undefined}
+        onIssue={can('invoice.issue') ? requestDockStatusChange('issue') : undefined}
+        onMarkPaid={can('invoice.mark_paid') ? requestDockStatusChange('paid') : undefined}
+        onCancel={can('invoice.cancel') ? requestDockStatusChange('cancel') : undefined}
         onDownloadPdf={handleDockPdf}
+      />
+
+      <ConfirmDialog
+        isOpen={Boolean(confirmAction)}
+        onClose={() => {
+          if (!updatingStatus) setConfirmAction(null);
+        }}
+        onConfirm={handleDockStatusChange}
+        loading={updatingStatus}
+        title={
+          confirmAction?.type === 'issue'
+            ? 'Issue Invoice?'
+            : confirmAction?.type === 'paid'
+              ? 'Mark Invoice as Paid?'
+              : 'Cancel Invoice?'
+        }
+        confirmLabel={
+          confirmAction?.type === 'issue'
+            ? 'Issue Invoice'
+            : confirmAction?.type === 'paid'
+              ? 'Mark as Paid'
+              : 'Cancel Invoice'
+        }
+        confirmVariant={confirmAction?.type === 'paid' ? 'success' : confirmAction?.type === 'issue' ? 'primary' : 'danger'}
+        message={
+          confirmAction?.type === 'issue'
+            ? 'Once issued, this invoice will be locked from editing and finalized for billing. Do you want to issue this invoice?'
+            : confirmAction?.type === 'paid'
+              ? 'Are you sure you want to mark this invoice as paid? This action will record the payment and finalize the invoice status.'
+              : 'Are you sure you want to cancel this invoice? This action cannot be undone.'
+        }
       />
 
       {userSettingsOpen && (

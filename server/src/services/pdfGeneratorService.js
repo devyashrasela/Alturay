@@ -1,7 +1,7 @@
 const PDFDocument = require('pdfkit');
 const { Writable } = require('stream');
 const { getTemplate, resolveTemplateId } = require('./pdfTemplates');
-const { registerFonts, loadLogo } = require('./pdfTemplates/helpers');
+const { registerFonts, loadLogo, toPdfCompatibleImageUrl } = require('./pdfTemplates/helpers');
 
 const MAX_PAGE = 14400; // Acrobat's page-size limit in points
 const sink = () => new Writable({ write: (_chunk, _enc, done) => done() });
@@ -24,8 +24,11 @@ const generateInvoicePDF = async (invoice, business, res, opts = {}) => {
 
   const requestedTplId = opts.templateId || resolveTemplateId(invoice, biz);
   const tpl = getTemplate(requestedTplId, invoice.type);
+  const logoUrl = biz.logo_url || biz.logoUrl || biz.logo;
   const ctx = {
-    logo: tpl.kind === 'a4' && biz.logo_url ? await loadLogo(biz.logo_url) : null,
+    logo: tpl.kind === 'a4' && typeof logoUrl === 'string'
+      ? await loadLogo(toPdfCompatibleImageUrl(logoUrl))
+      : null,
   };
 
   let height;

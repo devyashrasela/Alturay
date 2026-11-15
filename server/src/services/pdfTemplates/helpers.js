@@ -83,6 +83,61 @@ const loadLogo = async (url) => {
   }
 };
 
+const toPdfCompatibleImageUrl = (url) => {
+  if (typeof url !== 'string' || !url) return null;
+  try {
+    const parsed = new URL(url);
+    if (!parsed.hostname.endsWith('cloudinary.com')) return url;
+    const segments = parsed.pathname.split('/');
+    const uploadIndex = segments.indexOf('upload');
+    if (uploadIndex === -1) return url;
+    const tail = segments.slice(uploadIndex + 1);
+    const versionIndex = tail.findIndex((segment) => /^v\d+$/.test(segment));
+    const transformationPattern = /^(?:c_(?:fill|crop|thumb|scale)|w_|h_|ar_|g_|x_|y_|z_|r_|f_|q_)/;
+    const firstAssetIndex = versionIndex >= 0
+      ? versionIndex
+      : tail.findIndex((segment) => !segment.includes(',') && !transformationPattern.test(segment));
+    const assetStart = firstAssetIndex >= 0 ? firstAssetIndex : tail.length;
+    const assetPath = tail.slice(assetStart);
+    if (assetPath.length > 0) {
+      segments.splice(uploadIndex + 1, tail.length, 'f_png', ...assetPath);
+      parsed.pathname = segments.join('/');
+    }
+    return parsed.toString();
+  } catch {
+    return null;
+  }
+};
+
+const drawBusinessLogo = (doc, logoBuffer, {
+  x,
+  y,
+  maxWidth = 120,
+  maxHeight = 56,
+  align = 'right',
+  valign = 'center',
+} = {}) => {
+  if (!logoBuffer) return false;
+  try {
+    const image = typeof doc.openImage === 'function' ? doc.openImage(logoBuffer) : null;
+    if (!image?.width || !image?.height) return false;
+
+    const scale = Math.min(maxWidth / image.width, maxHeight / image.height);
+    const drawWidth = image.width * scale;
+    const drawHeight = image.height * scale;
+    const drawX = align === 'right' ? x + maxWidth - drawWidth : x;
+    const drawY = valign === 'center' ? y + (maxHeight - drawHeight) / 2 : y;
+
+    doc.image(logoBuffer, drawX, drawY, {
+      width: drawWidth,
+      height: drawHeight,
+    });
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 const formatShippingAddress = (addr) => {
   if (!addr) return null;
   if (typeof addr === 'string') {
@@ -153,6 +208,8 @@ module.exports = {
   formatDate,
   totalsOf,
   loadLogo,
+  toPdfCompatibleImageUrl,
+  drawBusinessLogo,
   formatBusinessAddress,
   formatCustomerAddress,
   formatShippingAddress,

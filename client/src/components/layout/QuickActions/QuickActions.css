@@ -1,0 +1,114 @@
+.quick-actions {
+  position: relative;
+}
+
+.quick-actions__trigger {
+  width: 32px;
+  height: 32px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.quick-actions__trigger:hover,
+.quick-actions__trigger[aria-expanded='true'] {
+  background: var(--hover);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+.quick-actions__trigger .ic {
+  transition: transform 0.2s;
+}
+
+.quick-actions__trigger[aria-expanded='true'] .ic {
+  transform: rotate(45deg);
+}
+
+.quick-actions__trigger:focus-visible,
+.quick-actions__item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.quick-actions__menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 70;
+  width: 248px;
+  padding: 6px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel);
+  box-shadow: var(--shadow-lg);
+}
+
+.quick-actions__label {
+  height: 28px;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.quick-actions__item {
+  width: 100%;
+  height: 34px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: none;
+  color: var(--text-2);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.quick-actions__item .ic {
+  color: var(--icon);
+}
+
+.quick-actions__item:hover:not(:disabled) {
+  background: var(--hover);
+  color: var(--text);
+}
+
+.quick-actions__item:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.quick-actions__soon {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+
+@media (max-width: 420px) {
+  .quick-actions__menu {
+    position: fixed;
+    top: calc(var(--header-height, 49px) + 8px);
+    right: var(--space-4);
+    width: min(248px, calc(100vw - 32px));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quick-actions__trigger,
+  .quick-actions__trigger .ic {
+    transition: none;
+  }
+}

@@ -5,6 +5,7 @@ import StatusBadge from '../../ui/StatusBadge/StatusBadge';
 import { useGetInvoiceQuery } from '../../../store/api/invoiceApi';
 import { formatCurrency } from '../../../utils/formatCurrency';
 import { formatDate } from '../../../utils/formatDate';
+import { effectiveStatus } from '../../../utils/invoiceStatus';
 import './RightDock.css';
 
 /** Lightweight shimmer rows shown while line items are loading */
@@ -33,6 +34,7 @@ export default function RightDock({
   onClose,
   onEdit,
   onIssue,
+  onMarkPaid,
   onCancel,
   onDownloadPdf,
   onEditProduct,
@@ -60,6 +62,7 @@ export default function RightDock({
   const invoiceData = detailMatchesCurrent
     ? {
         ...fullInvoice,
+        status: data?.status || fullInvoice.status,
         business: fullInvoice.business || data?.business || activeBusiness,
       }
     : data
@@ -92,15 +95,16 @@ export default function RightDock({
             <div className="dock-a" id="dockA">
               {type === 'invoice' && invoiceData && (
                 <>
-                  {/* Draft: Edit, Issue, Cancel (danger red), PDF */}
+                  {/* Draft: Edit, Issue, PDF */}
                   {invoiceData.status === 'draft' && (
                     <>
                       {onEdit && (
                         <button
                           type="button"
-                          className="ib"
+                          className="dock-action"
                           title={invoiceData.type === 'bill' ? 'Edit bill' : 'Edit invoice'}
                           aria-label={invoiceData.type === 'bill' ? 'Edit bill' : 'Edit invoice'}
+                          data-tooltip={invoiceData.type === 'bill' ? 'Edit Bill' : 'Edit Invoice'}
                           onClick={() => onEdit(invoiceData)}
                         >
                           <Icon name="pencil" size={15} />
@@ -109,9 +113,10 @@ export default function RightDock({
                       {onIssue && (
                         <button
                           type="button"
-                          className="ib"
+                          className="dock-action dock-action--issue"
                           title={invoiceData.type === 'bill' ? 'Issue bill' : 'Issue invoice'}
                           aria-label={invoiceData.type === 'bill' ? 'Issue bill' : 'Issue invoice'}
+                          data-tooltip={invoiceData.type === 'bill' ? 'Issue Bill' : 'Issue Invoice'}
                           onClick={() => onIssue(invoiceData)}
                         >
                           <Icon name="send" size={15} />
@@ -120,9 +125,10 @@ export default function RightDock({
                       {onCancel && (
                         <button
                           type="button"
-                          className="ib danger"
+                          className="dock-action dock-action--danger"
                           title={invoiceData.type === 'bill' ? 'Cancel bill' : 'Cancel invoice'}
                           aria-label={invoiceData.type === 'bill' ? 'Cancel bill' : 'Cancel invoice'}
+                          data-tooltip={invoiceData.type === 'bill' ? 'Cancel Bill' : 'Cancel Invoice'}
                           onClick={() => onCancel(invoiceData)}
                         >
                           <Icon name="cancel" size={15} />
@@ -134,6 +140,7 @@ export default function RightDock({
                           className="ib"
                           title="Download PDF"
                           aria-label="Download PDF"
+                          data-tooltip="Download PDF"
                           onClick={() => onDownloadPdf(invoiceData)}
                         >
                           <Icon name="download" size={15} />
@@ -142,15 +149,28 @@ export default function RightDock({
                     </>
                   )}
 
-                  {/* Issued / Pending / Overdue: Cancel (danger red), PDF */}
-                  {(invoiceData.status === 'issued' || invoiceData.status === 'pending' || invoiceData.status === 'overdue') && (
+                  {/* Issued / Pending / Overdue: Mark Paid, Cancel, PDF */}
+                  {(invoiceData.status === 'issued' || invoiceData.status === 'pending' || invoiceData.status === 'unpaid' || invoiceData.status === 'overdue') && (
                     <>
+                      {onMarkPaid && (
+                        <button
+                          type="button"
+                          className="dock-action dock-action--success"
+                          title="Mark invoice as paid"
+                          aria-label="Mark invoice as paid"
+                          data-tooltip="Mark as Paid"
+                          onClick={() => onMarkPaid(invoiceData)}
+                        >
+                          <Icon name="check" size={15} />
+                        </button>
+                      )}
                       {onCancel && (
                         <button
                           type="button"
-                          className="ib danger"
+                          className="dock-action dock-action--danger"
                           title={invoiceData.type === 'bill' ? 'Cancel bill' : 'Cancel invoice'}
                           aria-label={invoiceData.type === 'bill' ? 'Cancel bill' : 'Cancel invoice'}
+                          data-tooltip={invoiceData.type === 'bill' ? 'Cancel Bill' : 'Cancel Invoice'}
                           onClick={() => onCancel(invoiceData)}
                         >
                           <Icon name="cancel" size={15} />
@@ -162,6 +182,7 @@ export default function RightDock({
                           className="ib"
                           title="Download PDF"
                           aria-label="Download PDF"
+                          data-tooltip="Download PDF"
                           onClick={() => onDownloadPdf(invoiceData)}
                         >
                           <Icon name="download" size={15} />
@@ -177,6 +198,7 @@ export default function RightDock({
                       className="ib"
                       title="Download PDF"
                       aria-label="Download PDF"
+                      data-tooltip="Download PDF"
                       onClick={() => onDownloadPdf(invoiceData)}
                     >
                       <Icon name="download" size={15} />
@@ -204,6 +226,7 @@ export default function RightDock({
                     className="ib"
                     title="Download PDF"
                     aria-label="Download PDF"
+                    data-tooltip="Download PDF"
                     onClick={() => onDownloadPdf(data)}
                   >
                     <Icon name="download" size={15} />
@@ -220,6 +243,7 @@ export default function RightDock({
                     className="ib"
                     title="Edit product"
                     aria-label="Edit product"
+                    data-tooltip="Edit Product"
                     onClick={() => handleEditProduct(data)}
                   >
                     <Icon name="pencil" size={15} />
@@ -231,6 +255,7 @@ export default function RightDock({
                     className="ib danger"
                     title="Delete product"
                     aria-label="Delete product"
+                    data-tooltip="Delete Product"
                     onClick={() => handleDeleteProduct(data)}
                   >
                     <Icon name="trash" size={15} />
@@ -247,6 +272,7 @@ export default function RightDock({
               id="dockX"
               aria-label={wide ? 'Collapse panel' : 'Expand panel'}
               title={wide ? 'Collapse panel' : 'Expand panel'}
+              data-tooltip={wide ? 'Collapse Panel' : 'Expand Panel'}
               onClick={onToggleWide}
             >
               <Icon name={wide ? 'shrink' : 'expand'} size={15} />
@@ -258,6 +284,7 @@ export default function RightDock({
               id="dockC"
               aria-label="Close panel"
               title="Close panel"
+              data-tooltip="Close"
               onClick={onClose}
             >
               <Icon name="xmark" size={16} />
@@ -484,7 +511,7 @@ export default function RightDock({
                     <div className="dock-invoice__identity">
                       <div className="dock-invoice__title-row">
                         <h2>{invoiceData.invoice_number}</h2>
-                        <StatusBadge status={invoiceData.status} />
+                        <StatusBadge status={effectiveStatus(invoiceData)} />
                       </div>
                       <div className="dock-invoice__sub">
                         {invoiceData.type === 'bill' ? 'Vendor Bill' : 'Customer Invoice'} · {invoiceData.business?.name || 'Alturay'}

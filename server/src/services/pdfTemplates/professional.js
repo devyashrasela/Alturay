@@ -1,4 +1,15 @@
-const { FONT, numberFmt, moneyFmt, formatDate, totalsOf, formatBusinessAddress, formatCustomerAddress, formatShippingAddress, formatPaymentMethods } = require('./helpers');
+const {
+  FONT,
+  numberFmt,
+  moneyFmt,
+  formatDate,
+  totalsOf,
+  formatBusinessAddress,
+  formatCustomerAddress,
+  formatShippingAddress,
+  formatPaymentMethods,
+  drawBusinessLogo,
+} = require('./helpers');
 
 const pageOptions = () => ({
   size: 'A4',
@@ -8,7 +19,7 @@ const pageOptions = () => ({
 const ACCENT_COLOR = '#4C7A5D';
 const ACCENT_LIGHT = '#F0F5F1';
 
-const render = (doc, invoice, business) => {
+const render = (doc, invoice, business, ctx = {}) => {
   const margin = 45;
   const contentLeft = margin + 20; // Room for left accent bar
   const pageWidth = doc.page.width - contentLeft - margin;
@@ -26,6 +37,14 @@ const render = (doc, invoice, business) => {
   // ── Header ──
   doc.y = margin + 5;
   const headerY = doc.y;
+  if (ctx.logo) {
+    drawBusinessLogo(doc, ctx.logo, {
+      x: contentLeft + pageWidth - 110,
+      y: headerY,
+      maxWidth: 110,
+      maxHeight: 48,
+    });
+  }
 
   // Left: Invoice No & Due Date
   doc.font(FONT.regular).fontSize(9.5).fillColor('#4B5563')
@@ -39,11 +58,11 @@ const render = (doc, invoice, business) => {
 
   // Right: Title & Description
   doc.font(FONT.bold).fontSize(30).fillColor('#111827')
-    .text(typeLabel, contentLeft, headerY - 5, { width: pageWidth, align: 'right' });
+    .text(typeLabel, contentLeft, headerY - 5, { width: pageWidth - 120, align: 'right' });
 
   if (invoice.description) {
     doc.font(FONT.regular).fontSize(9.5).fillColor('#4B5563')
-      .text(invoice.description, contentLeft, doc.y, { width: pageWidth, align: 'right' });
+      .text(invoice.description, contentLeft, doc.y, { width: pageWidth - 120, align: 'right' });
   }
 
   doc.y = Math.max(doc.y, headerY + 50);

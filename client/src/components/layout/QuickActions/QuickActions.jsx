@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Icon from '../../ui/Icon/Icon';
 import { QUICK_ACTIONS } from '../navConfig';
 import { usePermissions } from '../../../hooks/usePermissions';
+import './QuickActions.css';
 
 export default function QuickActions() {
   const navigate = useNavigate();
@@ -26,10 +27,10 @@ export default function QuickActions() {
       }
     };
 
-    document.addEventListener('mousedown', handlePointer);
+    document.addEventListener('pointerdown', handlePointer);
     document.addEventListener('keydown', handleKey);
     return () => {
-      document.removeEventListener('mousedown', handlePointer);
+      document.removeEventListener('pointerdown', handlePointer);
       document.removeEventListener('keydown', handleKey);
     };
   }, [open]);
@@ -45,36 +46,47 @@ export default function QuickActions() {
   };
 
   return (
-    <div ref={containerRef}>
+    <div className="quick-actions" ref={containerRef}>
       <button
-        className="fab"
-        id="fab"
+        className="quick-actions__trigger"
+        id="quick-actions-trigger"
         type="button"
         aria-label="Quick actions"
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-controls="qa"
-        onClick={() => setOpen((prev) => !prev)}
+        aria-controls="quick-actions-menu"
+        onClick={(event) => {
+          event.stopPropagation();
+          setOpen((prev) => !prev);
+        }}
       >
         <Icon name="plus" size={18} strokeWidth={2.2} />
       </button>
 
       {open && (
-        <div className="pop qa" id="qa" role="menu" aria-label="Quick actions">
-          <div className="pop__label">Create</div>
+        <div
+          className="quick-actions__menu"
+          id="quick-actions-menu"
+          role="menu"
+          aria-label="Quick actions"
+        >
+          <div className="quick-actions__label">Create</div>
           {visibleActions.map((action) => (
             <button
               key={action.label}
               type="button"
               role="menuitem"
-              className="pop__item"
+              className="quick-actions__item"
               disabled={action.soon}
               title={action.soon ? 'Available in a later update' : undefined}
-              onClick={() => handleAction(action)}
+              onClick={(event) => {
+                event.stopPropagation();
+                handleAction(action);
+              }}
             >
               <Icon name={action.icon} size={16} />
               <span>{action.label}</span>
-              {action.soon && <span className="soon">Soon</span>}
+              {action.soon && <span className="quick-actions__soon">Soon</span>}
             </button>
           ))}
         </div>

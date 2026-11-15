@@ -3,7 +3,16 @@ import Button from '../Button/Button';
 import { AlertTriangle } from 'lucide-react';
 import '../Modal/Modal.css';
 
-export default function ConfirmDialog({ isOpen, onClose, onConfirm, title, message, confirmLabel = 'Delete', loading = false }) {
+export default function ConfirmDialog({
+  isOpen,
+  onClose,
+  onConfirm,
+  title,
+  message,
+  confirmLabel = 'Delete',
+  confirmVariant = 'danger',
+  loading = false,
+}) {
   return (
     <Modal
       isOpen={isOpen}
@@ -12,7 +21,7 @@ export default function ConfirmDialog({ isOpen, onClose, onConfirm, title, messa
       footer={
         <>
           <Button variant="secondary" onClick={onClose} disabled={loading}>Cancel</Button>
-          <Button variant="danger" onClick={onConfirm} loading={loading}>{confirmLabel}</Button>
+          <Button variant={confirmVariant} onClick={onConfirm} loading={loading}>{confirmLabel}</Button>
         </>
       }
     >

@@ -1,7 +1,31 @@
 import { createSlice } from '@reduxjs/toolkit';
 
+const getStoredBusinessId = () => {
+  try {
+    return localStorage.getItem('alturay_active_business') || null;
+  } catch {
+    return null;
+  }
+};
+
+const persistBusinessId = (id) => {
+  try {
+    localStorage.setItem('alturay_active_business', id);
+  } catch {
+    // Storage can be unavailable; Redux remains the source of truth.
+  }
+};
+
+const removeStoredBusinessId = () => {
+  try {
+    localStorage.removeItem('alturay_active_business');
+  } catch {
+    // Storage can be unavailable; Redux remains the source of truth.
+  }
+};
+
 const initialState = {
-  activeBusinessId: localStorage.getItem('alturay_active_business') || null,
+  activeBusinessId: getStoredBusinessId(),
   activeBusiness: null,
   businesses: [],
 };
@@ -16,7 +40,7 @@ const businessSlice = createSlice({
     setActiveBusiness: (state, action) => {
       state.activeBusinessId = action.payload.id;
       state.activeBusiness = action.payload;
-      localStorage.setItem('alturay_active_business', action.payload.id);
+      persistBusinessId(action.payload.id);
     },
     addBusiness: (state, action) => {
       state.businesses.push(action.payload);
@@ -32,7 +56,7 @@ const businessSlice = createSlice({
       state.activeBusinessId = null;
       state.activeBusiness = null;
       state.businesses = [];
-      localStorage.removeItem('alturay_active_business');
+      removeStoredBusinessId();
     },
   },
 });

@@ -26,24 +26,22 @@
   --pwo: 62vw;
 }
 
-/* ── Center Content Column (.right / .main-col) ── */
-.main-col,
-.right {
+/* ── Center Content Column ── */
+.app-layout__main-col {
   display: flex;
   flex-direction: column;
   min-width: 0;
   min-height: 100vh;
 }
 
-.main {
+.app-layout__main {
   flex: 1;
   padding: 36px 20px 64px 28px;
   min-width: 0;
 }
 
 /* ── Minimalist Footer ── */
-.app-footer,
-footer {
+.app-footer {
   height: 42px;
   flex: none;
   display: flex;
@@ -80,7 +78,7 @@ footer {
   .dock-in {
     width: 100%;
   }
-  .main {
+  .app-layout__main {
     padding: 24px 16px 48px;
   }
 }

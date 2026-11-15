@@ -1,11 +1,22 @@
-const { FONT, numberFmt, moneyFmt, formatDate, totalsOf, formatBusinessAddress, formatCustomerAddress, formatShippingAddress, formatPaymentMethods } = require('./helpers');
+const {
+  FONT,
+  numberFmt,
+  moneyFmt,
+  formatDate,
+  totalsOf,
+  formatBusinessAddress,
+  formatCustomerAddress,
+  formatShippingAddress,
+  formatPaymentMethods,
+  drawBusinessLogo,
+} = require('./helpers');
 
 const pageOptions = () => ({
   size: 'A4',
   margin: 50,
 });
 
-const render = (doc, invoice, business) => {
+const render = (doc, invoice, business, ctx = {}) => {
   const margin = 50;
   const pageWidth = doc.page.width - margin * 2;
   const cur = business.currency || 'INR';
@@ -13,7 +24,16 @@ const render = (doc, invoice, business) => {
 
   // ── Header: Title & Meta ──
   doc.y = margin;
-  doc.font(FONT.bold).fontSize(28).fillColor('#111827').text(typeLabel, margin, doc.y);
+  if (ctx.logo) {
+    drawBusinessLogo(doc, ctx.logo, {
+      x: margin + pageWidth - 110,
+      y: margin,
+      maxWidth: 110,
+      maxHeight: 48,
+    });
+  }
+  doc.font(FONT.bold).fontSize(28).fillColor('#111827')
+    .text(typeLabel, margin, doc.y, { width: pageWidth - 130 });
   doc.font(FONT.regular).fontSize(10).fillColor('#374151');
   doc.text(`${typeLabel} NO: ${invoice.invoice_number}`);
   doc.text(formatDate(invoice.issue_date).toUpperCase());

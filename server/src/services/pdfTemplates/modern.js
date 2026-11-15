@@ -1,4 +1,15 @@
-const { FONT, numberFmt, moneyFmt, formatDate, totalsOf, formatBusinessAddress, formatCustomerAddress, formatShippingAddress, formatPaymentMethods } = require('./helpers');
+const {
+  FONT,
+  numberFmt,
+  moneyFmt,
+  formatDate,
+  totalsOf,
+  formatBusinessAddress,
+  formatCustomerAddress,
+  formatShippingAddress,
+  formatPaymentMethods,
+  drawBusinessLogo,
+} = require('./helpers');
 
 const pageOptions = () => ({
   size: 'A4',
@@ -17,33 +28,39 @@ const render = (doc, invoice, business, ctx = {}) => {
   // ── Header: Title & Logo ──
   doc.y = margin;
   const headerY = doc.y;
+  const logoBoxSize = 56;
+  const headerTextWidth = pageWidth - logoBoxSize - 20;
 
   // Title on left
   doc.font(FONT.bold).fontSize(26).fillColor('#111827')
-    .text(typeLabel, margin, headerY);
+    .text(typeLabel, margin, headerY, { width: headerTextWidth });
   doc.font(FONT.regular).fontSize(9.5).fillColor('#4B5563');
-  doc.text(`${typeLabel} Number: #${invoice.invoice_number}`);
-  doc.text(`${typeLabel} Date: ${formatDate(invoice.issue_date)}`);
+  doc.text(`${typeLabel} Number: #${invoice.invoice_number}`, margin, doc.y, { width: headerTextWidth });
+  doc.text(`${typeLabel} Date: ${formatDate(invoice.issue_date)}`, margin, doc.y, { width: headerTextWidth });
   if (invoice.due_date) {
-    doc.text(`Due Date: ${formatDate(invoice.due_date)}`);
+    doc.text(`Due Date: ${formatDate(invoice.due_date)}`, margin, doc.y, { width: headerTextWidth });
   }
   if (invoice.po_number) {
-    doc.text(`PO Number: ${invoice.po_number}`);
+    doc.text(`PO Number: ${invoice.po_number}`, margin, doc.y, { width: headerTextWidth });
   }
   if (invoice.description) {
     doc.moveDown(0.2);
     doc.font(FONT.regular).fontSize(9).fillColor('#6B7280')
-      .text(invoice.description, margin, doc.y, { width: pageWidth * 0.6 });
+      .text(invoice.description, margin, doc.y, { width: headerTextWidth });
   }
 
   // Logo / Business mark on right
-  const logoBoxSize = 56;
   const logoX = margin + pageWidth - logoBoxSize;
 
   if (ctx.logo) {
-    try {
-      doc.image(ctx.logo, logoX, headerY, { fit: [logoBoxSize, logoBoxSize], align: 'right' });
-    } catch {
+    if (!drawBusinessLogo(doc, ctx.logo, {
+      x: logoX,
+      y: headerY,
+      maxWidth: logoBoxSize,
+      maxHeight: logoBoxSize,
+      align: 'right',
+      valign: 'center',
+    })) {
       drawLogoTile(doc, business.name, logoX, headerY, logoBoxSize);
     }
   } else {
@@ -121,7 +138,14 @@ const render = (doc, invoice, business, ctx = {}) => {
   const items = invoice.items || [];
   items.forEach((item) => {
     const rY = doc.y;
-    const rowH = item.description ? 34 : 22;
+    const descWidth = colW.desc - 8;
+    doc.font(FONT.regular).fontSize(9);
+    const itemHeight = doc.heightOfString(item.item_name || '', { width: descWidth });
+    doc.fontSize(7.5);
+    const descriptionHeight = item.description
+      ? doc.heightOfString(item.description, { width: descWidth })
+      : 0;
+    const rowH = Math.max(22, 10 + itemHeight + (descriptionHeight ? descriptionHeight + 4 : 0));
 
     // Row border
     doc.save().lineWidth(0.6).strokeColor('#D1D5DB')
@@ -129,10 +153,10 @@ const render = (doc, invoice, business, ctx = {}) => {
 
     doc.font(FONT.regular).fontSize(9).fillColor('#1F2937');
     x = margin + 8;
-    doc.text(item.item_name, x, rY + 5, { width: colW.desc - 8 });
+    doc.text(item.item_name || '', x, rY + 5, { width: descWidth });
     if (item.description) {
       doc.font(FONT.regular).fontSize(7.5).fillColor('#6B7280')
-        .text(item.description, x, rY + 18, { width: colW.desc - 8 });
+        .text(item.description, x, rY + 5 + itemHeight + 2, { width: descWidth });
     }
 
     x += colW.desc;
