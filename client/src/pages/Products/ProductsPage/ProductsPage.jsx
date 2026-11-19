@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useOutletContext } from 'react-router-dom';
 import {
   useGetProductsQuery,
   useCreateProductMutation,
   useUpdateProductMutation,
   useDeleteProductMutation,
 } from '../../../store/api/productApi';
-import { addToast } from '../../../store/slices/uiSlice';
+import { addToast, openDock, closeDock, updateDockData } from '../../../store/slices/uiSlice';
 import { usePermissions } from '../../../hooks/usePermissions';
 import Icon from '../../../components/ui/Icon/Icon';
 import DataTable from '../../../components/ui/DataTable';
@@ -31,7 +31,9 @@ const EMPTY_FORM = {
 export default function ProductsPage() {
   const dispatch = useDispatch();
   const location = useLocation();
+  const { registerDockActions } = useOutletContext() || {};
   const { activeBusinessId, activeBusiness } = useSelector((s) => s.business);
+  const { dock } = useSelector((s) => s.ui);
   const { can } = usePermissions();
 
   const canCreate = can('product.create');
@@ -55,6 +57,7 @@ export default function ProductsPage() {
 
   const products = data?.data?.products || [];
   const meta = data?.meta || {};
+  const selectedProductId = dock?.open && dock?.type === 'product' ? dock.data?.id : null;
 
   // Auto-open create modal if navigated with ?add=1 or ?create=1 and permitted
   useEffect(() => {
@@ -73,7 +76,7 @@ export default function ProductsPage() {
     setShowModal(true);
   };
 
-  const openEdit = (p) => {
+  const openEdit = useCallback((p) => {
     setEditProduct(p);
     setForm({
       name: p.name,
@@ -84,17 +87,45 @@ export default function ProductsPage() {
       unit: p.unit || 'pcs',
     });
     setShowModal(true);
+  }, []);
+
+  // Expose product edit/delete to the right dock, permission-gated like the row actions
+  useEffect(() => {
+    if (!registerDockActions) return undefined;
+    return registerDockActions({
+      onEdit: canUpdate ? openEdit : undefined,
+      onDelete: canDelete ? setDeleteProduct : undefined,
+    });
+  }, [registerDockActions, openEdit, canUpdate, canDelete]);
+
+  const handleRowClick = (product) => {
+    if (selectedProductId === product.id) {
+      dispatch(closeDock());
+    } else {
+      dispatch(
+        openDock({
+          type: 'product',
+          data: {
+            ...product,
+            business: activeBusiness,
+          },
+        })
+      );
+    }
   };
 
   const handleSave = async (e) => {
     e.preventDefault();
     try {
       if (editProduct) {
-        await updateProduct({
+        const result = await updateProduct({
           businessId: activeBusinessId,
           productId: editProduct.id,
           ...form,
         }).unwrap();
+        if (editProduct.id === selectedProductId && result?.data?.product) {
+          dispatch(updateDockData({ ...result.data.product, business: activeBusiness }));
+        }
         dispatch(addToast({ type: 'success', message: 'Product updated.' }));
       } else {
         await createProduct({ businessId: activeBusinessId, ...form }).unwrap();
@@ -117,6 +148,9 @@ export default function ProductsPage() {
         businessId: activeBusinessId,
         productId: deleteProduct.id,
       }).unwrap();
+      if (deleteProduct.id === selectedProductId) {
+        dispatch(closeDock());
+      }
       dispatch(addToast({ type: 'success', message: 'Product deleted.' }));
       setDeleteProduct(null);
     } catch {
@@ -260,6 +294,8 @@ export default function ProductsPage() {
           }}
           columns={columns}
           data={products}
+          onRowClick={handleRowClick}
+          selectedId={selectedProductId}
         />
 
         <DataTable.Pagination

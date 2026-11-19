@@ -46,6 +46,7 @@ export default function AppLayout() {
   const [userSettingsOpen, setUserSettingsOpen] = useState(false);
   const [userSettingsTab, setUserSettingsTab] = useState('profile');
   const [confirmAction, setConfirmAction] = useState(null);
+  const [dockActions, setDockActions] = useState(null);
 
   // Track previous values for auto-close logic
   const prevPathnameRef = useRef(location.pathname);
@@ -105,6 +106,15 @@ export default function AppLayout() {
   const handleToggleWide = useCallback(() => {
     dispatch(toggleDockWide());
   }, [dispatch]);
+
+  // Pages register their own contextual dock actions (e.g. product edit/delete).
+  // Handlers stay in page state instead of Redux so dock data remains serializable.
+  const registerDockActions = useCallback((actions) => {
+    setDockActions(actions);
+    return () => {
+      setDockActions((current) => (current === actions ? null : current));
+    };
+  }, []);
 
   // Keyboard escape for dock
   useEffect(() => {
@@ -208,6 +218,7 @@ export default function AppLayout() {
               closeDock: handleCloseDock,
               isDockOpen: Boolean(dock?.open),
               dockData: dock?.data,
+              registerDockActions,
             }}
           />
         </main>
@@ -229,6 +240,8 @@ export default function AppLayout() {
         onMarkPaid={can('invoice.mark_paid') ? requestDockStatusChange('paid') : undefined}
         onCancel={can('invoice.cancel') ? requestDockStatusChange('cancel') : undefined}
         onDownloadPdf={handleDockPdf}
+        onEditProduct={dockActions?.onEdit}
+        onDeleteProduct={dockActions?.onDelete}
       />
 
       <ConfirmDialog
