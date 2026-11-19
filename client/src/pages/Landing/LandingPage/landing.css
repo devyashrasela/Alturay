@@ -462,9 +462,15 @@ body:has(.landing-page) {
    ═══════════════════════════════════════════════════════════ */
 
 .landing-hero {
+  /* The artwork is the scroll-expansion stage, so its intrinsic width is
+     derived once here and reused to keep its aspect ratio matched to the
+     viewport (see `.landing-hero__stack`). */
+  --hero-gutter: clamp(20px, 4.2vw, 60px);
+  --hero-art-width: min(calc(100vw - var(--hero-gutter) * 2), 1360px);
+
   position: relative;
   padding:
-    calc(var(--landing-nav-height) + clamp(24px, 3.4vw, 42px)) clamp(20px, 4.2vw, 60px) clamp(68px, 8vw, 116px);
+    calc(var(--landing-nav-height) + clamp(24px, 3.4vw, 42px)) var(--hero-gutter) clamp(68px, 8vw, 116px);
   text-align: center;
 }
 
@@ -548,7 +554,18 @@ body:has(.landing-page) {
 
 .landing-hero__stack {
   position: relative;
+  /* Match the artwork's aspect ratio to the viewport. The hero is scaled to
+     cover the stage while it expands, so a wide-and-short panel gets cropped
+     at the sides and pushes the floating cards out of frame. Sizing the panel
+     to `artWidth * (100dvh / 100vw)` keeps the cover crop negligible at every
+     screen size. `tan(atan2())` is the portable way to divide two lengths in
+     CSS, since `calc()` cannot divide by a length directly. The original
+     clamp stays as a floor so ultrawide viewports keep a substantial panel. */
   height: clamp(450px, 43vw, 590px);
+  height: max(
+    clamp(450px, 43vw, 590px),
+    calc(var(--hero-art-width) * tan(atan2(100dvh, 100vw)))
+  );
   isolation: isolate;
 }
 
@@ -903,6 +920,18 @@ body:has(.landing-page) {
 
 /* ── Hero responsive ──────────────────────────────────────── */
 
+/* The docked navbar grows at this width, so the floating cards start lower to
+   stay clear of it once the artwork has expanded behind the header. */
+@media (max-width: 960px) {
+  .landing-hero__ui--products {
+    top: 15%;
+  }
+
+  .landing-hero__ui--invoice {
+    top: 18.5%;
+  }
+}
+
 @media (max-width: 760px) {
   .landing-page {
     --hero-scroll-distance: 95dvh;
@@ -910,7 +939,8 @@ body:has(.landing-page) {
   }
 
   .landing-hero {
-    padding: calc(var(--landing-nav-height) + 20px) 20px 76px;
+    --hero-gutter: 20px;
+    padding: calc(var(--landing-nav-height) + 20px) var(--hero-gutter) 76px;
   }
 
   .landing-hero__title {
@@ -981,27 +1011,27 @@ body:has(.landing-page) {
   }
 
   .landing-hero__ui {
-    width: clamp(132px, 40vw, 190px);
+    width: clamp(124px, 38vw, 190px);
     padding: 11px 12px;
     border-radius: 13px;
   }
 
+  /* The panel is near viewport width once expanded, so these insets have to
+     leave room for the cover crop (and the cards' own rotation). */
   .landing-hero__ui--products {
     --ui-rotate: -1.6deg;
-    left: 8px;
-    top: 26px;
+    left: 22px;
   }
 
   .landing-hero__ui--invoice {
     --ui-rotate: 1.6deg;
-    right: 8px;
-    top: 44px;
+    right: 22px;
   }
 
   .landing-hero__ui--access {
     --ui-rotate: -1deg;
     width: clamp(176px, 52vw, 220px);
-    bottom: 20px;
+    bottom: 7%;
   }
 }
 
