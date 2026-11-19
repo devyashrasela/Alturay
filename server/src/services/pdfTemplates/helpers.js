@@ -100,13 +100,34 @@ const toPdfCompatibleImageUrl = (url) => {
     const assetStart = firstAssetIndex >= 0 ? firstAssetIndex : tail.length;
     const assetPath = tail.slice(assetStart);
     if (assetPath.length > 0) {
-      segments.splice(uploadIndex + 1, tail.length, 'f_png', ...assetPath);
+      // fl_png32 forces an 8-bit RGBA PNG. PDFKit mis-builds the alpha mask for
+      // palette PNGs with a bit depth below 8, which renders the logo clipped.
+      segments.splice(uploadIndex + 1, tail.length, 'f_png,fl_png32', ...assetPath);
       parsed.pathname = segments.join('/');
     }
     return parsed.toString();
   } catch {
     return null;
   }
+};
+
+// PDFKit 0.16 derives an indexed PNG's alpha mask assuming one palette index per
+// decoded byte. png-js returns rows packed for bit depths below 8, so a 1/2/4-bit
+// palette image with transparency loses half of its pixels and mis-reads the rest.
+const hasUnsupportedIndexedAlpha = (buffer) => {
+  if (!Buffer.isBuffer(buffer) || buffer.length < 33) return false;
+  if (buffer.readUInt32BE(0) !== 0x89504e47) return false; // not a PNG
+  if (buffer[25] !== 3 || buffer[24] >= 8) return false; // needs indexed + bit depth < 8
+
+  let offset = 8;
+  while (offset + 8 <= buffer.length) {
+    const length = buffer.readUInt32BE(offset);
+    const type = buffer.toString('ascii', offset + 4, offset + 8);
+    if (type === 'tRNS') return true;
+    if (type === 'IDAT' || type === 'IEND') return false;
+    offset += 12 + length;
+  }
+  return false;
 };
 
 const drawBusinessLogo = (doc, logoBuffer, {
@@ -117,7 +138,7 @@ const drawBusinessLogo = (doc, logoBuffer, {
   align = 'right',
   valign = 'center',
 } = {}) => {
-  if (!logoBuffer) return false;
+  if (!logoBuffer || hasUnsupportedIndexedAlpha(logoBuffer)) return false;
   try {
     const image = typeof doc.openImage === 'function' ? doc.openImage(logoBuffer) : null;
     if (!image?.width || !image?.height) return false;
