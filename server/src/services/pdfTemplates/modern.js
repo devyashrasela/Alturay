@@ -120,25 +120,44 @@ const render = (doc, invoice, business, ctx = {}) => {
     qty: pageWidth * 0.12,
     amount: pageWidth * 0.22,
   };
+  const cellPad = 8;
+  const grid = { color: '#111827', width: 0.7 };
+  // Left edge of every column, used for both the text boxes and the column rules.
+  const colX = [
+    margin,
+    margin + colW.desc,
+    margin + colW.desc + colW.price,
+    margin + colW.desc + colW.price + colW.qty,
+  ];
 
-  // Header border box
-  doc.save().lineWidth(1).strokeColor('#111827')
-    .rect(margin, tableTop, pageWidth, 22).stroke().restore();
+  // Vertical rules at each column boundary so the table reads as a grid.
+  const drawColumnRules = (top, height) => {
+    doc.save().lineWidth(grid.width).strokeColor(grid.color);
+    colX.slice(1).forEach((lineX) => {
+      doc.moveTo(lineX, top).lineTo(lineX, top + height).stroke();
+    });
+    doc.restore();
+  };
+
+  // Header row
+  const headerH = 22;
+  doc.save().lineWidth(grid.width).strokeColor(grid.color)
+    .rect(margin, tableTop, pageWidth, headerH).stroke().restore();
+  drawColumnRules(tableTop, headerH);
 
   doc.font(FONT.bold).fontSize(9).fillColor('#111827');
-  let x = margin + 8;
-  doc.text('Item & Description', x, tableTop + 6, { width: colW.desc - 8 }); x += colW.desc;
-  doc.text('Unit Price', x, tableTop + 6, { width: colW.price, align: 'right' }); x += colW.price;
-  doc.text('Qty', x, tableTop + 6, { width: colW.qty, align: 'center' }); x += colW.qty;
-  doc.text('Amount', x, tableTop + 6, { width: colW.amount - 8, align: 'right' });
+  doc.text('Item & Description', colX[0] + cellPad, tableTop + 6, { width: colW.desc - cellPad * 2 });
+  doc.text('Unit Price', colX[1], tableTop + 6, { width: colW.price - cellPad, align: 'right' });
+  doc.text('Qty', colX[2], tableTop + 6, { width: colW.qty, align: 'center' });
+  doc.text('Amount', colX[3], tableTop + 6, { width: colW.amount - cellPad, align: 'right' });
 
-  doc.y = tableTop + 22;
+  doc.y = tableTop + headerH;
 
   // Rows
   const items = invoice.items || [];
   items.forEach((item) => {
     const rY = doc.y;
-    const descWidth = colW.desc - 8;
+    const descWidth = colW.desc - cellPad * 2;
     doc.font(FONT.regular).fontSize(9);
     const itemHeight = doc.heightOfString(item.item_name || '', { width: descWidth });
     doc.fontSize(7.5);
@@ -147,23 +166,22 @@ const render = (doc, invoice, business, ctx = {}) => {
       : 0;
     const rowH = Math.max(22, 10 + itemHeight + (descriptionHeight ? descriptionHeight + 4 : 0));
 
-    // Row border
-    doc.save().lineWidth(0.6).strokeColor('#D1D5DB')
+    // Row border + column rules, matching the header grid
+    doc.save().lineWidth(grid.width).strokeColor(grid.color)
       .rect(margin, rY, pageWidth, rowH).stroke().restore();
+    drawColumnRules(rY, rowH);
 
     doc.font(FONT.regular).fontSize(9).fillColor('#1F2937');
-    x = margin + 8;
-    doc.text(item.item_name || '', x, rY + 5, { width: descWidth });
+    doc.text(item.item_name || '', colX[0] + cellPad, rY + 5, { width: descWidth });
     if (item.description) {
       doc.font(FONT.regular).fontSize(7.5).fillColor('#6B7280')
-        .text(item.description, x, rY + 5 + itemHeight + 2, { width: descWidth });
+        .text(item.description, colX[0] + cellPad, rY + 5 + itemHeight + 2, { width: descWidth });
     }
 
-    x += colW.desc;
     doc.font(FONT.regular).fontSize(9).fillColor('#1F2937');
-    doc.text(moneyFmt(item.unit_price, cur), x, rY + 6, { width: colW.price, align: 'right' }); x += colW.price;
-    doc.text(String(item.quantity), x, rY + 6, { width: colW.qty, align: 'center' }); x += colW.qty;
-    doc.font(FONT.bold).text(moneyFmt(item.line_total, cur), x, rY + 6, { width: colW.amount - 8, align: 'right' });
+    doc.text(moneyFmt(item.unit_price, cur), colX[1], rY + 6, { width: colW.price - cellPad, align: 'right' });
+    doc.text(String(item.quantity), colX[2], rY + 6, { width: colW.qty, align: 'center' });
+    doc.font(FONT.bold).text(moneyFmt(item.line_total, cur), colX[3], rY + 6, { width: colW.amount - cellPad, align: 'right' });
 
     doc.y = rY + rowH;
   });
