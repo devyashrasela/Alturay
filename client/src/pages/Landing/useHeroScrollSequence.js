@@ -19,27 +19,55 @@ const COPY_FADE_END = 0.3;
 const COPY_HIDE_AT = 0.31;
 
 const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
+const COMPACT_QUERY = '(max-width: 760px)';
 
 function getMotionPreference() {
   if (typeof window === 'undefined') return false;
   return !window.matchMedia(REDUCED_MOTION_QUERY).matches;
 }
 
+function getCompactPreference() {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia(COMPACT_QUERY).matches;
+}
+
+// While the stage is sticky its viewport top is clamped to zero; before and
+// after the pin it follows the sequence edges. Phones use this cached result
+// instead of reading layout from the DOM on every scroll frame.
+function getStageTop(geometry, scrollY) {
+  const pinStart = geometry.sequenceTop;
+  const pinEnd = geometry.sequenceTop + geometry.scrollLength;
+  if (scrollY < pinStart) return pinStart - scrollY;
+  if (scrollY > pinEnd) return pinEnd - scrollY;
+  return 0;
+}
+
 /**
  * Drives the hero's scroll choreography with a single rAF-throttled scroll
- * listener. All visual values are exposed as CSS custom properties on the
- * sticky stage so the browser can keep the animation on the compositor.
+ * listener. Desktop exposes CSS custom properties for the whole composition.
+ * Phones write only the artwork's transform directly: the compact layout keeps
+ * its nested layers static, so there is no subtree style recalculation on
+ * scroll and the transform stays on the compositor.
  */
 export default function useHeroScrollSequence({ sequenceRef, stageRef }) {
   const [motionEnabled, setMotionEnabled] = useState(getMotionPreference);
+  const [compact, setCompact] = useState(getCompactPreference);
 
   useEffect(() => {
-    const query = window.matchMedia(REDUCED_MOTION_QUERY);
-    const handleChange = () => setMotionEnabled(!query.matches);
+    const motionQuery = window.matchMedia(REDUCED_MOTION_QUERY);
+    const compactQuery = window.matchMedia(COMPACT_QUERY);
+    const handleChange = () => {
+      setMotionEnabled(!motionQuery.matches);
+      setCompact(compactQuery.matches);
+    };
 
     handleChange();
-    query.addEventListener('change', handleChange);
-    return () => query.removeEventListener('change', handleChange);
+    motionQuery.addEventListener('change', handleChange);
+    compactQuery.addEventListener('change', handleChange);
+    return () => {
+      motionQuery.removeEventListener('change', handleChange);
+      compactQuery.removeEventListener('change', handleChange);
+    };
   }, []);
 
   useEffect(() => {
@@ -62,6 +90,10 @@ export default function useHeroScrollSequence({ sequenceRef, stageRef }) {
     let measureFrame = 0;
     let disposed = false;
     let geometry = null;
+    let navIsOverArt = null;
+    let copyIsHidden = null;
+    let lastProgress = '';
+    let lastExpand = '';
 
     const measureGeometry = () => {
       // Temporarily remove the animated transform (and the panel's own
@@ -98,44 +130,82 @@ export default function useHeroScrollSequence({ sequenceRef, stageRef }) {
         finalShiftY,
         navHeight,
         scrollLength,
+        // Cached once so phone scroll frames never read layout.
+        sequenceTop: sequence.getBoundingClientRect().top + window.scrollY,
       };
 
-      stage.style.setProperty('--hero-scale', finalScale.toFixed(4));
-      stage.style.setProperty('--hero-shift-y', `${finalShiftY.toFixed(2)}px`);
+      if (!compact) {
+        stage.style.setProperty('--hero-scale', finalScale.toFixed(4));
+        stage.style.setProperty('--hero-shift-y', `${finalShiftY.toFixed(2)}px`);
+      }
+    };
+
+    const setNavState = (next) => {
+      if (next === navIsOverArt) return;
+      navIsOverArt = next;
+      page?.classList.toggle('is-hero-art-under-nav', next);
+      stage.classList.toggle('is-art-under-nav', next);
+    };
+
+    const setCopyHidden = (next) => {
+      if (next === copyIsHidden) return;
+      copyIsHidden = next;
+      stage.classList.toggle('is-copy-hidden', next);
     };
 
     const applyProgress = () => {
       scrollFrame = 0;
       if (!geometry) return;
 
-      const sequenceTop = sequence.getBoundingClientRect().top;
-      const stageRect = stage.getBoundingClientRect();
-      const progress = clamp01(-sequenceTop / geometry.scrollLength);
+      let stageTop;
+      let progress;
+      if (compact) {
+        progress = clamp01((window.scrollY - geometry.sequenceTop) / geometry.scrollLength);
+        stageTop = getStageTop(geometry, window.scrollY);
+      } else {
+        const sequenceTop = sequence.getBoundingClientRect().top;
+        const stageRect = stage.getBoundingClientRect();
+        stageTop = stageRect.top;
+        progress = clamp01(-sequenceTop / geometry.scrollLength);
+      }
 
       const expand = easeInOutCubic(progress / EXPAND_END);
       const copyProgress = smoothstep(progress / COPY_FADE_END);
+      const progressKey = progress.toFixed(4);
+      const expandKey = expand.toFixed(4);
 
-      stage.style.setProperty('--hero-progress', progress.toFixed(4));
-      stage.style.setProperty('--hero-expand', expand.toFixed(4));
-      stage.style.setProperty('--hero-copy', copyProgress.toFixed(4));
+      if (compact) {
+        // One inline transform on the artwork itself. The compact CSS keeps the
+        // cards, layers and logo static, so no descendants are restyled.
+        if (expandKey !== lastExpand) {
+          const scale = (1 + (geometry.finalScale - 1) * expand).toFixed(5);
+          const shiftY = (geometry.finalShiftY * expand).toFixed(2);
+          art.style.transform = `translate3d(0, ${shiftY}px, 0) scale(${scale})`;
+          lastExpand = expandKey;
+        }
+      } else if (progressKey !== lastProgress) {
+        stage.style.setProperty('--hero-progress', progressKey);
+        stage.style.setProperty('--hero-expand', expandKey);
+        stage.style.setProperty('--hero-copy', copyProgress.toFixed(4));
+        lastProgress = progressKey;
+      }
 
-      // Keep the navbar legible once the artwork reaches it. This is measured
-      // from the actual transformed artwork geometry so it works at every
-      // responsive size without a hard-coded breakpoint.
+      // Keep the navbar legible once the artwork reaches it. This is derived
+      // from the same cached geometry so it works at every responsive size
+      // without a hard-coded breakpoint or per-frame layout reads on phones.
       const currentScale = 1 + (geometry.finalScale - 1) * expand;
       const artScreenTop =
-        stageRect.top +
+        stageTop +
         geometry.artCenterY +
         (geometry.artTop - geometry.artCenterY) * currentScale +
         geometry.finalShiftY * expand;
       const artScreenBottom = artScreenTop + geometry.artHeight * currentScale;
-      const navIsOverArt =
+      const isOverArt =
         artScreenTop - 28 * currentScale <= geometry.navHeight + 8 &&
         artScreenBottom > 0;
 
-      page?.classList.toggle('is-hero-art-under-nav', navIsOverArt);
-      stage.classList.toggle('is-art-under-nav', navIsOverArt);
-      stage.classList.toggle('is-copy-hidden', progress >= COPY_HIDE_AT);
+      setNavState(isOverArt);
+      setCopyHidden(progress >= COPY_HIDE_AT);
     };
 
     const requestProgress = () => {
@@ -181,13 +251,14 @@ export default function useHeroScrollSequence({ sequenceRef, stageRef }) {
 
       page?.classList.remove('is-hero-art-under-nav');
       stage.classList.remove('is-art-under-nav', 'is-copy-hidden');
+      if (compact) art.style.removeProperty('transform');
       stage.style.removeProperty('--hero-progress');
       stage.style.removeProperty('--hero-expand');
       stage.style.removeProperty('--hero-copy');
       stage.style.removeProperty('--hero-scale');
       stage.style.removeProperty('--hero-shift-y');
     };
-  }, [motionEnabled, sequenceRef, stageRef]);
+  }, [motionEnabled, compact, sequenceRef, stageRef]);
 
   return motionEnabled;
 }

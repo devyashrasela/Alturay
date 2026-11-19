@@ -951,6 +951,14 @@ body:has(.landing-page) {
     height: 100dvh;
   }
 
+  /* Phone scroll frames write the artwork transform directly. Keep the copy
+     outside the desktop custom-property chain so it needs no restyle. */
+  .landing-page--motion .landing-hero__copy {
+    opacity: 1;
+    transform: none;
+    will-change: auto;
+  }
+
   .landing-hero__copy {
     position: absolute;
     z-index: 2;
@@ -1017,6 +1025,10 @@ body:has(.landing-page) {
   .landing-hero__back,
   .landing-hero__panel {
     --layer-radius: 22px;
+    /* Static geometry keeps the compact hero layers out of the per-frame
+       style/paint work; only their shared parent is transformed on scroll. */
+    border-radius: var(--layer-radius);
+    transform: rotate(var(--layer-rotate));
   }
 
   .landing-hero__back--yellow {
@@ -1035,6 +1047,13 @@ body:has(.landing-page) {
   .landing-hero__panel {
     --layer-rotate: -1.6deg;
     top: 16px;
+  }
+
+  /* The masked grain and non-scaling SVG strokes are barely visible in the
+     short phone strip but expensive to rasterize while the panel is scaled. */
+  .landing-hero__texture,
+  .landing-hero__threads {
+    display: none;
   }
 
   /* The visible strip is short, so the decorative orbits and logo are smaller
@@ -1056,6 +1075,7 @@ body:has(.landing-page) {
   .landing-hero__logo {
     top: 50%;
     width: clamp(72px, 18vw, 92px);
+    transform: translate(-50%, -50%);
   }
 
   /* The cards keep the laptop structure but use tighter vertical rhythm so
