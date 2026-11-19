@@ -50,6 +50,10 @@ export default function useHeroScrollSequence({ sequenceRef, stageRef }) {
     if (!sequence || !stage) return undefined;
 
     const art = stage.querySelector('.landing-hero__art');
+    // The phone layout drops the violet panel below the colour layers so their
+    // edges stay visible. Measure the panel itself: on desktop it shares the
+    // art rect exactly, so this is a no-op there.
+    const coverTarget = stage.querySelector('.landing-hero__panel') || art;
     const nav = document.querySelector('.landing-nav');
     const page = stage.closest('.landing-page');
     if (!art) return undefined;
@@ -60,25 +64,28 @@ export default function useHeroScrollSequence({ sequenceRef, stageRef }) {
     let geometry = null;
 
     const measureGeometry = () => {
-      // Temporarily remove the animated transform to measure the artwork's
-      // untransformed position and size.
-      const previousTransform = art.style.transform;
+      // Temporarily remove the animated transform (and the panel's own
+      // decorative rotation) to measure the untransformed cover geometry.
+      const previousArtTransform = art.style.transform;
+      const previousTargetTransform = coverTarget.style.transform;
       art.style.transform = 'none';
+      coverTarget.style.transform = 'none';
 
       const stageRect = stage.getBoundingClientRect();
-      const artRect = art.getBoundingClientRect();
-      const artWidth = artRect.width || 1;
-      const artHeight = artRect.height || 1;
+      const targetRect = coverTarget.getBoundingClientRect();
       const navHeight = nav?.getBoundingClientRect().height ?? 0;
 
-      art.style.transform = previousTransform;
+      art.style.transform = previousArtTransform;
+      coverTarget.style.transform = previousTargetTransform;
 
+      const artWidth = targetRect.width || 1;
+      const artHeight = targetRect.height || 1;
       const coverScale = Math.max(
         stageRect.width / artWidth,
         stageRect.height / artHeight,
       );
       const finalScale = coverScale * 1.055;
-      const artTop = artRect.top - stageRect.top;
+      const artTop = targetRect.top - stageRect.top;
       const artCenterY = artTop + artHeight / 2;
       const finalShiftY = stageRect.height / 2 - artCenterY;
       const scrollLength = Math.max(1, sequence.offsetHeight - stageRect.height);

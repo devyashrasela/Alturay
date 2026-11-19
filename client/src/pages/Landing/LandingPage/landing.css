@@ -227,16 +227,14 @@ body:has(.landing-page) {
   align-items: center;
   justify-content: center;
   padding: 0;
-  border: 1px solid var(--landing-line);
-  border-radius: 12px;
-  background: var(--landing-pill);
+  border: 0;
+  background: transparent;
   color: var(--landing-ink);
-  transition: background-color 160ms ease, border-color 160ms ease;
+  transition: color 160ms ease;
 }
 
 .landing-nav__toggle:hover {
-  background: rgba(10, 10, 11, 0.075);
-  border-color: rgba(10, 10, 11, 0.14);
+  color: var(--landing-ink-muted);
 }
 
 /* ── Mobile menu panel ────────────────────────────────────── */
@@ -346,14 +344,11 @@ body:has(.landing-page) {
 }
 
 .landing-page:is(.is-hero-art-under-nav, .is-footer-under-nav) .landing-nav__toggle {
-  border-color: rgba(255, 255, 255, 0.24);
-  background: rgba(255, 255, 255, 0.12);
   color: #FFFFFF;
 }
 
 .landing-page:is(.is-hero-art-under-nav, .is-footer-under-nav) .landing-nav__toggle:hover {
-  border-color: rgba(255, 255, 255, 0.34);
-  background: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.72);
 }
 
 /* ── Pinned hero sequence ─────────────────────────────────── */
@@ -938,13 +933,45 @@ body:has(.landing-page) {
     --hero-release-distance: 32dvh;
   }
 
+  /* Phones use a fixed two-zone composition instead of the desktop document
+     flow: copy in the top 70dvh, artwork pinned to the bottom 30dvh. Pinning
+     the art keeps its top edge at the same height regardless of how many lines
+     the headline wraps to. */
   .landing-hero {
     --hero-gutter: 20px;
-    padding: calc(var(--landing-nav-height) + 20px) var(--hero-gutter) 76px;
+    --hero-art-top: 70dvh;
+
+    min-height: 100dvh;
+    box-sizing: border-box;
+    padding: 0;
+    overflow: clip;
+  }
+
+  .landing-page--motion .landing-hero {
+    height: 100dvh;
+  }
+
+  .landing-hero__copy {
+    position: absolute;
+    z-index: 2;
+    top: calc(var(--landing-nav-height) + 8px);
+    left: var(--hero-gutter);
+    right: var(--hero-gutter);
+    /* Finish 32px above the art boundary: the yellow layer is rotated, so its
+       highest corner sits a few pixels above 70dvh. */
+    height: calc(var(--hero-art-top) - var(--landing-nav-height) - 32px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    max-width: none;
+    margin: 0;
   }
 
   .landing-hero__title {
-    font-size: clamp(38px, 10vw, 46px);
+    /* Width alone wraps badly on 360px screens; the dvh cap keeps the copy
+       block inside the top zone while letting larger phones use bigger type. */
+    font-size: clamp(46px, calc(min(16vw, 8dvh) - 2px), 70px);
     line-height: 1.04;
     letter-spacing: -0.042em;
   }
@@ -955,21 +982,36 @@ body:has(.landing-page) {
 
   .landing-hero__lede {
     max-width: 420px;
-    margin-top: 18px;
-    font-size: 15px;
-    line-height: 1.55;
+    margin-top: 14px;
+    font-size: 14px;
+    line-height: 1.5;
   }
 
   .landing-hero__cta {
-    height: 50px;
-    margin-top: 24px;
-    padding: 0 26px;
+    height: 48px;
+    margin-top: 18px;
+    padding: 0 24px;
     border-radius: 13px;
     font-size: 14px;
   }
 
+  /* Overshoot the stage on the sides and bottom so the rotated layers have no
+     white corners. The stage still clips the excess. */
   .landing-hero__art {
-    margin-top: 46px;
+    position: absolute;
+    z-index: 1;
+    top: var(--hero-art-top);
+    left: -12px;
+    right: -12px;
+    bottom: -24px;
+    width: auto;
+    height: auto;
+    margin: 0;
+  }
+
+  .landing-hero__stack {
+    width: 100%;
+    height: 100%;
   }
 
   .landing-hero__back,
@@ -979,107 +1021,135 @@ body:has(.landing-page) {
 
   .landing-hero__back--yellow {
     --layer-rotate: -2.8deg;
-    inset: -15px -7px 11px -8px;
+    inset: 0 -18px -24px -18px;
   }
 
   .landing-hero__back--pink {
     --layer-rotate: -2.2deg;
-    inset: -8px -4px 6px -4px;
+    inset: 8px -12px -16px -12px;
   }
 
+  /* Dropping the purple panel below the coloured layers recreates the desktop
+     bands: yellow along the top, then pink, then violet. The scroll hook now
+     measures this panel so the offset cannot leave a gap at full cover. */
   .landing-hero__panel {
     --layer-rotate: -1.6deg;
+    top: 16px;
   }
 
+  /* The visible strip is short, so the decorative orbits and logo are smaller
+     than their desktop counterparts. */
   .landing-hero__orbit {
-    top: 47%;
+    top: 50%;
   }
 
   .landing-hero__orbit--lg {
-    width: clamp(230px, 58vw, 300px);
-    height: clamp(230px, 58vw, 300px);
+    width: clamp(180px, 52vw, 240px);
+    height: clamp(180px, 52vw, 240px);
   }
 
   .landing-hero__orbit--sm {
-    width: clamp(148px, 38vw, 200px);
-    height: clamp(148px, 38vw, 200px);
+    width: clamp(120px, 34vw, 170px);
+    height: clamp(120px, 34vw, 170px);
   }
 
   .landing-hero__logo {
-    top: 47%;
-    width: clamp(84px, 21vw, 112px);
+    top: 50%;
+    width: clamp(72px, 18vw, 92px);
   }
 
+  /* The cards keep the laptop structure but use tighter vertical rhythm so
+     their height-to-width ratio matches the larger desktop cards. */
   .landing-hero__ui {
-    width: clamp(124px, 38vw, 190px);
-    padding: 11px 12px;
-    border-radius: 13px;
+    width: clamp(118px, 34vw, 160px);
+    padding: 6px 8px;
+    border-radius: 10px;
   }
 
-  /* The panel is near viewport width once expanded, so these insets have to
-     leave room for the cover crop (and the cards' own rotation). */
-  .landing-hero__ui--products {
-    --ui-rotate: -1.6deg;
-    left: 22px;
-  }
-
-  .landing-hero__ui--invoice {
-    --ui-rotate: 1.6deg;
-    right: 22px;
-  }
-
-  .landing-hero__ui--access {
-    --ui-rotate: -1deg;
-    width: clamp(176px, 52vw, 220px);
-    bottom: 7%;
-  }
-}
-
-@media (max-width: 420px) {
-  .landing-hero__ui {
-    padding: 10px 11px;
+  .landing-hero__ui-head {
+    gap: 5px;
   }
 
   .landing-hero__ui-icon {
-    width: 20px;
-    height: 20px;
+    width: 14px;
+    height: 14px;
+    border-radius: 5px;
+  }
+
+  .landing-hero__ui-icon svg {
+    width: 10px;
+    height: 10px;
   }
 
   .landing-hero__ui-title {
-    font-size: 10.5px;
+    font-size: 9.5px;
   }
 
   .landing-hero__ui-chip,
   .landing-hero__invoice-status {
-    padding: 2px 6px;
-    font-size: 9px;
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-size: 8px;
+  }
+
+  .landing-hero__product-row {
+    gap: 6px;
+    margin-top: 4px;
+  }
+
+  .landing-hero__product-row+.landing-hero__product-row {
+    margin-top: 3px;
+    padding-top: 3px;
+  }
+
+  .landing-hero__swatch {
+    width: 8px;
+    height: 8px;
+    border-radius: 3px;
   }
 
   .landing-hero__product-name,
   .landing-hero__product-price {
-    font-size: 10px;
+    font-size: 9px;
   }
 
-  .landing-hero__invoice-meta,
-  .landing-hero__invoice-foot {
-    font-size: 9px;
+  .landing-hero__invoice-meta {
+    margin-top: 4px;
+    font-size: 8px;
   }
 
   .landing-hero__invoice-amount {
-    font-size: 21px;
+    margin-top: 3px;
+    font-size: 14px;
   }
 
-  .landing-hero__access-name {
-    font-size: 10px;
+  .landing-hero__invoice-foot {
+    margin-top: 4px;
+    padding-top: 4px;
+    font-size: 8px;
   }
 
-  .landing-hero__access-meta {
-    font-size: 9px;
+  /* Phones keep the cards still in the panel. Only their resting tilt remains;
+     they ride with the artwork zoom and can leave the screen naturally. */
+  .landing-hero__ui--products,
+  .landing-hero__ui--invoice {
+    transform: rotate(var(--ui-rotate));
   }
 
-  .landing-hero__avatar {
-    width: 22px;
-    height: 22px;
+  .landing-hero__ui--products {
+    --ui-rotate: -1.6deg;
+    left: 4%;
+    top: 12%;
+  }
+
+  .landing-hero__ui--invoice {
+    --ui-rotate: 1.6deg;
+    right: 4%;
+    top: 14%;
+  }
+
+  .landing-hero__ui--access {
+    display: none;
   }
 }
 
