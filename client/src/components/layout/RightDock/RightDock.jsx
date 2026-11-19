@@ -68,7 +68,6 @@ export default function RightDock({
     : data
       ? { ...data, business: data.business || activeBusiness }
       : null;
-
   // Line items are only available once the full detail response arrives for this invoice
   const isLoadingItems = type === 'invoice' && invoiceId && !detailMatchesCurrent;
 
@@ -464,32 +463,6 @@ export default function RightDock({
                   <p>{data.description}</p>
                 </div>
               )}
-
-              <div className="mini">
-                <h4>Actions</h4>
-                <p>Modify product pricing, tax configuration, or inventory details.</p>
-                <div style={{ display: 'flex', gap: 10 }}>
-                  {handleEditProduct && (
-                    <button
-                      type="button"
-                      className="btn primary full"
-                      onClick={() => handleEditProduct(data)}
-                    >
-                      Edit product
-                    </button>
-                  )}
-                  {handleDeleteProduct && (
-                    <button
-                      type="button"
-                      className="btn full"
-                      style={{ color: 'var(--danger)' }}
-                      onClick={() => handleDeleteProduct(data)}
-                    >
-                      Delete
-                    </button>
-                  )}
-                </div>
-              </div>
             </div>
           )}
 
