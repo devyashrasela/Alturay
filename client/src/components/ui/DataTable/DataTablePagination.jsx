@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import Pagination from '../Pagination/Pagination';
 
 export function DataTablePagination({
@@ -8,9 +9,22 @@ export function DataTablePagination({
   className = '',
   style,
 }) {
-  const totalPages = meta?.totalPages ?? 1;
-  const total = meta?.total ?? 0;
-  const resolvedLimit = meta?.limit ?? limit;
+  const total = Math.max(0, Number(meta?.total) || 0);
+  const resolvedLimit = Number(meta?.limit) > 0 ? Number(meta.limit) : limit;
+
+  // Count pages from the records the API actually holds, not from a possibly
+  // stale meta.totalPages, so the control never renders phantom pages.
+  const totalPages =
+    total > 0
+      ? Math.ceil(total / resolvedLimit)
+      : Math.max(1, Math.floor(Number(meta?.totalPages)) || 1);
+
+  // Keep the active page valid when the result set shrinks (search, delete, filter).
+  useEffect(() => {
+    if (Number(page) > totalPages) {
+      onPageChange?.(totalPages);
+    }
+  }, [page, totalPages, onPageChange]);
 
   if (totalPages <= 1) return null;
 

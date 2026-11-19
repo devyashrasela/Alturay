@@ -22,6 +22,10 @@ exports.list = async (req, res, next) => {
 
     const { count, rows } = await Invoice.findAndCountAll({
       where: whereClause,
+      // The `items` join multiplies rows, so count distinct invoices instead of
+      // joined rows — otherwise the pagination reports phantom pages.
+      distinct: true,
+      col: 'id',
       limit: parseInt(limit),
       offset,
       order: [['created_at', 'DESC']],
