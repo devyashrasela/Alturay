@@ -4,29 +4,36 @@ import Lenis from 'lenis';
 const MOBILE_QUERY = '(max-width: 760px)';
 const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
 
-function getEnabled() {
+function getMobilePreference() {
   if (typeof window === 'undefined') return false;
-  return !window.matchMedia(MOBILE_QUERY).matches &&
-    !window.matchMedia(REDUCED_MOTION_QUERY).matches;
+  return window.matchMedia(MOBILE_QUERY).matches;
+}
+
+function getMotionAllowed() {
+  if (typeof window === 'undefined') return false;
+  return !window.matchMedia(REDUCED_MOTION_QUERY).matches;
 }
 
 /*
- * Inertia ("lerp") smooth scrolling for the landing page only. Phones keep
- * native touch momentum scrolling: Lenis's wheel interpolation adds a constant
- * rAF loop without improving touch input, so it is disabled below 760px.
- * Lenis drives the real window scroll position on desktop, so position: sticky,
- * the hero scroll sequence, IntersectionObserver and scroll listeners keep
- * working. Destroyed on unmount, so app routes keep native scrolling.
+ * Inertia ("lerp") smooth scrolling for the landing page only. Desktop keeps
+ * its wheel-only tuning unchanged. Phones use Lenis's touch sync with the same
+ * 0.085 lerp so the pinned hero glides like the computer display instead of
+ * stepping with the raw touch stream. Destroyed on unmount, so app routes keep
+ * native scrolling.
  *
  * Tuning: lower lerp = floatier/longer glide, higher = snappier.
  */
 export default function useSmoothScroll() {
-  const [enabled, setEnabled] = useState(getEnabled);
+  const [mobile, setMobile] = useState(getMobilePreference);
+  const [motionAllowed, setMotionAllowed] = useState(getMotionAllowed);
 
   useEffect(() => {
     const mobileQuery = window.matchMedia(MOBILE_QUERY);
     const reducedQuery = window.matchMedia(REDUCED_MOTION_QUERY);
-    const handleChange = () => setEnabled(getEnabled());
+    const handleChange = () => {
+      setMobile(mobileQuery.matches);
+      setMotionAllowed(!reducedQuery.matches);
+    };
 
     handleChange();
     mobileQuery.addEventListener('change', handleChange);
@@ -38,9 +45,19 @@ export default function useSmoothScroll() {
   }, []);
 
   useEffect(() => {
-    if (!enabled) return undefined;
+    if (!motionAllowed) return undefined;
 
-    const lenis = new Lenis({ lerp: 0.085, smoothWheel: true });
+    const options = mobile
+      ? {
+        lerp: 0.085,
+        smoothWheel: true,
+        syncTouch: true,
+        syncTouchLerp: 0.085,
+        touchInertiaExponent: 1.7,
+      }
+      : { lerp: 0.085, smoothWheel: true };
+
+    const lenis = new Lenis(options);
 
     let frame = 0;
     const raf = (time) => {
@@ -67,5 +84,5 @@ export default function useSmoothScroll() {
       window.cancelAnimationFrame(frame);
       lenis.destroy();
     };
-  }, [enabled]);
+  }, [mobile, motionAllowed]);
 }

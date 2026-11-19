@@ -45,9 +45,9 @@ function getStageTop(geometry, scrollY) {
 /**
  * Drives the hero's scroll choreography with a single rAF-throttled scroll
  * listener. Desktop exposes CSS custom properties for the whole composition.
- * Phones write only the artwork's transform directly: the compact layout keeps
- * its nested layers static, so there is no subtree style recalculation on
- * scroll and the transform stays on the compositor.
+ * Phones write the artwork transform and the copy fade directly: the compact
+ * layout keeps its nested layers static, so only two small elements restyle on
+ * scroll while the motion stays on the compositor.
  */
 export default function useHeroScrollSequence({ sequenceRef, stageRef }) {
   const [motionEnabled, setMotionEnabled] = useState(getMotionPreference);
@@ -82,6 +82,7 @@ export default function useHeroScrollSequence({ sequenceRef, stageRef }) {
     // edges stay visible. Measure the panel itself: on desktop it shares the
     // art rect exactly, so this is a no-op there.
     const coverTarget = stage.querySelector('.landing-hero__panel') || art;
+    const copy = stage.querySelector('.landing-hero__copy');
     const nav = document.querySelector('.landing-nav');
     const page = stage.closest('.landing-page');
     if (!art) return undefined;
@@ -94,6 +95,7 @@ export default function useHeroScrollSequence({ sequenceRef, stageRef }) {
     let copyIsHidden = null;
     let lastProgress = '';
     let lastExpand = '';
+    let lastCopy = '';
 
     const measureGeometry = () => {
       // Temporarily remove the animated transform (and the panel's own
@@ -175,6 +177,15 @@ export default function useHeroScrollSequence({ sequenceRef, stageRef }) {
       const expandKey = expand.toFixed(4);
 
       if (compact) {
+        // The phone keeps the desktop fade curve but writes it straight to the
+        // copy element instead of restyling the whole hero through a variable.
+        const copyKey = copyProgress.toFixed(4);
+        if (copyKey !== lastCopy) {
+          copy.style.opacity = (1 - copyProgress).toFixed(4);
+          copy.style.transform = `translate3d(0, ${(-38 * copyProgress).toFixed(2)}px, 0)`;
+          lastCopy = copyKey;
+        }
+
         // One inline transform on the artwork itself. The compact CSS keeps the
         // cards, layers and logo static, so no descendants are restyled.
         if (expandKey !== lastExpand) {
@@ -251,7 +262,11 @@ export default function useHeroScrollSequence({ sequenceRef, stageRef }) {
 
       page?.classList.remove('is-hero-art-under-nav');
       stage.classList.remove('is-art-under-nav', 'is-copy-hidden');
-      if (compact) art.style.removeProperty('transform');
+      if (compact) {
+        art.style.removeProperty('transform');
+        copy.style.opacity = '';
+        copy.style.transform = '';
+      }
       stage.style.removeProperty('--hero-progress');
       stage.style.removeProperty('--hero-expand');
       stage.style.removeProperty('--hero-copy');

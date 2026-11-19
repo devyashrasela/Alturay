@@ -237,6 +237,40 @@ body:has(.landing-page) {
   color: var(--landing-ink-muted);
 }
 
+.landing-nav__toggle-icon {
+  position: relative;
+  display: block;
+  width: 20px;
+  height: 20px;
+}
+
+.landing-nav__toggle-icon svg {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 50%;
+  transition: opacity 180ms ease, transform 260ms var(--landing-ease);
+}
+
+.landing-nav__toggle-menu {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
+.landing-nav__toggle-close {
+  opacity: 0;
+  transform: rotate(-90deg) scale(0.55);
+}
+
+.landing-nav__toggle.is-open .landing-nav__toggle-menu {
+  opacity: 0;
+  transform: rotate(90deg) scale(0.55);
+}
+
+.landing-nav__toggle.is-open .landing-nav__toggle-close {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+}
+
 /* ── Mobile menu panel ────────────────────────────────────── */
 
 .landing-nav__mobile {
@@ -250,6 +284,20 @@ body:has(.landing-page) {
   border: 1px solid var(--landing-line);
   border-radius: 18px;
   background: #FFFFFF;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-8px) scale(0.98);
+  transform-origin: 50% 0;
+  transition: opacity 180ms ease, transform 240ms var(--landing-ease), visibility 0s linear 240ms;
+}
+
+.landing-nav__mobile.is-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+  transition: opacity 180ms ease, transform 240ms var(--landing-ease), visibility 0s;
 }
 
 .landing-nav__mobile nav {
@@ -444,6 +492,8 @@ body:has(.landing-page) {
   .landing-nav__login,
   .landing-nav__cta,
   .landing-nav__toggle,
+  .landing-nav__toggle-icon svg,
+  .landing-nav__mobile,
   .landing-nav__mobile-link,
   .landing-nav__mobile-login {
     transition: none;
@@ -951,12 +1001,10 @@ body:has(.landing-page) {
     height: 100dvh;
   }
 
-  /* Phone scroll frames write the artwork transform directly. Keep the copy
-     outside the desktop custom-property chain so it needs no restyle. */
+  /* Phone scroll frames write opacity/transform straight to the copy element,
+     matching the desktop fade without restyling the whole hero subtree. */
   .landing-page--motion .landing-hero__copy {
-    opacity: 1;
-    transform: none;
-    will-change: auto;
+    will-change: opacity, transform;
   }
 
   .landing-hero__copy {

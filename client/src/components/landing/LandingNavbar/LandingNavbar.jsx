@@ -76,46 +76,52 @@ export default function LandingNavbar() {
           <button
             ref={toggleRef}
             type="button"
-            className="landing-nav__toggle"
+            className={`landing-nav__toggle${menuOpen ? ' is-open' : ''}`}
             aria-expanded={menuOpen}
             aria-controls="landing-mobile-menu"
             aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
             onClick={() => setMenuOpen((open) => !open)}
           >
-            {menuOpen ? <X size={20} strokeWidth={2} /> : <Menu size={20} strokeWidth={2} />}
+            <span className="landing-nav__toggle-icon" aria-hidden="true">
+              <Menu className="landing-nav__toggle-menu" size={20} strokeWidth={2} />
+              <X className="landing-nav__toggle-close" size={20} strokeWidth={2} />
+            </span>
           </button>
         </div>
       </div>
 
-      {menuOpen && (
-        <div className="landing-nav__mobile" id="landing-mobile-menu">
-          <nav aria-label="Landing page sections">
-            {NAV_LINKS.map((link) => (
-              <a
-                className="landing-nav__mobile-link"
-                href={link.href}
-                key={link.href}
-                onClick={closeMenu}
-              >
-                {link.label}
-              </a>
-            ))}
-          </nav>
-
-          <div className="landing-nav__mobile-actions">
-            <Link className="landing-nav__mobile-login" to="/login" onClick={closeMenu}>
-              Log in
-            </Link>
-            <Link
-              className="landing-nav__cta landing-nav__cta--mobile"
-              to="/register"
+      <div
+        className={`landing-nav__mobile${menuOpen ? ' is-open' : ''}`}
+        id="landing-mobile-menu"
+        aria-hidden={!menuOpen}
+        inert={!menuOpen}
+      >
+        <nav aria-label="Landing page sections">
+          {NAV_LINKS.map((link) => (
+            <a
+              className="landing-nav__mobile-link"
+              href={link.href}
+              key={link.href}
               onClick={closeMenu}
             >
-              Get Started
-            </Link>
-          </div>
+              {link.label}
+            </a>
+          ))}
+        </nav>
+
+        <div className="landing-nav__mobile-actions">
+          <Link className="landing-nav__mobile-login" to="/login" onClick={closeMenu}>
+            Log in
+          </Link>
+          <Link
+            className="landing-nav__cta landing-nav__cta--mobile"
+            to="/register"
+            onClick={closeMenu}
+          >
+            Get Started
+          </Link>
         </div>
-      )}
+      </div>
     </header>
   );
 }
