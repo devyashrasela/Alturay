@@ -38,7 +38,12 @@ const CARD_TARGETS = {
 };
 
 const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
-const COMPACT_QUERY = '(max-width: 760px)';
+// Phones pin the artwork to the bottom 30dvh and tablets to the bottom 35dvh.
+// Both use the same direct-write scroll path so the short strip can cover the
+// stage without throwing the floating cards out of frame. Tablets additionally
+// anchor the zoom to the artwork's bottom edge so it rises from the bottom.
+const COMPACT_QUERY = '(max-width: 1104px)';
+const TABLET_QUERY = '(min-width: 761px) and (max-width: 1104px)';
 
 function getMotionPreference() {
   if (typeof window === 'undefined') return false;
@@ -48,6 +53,11 @@ function getMotionPreference() {
 function getCompactPreference() {
   if (typeof window === 'undefined') return false;
   return window.matchMedia(COMPACT_QUERY).matches;
+}
+
+function getTabletPreference() {
+  if (typeof window === 'undefined') return false;
+  return window.matchMedia(TABLET_QUERY).matches;
 }
 
 // Mirrors the desktop cover calculation from the stylesheet using only the
@@ -80,29 +90,35 @@ function getStageTop(geometry, scrollY) {
 /**
  * Drives the hero's scroll choreography with a single rAF-throttled scroll
  * listener. Desktop exposes CSS custom properties for the whole composition.
- * Phones write the artwork transform, the copy fade, a counter-scale for the
- * logo/rings, and framed card positions directly. That keeps the nested details
- * growing at the desktop rate without restyling the whole hero through CSS
- * variables.
+ * Phones and tablets write the artwork transform, the copy fade, a counter-scale
+ * for the logo/rings, and framed card positions directly. That keeps the nested
+ * details growing at the desktop rate without restyling the whole hero through
+ * CSS variables. Tablets scale from the bottom edge; phones keep the desktop
+ * centre anchor.
  */
 export default function useHeroScrollSequence({ sequenceRef, stageRef }) {
   const [motionEnabled, setMotionEnabled] = useState(getMotionPreference);
   const [compact, setCompact] = useState(getCompactPreference);
+  const [tablet, setTablet] = useState(getTabletPreference);
 
   useEffect(() => {
     const motionQuery = window.matchMedia(REDUCED_MOTION_QUERY);
     const compactQuery = window.matchMedia(COMPACT_QUERY);
+    const tabletQuery = window.matchMedia(TABLET_QUERY);
     const handleChange = () => {
       setMotionEnabled(!motionQuery.matches);
       setCompact(compactQuery.matches);
+      setTablet(tabletQuery.matches);
     };
 
     handleChange();
     motionQuery.addEventListener('change', handleChange);
     compactQuery.addEventListener('change', handleChange);
+    tabletQuery.addEventListener('change', handleChange);
     return () => {
       motionQuery.removeEventListener('change', handleChange);
       compactQuery.removeEventListener('change', handleChange);
+      tabletQuery.removeEventListener('change', handleChange);
     };
   }, []);
 
@@ -188,6 +204,7 @@ export default function useHeroScrollSequence({ sequenceRef, stageRef }) {
       const stageTop = stageRect.top;
       const artCenterX = artRect.left - stageLeft + artRect.width / 2;
       const artCenterY = artRect.top - stageTop + artRect.height / 2;
+      const artBottomY = artRect.bottom - stageTop;
 
       cardSpecs.forEach((spec) => {
         const rect = spec.element.getBoundingClientRect();
@@ -226,7 +243,11 @@ export default function useHeroScrollSequence({ sequenceRef, stageRef }) {
       const finalScale = coverScale * 1.055;
       const artTop = targetRect.top - stageTop;
       const panelCenterY = artTop + artHeight / 2;
-      const finalShiftY = stageRect.height / 2 - panelCenterY;
+      // Tablets zoom from the artwork's bottom edge so the violet panel grows
+      // upward and stays glued to the bottom of the viewport. Phones keep the
+      // desktop centre-based map because their strip is already framed that way.
+      const artOriginY = tablet ? artBottomY : artCenterY;
+      const finalShiftY = tablet ? 0 : stageRect.height / 2 - panelCenterY;
       const scrollLength = Math.max(1, sequence.offsetHeight - stageRect.height);
 
       geometry = {
@@ -237,6 +258,7 @@ export default function useHeroScrollSequence({ sequenceRef, stageRef }) {
         // are mapped with the wrapper's own centre rather than the panel's.
         artMapCenterX: artCenterX,
         artMapCenterY: artCenterY,
+        artOriginY,
         finalScale,
         finalShiftY,
         navHeight,
@@ -335,8 +357,8 @@ export default function useHeroScrollSequence({ sequenceRef, stageRef }) {
             const currentX =
               geometry.artMapCenterX + (restX - geometry.artMapCenterX) * artScale;
             const currentY =
-              geometry.artMapCenterY
-              + (restY - geometry.artMapCenterY) * artScale
+              geometry.artOriginY
+              + (restY - geometry.artOriginY) * artScale
               + geometry.finalShiftY * expand;
             // Where it should be on screen: the resting spot eased towards the
             // framed laptop position, so it stays in view for the whole zoom.
@@ -366,8 +388,8 @@ export default function useHeroScrollSequence({ sequenceRef, stageRef }) {
       const currentScale = artScale;
       const artScreenTop =
         stageTop +
-        geometry.artCenterY +
-        (geometry.artTop - geometry.artCenterY) * currentScale +
+        geometry.artOriginY +
+        (geometry.artTop - geometry.artOriginY) * currentScale +
         geometry.finalShiftY * expand;
       const artScreenBottom = artScreenTop + geometry.artHeight * currentScale;
       const isOverArt =
@@ -439,7 +461,7 @@ export default function useHeroScrollSequence({ sequenceRef, stageRef }) {
       stage.style.removeProperty('--hero-scale');
       stage.style.removeProperty('--hero-shift-y');
     };
-  }, [motionEnabled, compact, sequenceRef, stageRef]);
+  }, [motionEnabled, compact, tablet, sequenceRef, stageRef]);
 
   return motionEnabled;
 }

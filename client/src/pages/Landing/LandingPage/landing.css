@@ -1265,6 +1265,165 @@ body:has(.landing-page) {
   }
 }
 
+/* Tablets use the phone's two-zone composition with a taller bottom strip:
+   copy above, artwork pinned to the bottom 35dvh. The viewport-aspect panel
+   height from the base rule stretches badly in portrait, so it is replaced
+   here rather than merely clamped. */
+@media (min-width: 761px) and (max-width: 1104px) {
+  .landing-page {
+    --hero-release-distance: 32dvh;
+  }
+
+  .landing-hero {
+    --hero-art-top: 65dvh;
+
+    min-height: 100dvh;
+    box-sizing: border-box;
+    padding: 0 var(--hero-gutter);
+    overflow: clip;
+  }
+
+  .landing-page--motion .landing-hero {
+    height: 100dvh;
+  }
+
+  .landing-hero__copy {
+    position: absolute;
+    z-index: 2;
+    top: calc(var(--landing-nav-height) + 24px);
+    left: var(--hero-gutter);
+    right: var(--hero-gutter);
+    height: calc(var(--hero-art-top) - var(--landing-nav-height) - 48px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    max-width: none;
+    margin: 0;
+  }
+
+  .landing-hero__title {
+    font-size: clamp(58px, 6.4vw, 76px);
+    line-height: 1.04;
+    letter-spacing: -0.044em;
+  }
+
+  .landing-hero__break {
+    display: none;
+  }
+
+  .landing-hero__lede {
+    max-width: 620px;
+    margin-top: 20px;
+    font-size: 17px;
+    line-height: 1.55;
+  }
+
+  .landing-hero__art {
+    position: absolute;
+    z-index: 1;
+    top: var(--hero-art-top);
+    left: -16px;
+    right: -16px;
+    bottom: 0;
+    width: auto;
+    height: auto;
+    margin: 0;
+  }
+
+  /* Zoom from the artwork's bottom edge: the violet panel rises from the
+     bottom and covers the stage without lifting off the viewport edge. */
+  .landing-page--motion .landing-hero__art {
+    transform-origin: 50% 100%;
+  }
+
+  .landing-hero__stack {
+    width: 100%;
+    height: 100%;
+  }
+
+  .landing-hero__back,
+  .landing-hero__panel {
+    --layer-radius: 26px;
+
+    border-radius: var(--layer-radius);
+    transform: rotate(var(--layer-rotate));
+  }
+
+  .landing-hero__back--yellow {
+    --layer-rotate: -2.8deg;
+
+    inset: 0 -18px -22px -18px;
+  }
+
+  .landing-hero__back--pink {
+    --layer-rotate: -2.2deg;
+
+    inset: 10px -12px -14px -12px;
+  }
+
+  .landing-hero__panel {
+    --layer-rotate: -1.6deg;
+
+    top: 18px;
+  }
+
+  .landing-hero__texture {
+    background-size: 5px 5px;
+    opacity: 0.12;
+  }
+
+  .landing-hero__orbit {
+    top: 50%;
+  }
+
+  .landing-hero__orbit--lg {
+    width: clamp(220px, 30vw, 320px);
+    height: clamp(220px, 30vw, 320px);
+  }
+
+  .landing-hero__orbit--sm {
+    width: clamp(150px, 20vw, 220px);
+    height: clamp(150px, 20vw, 220px);
+  }
+
+  .landing-hero__logo {
+    top: 50%;
+    width: clamp(88px, 12vw, 120px);
+    transform: translate(-50%, -50%);
+  }
+
+  .landing-hero__ui {
+    width: clamp(190px, 22vw, 240px);
+    padding: 10px 12px;
+    border-radius: 14px;
+    transform: rotate(var(--ui-rotate));
+  }
+
+  .landing-hero__ui--products {
+    --ui-rotate: -1.6deg;
+
+    left: 4%;
+    top: 12%;
+  }
+
+  .landing-hero__ui--invoice {
+    --ui-rotate: 1.6deg;
+
+    right: 4%;
+    top: 14%;
+  }
+
+  .landing-hero__ui--access {
+    --ui-rotate: 1.2deg;
+
+    left: 0;
+    right: 0;
+    bottom: 8%;
+    margin-inline: auto;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .landing-hero__cta {
     transition: none;
