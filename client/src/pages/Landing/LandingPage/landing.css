@@ -2171,6 +2171,22 @@ body:has(.landing-page) {
   }
 }
 
+/* Phones: the statement scales just under the hero/Everything headline, and
+   the inline icons grow with it instead of staying desktop-proportional. */
+@media (max-width: 600px) {
+  .landing-mb__statement {
+    font-size: clamp(40px, calc(min(16vw, 8dvh) - 8px), 64px);
+    line-height: 1.08;
+    letter-spacing: -0.042em;
+  }
+
+  .landing-mb__icon {
+    width: 0.92em;
+    height: 0.92em;
+    margin-top: 0.1em;
+  }
+}
+
 /* ═══════════════════════════════════════════════════════════════════════
    "FAQ"
    Reference film grammar: plain document flow. After the previous section's
