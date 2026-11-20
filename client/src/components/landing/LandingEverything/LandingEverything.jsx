@@ -189,6 +189,25 @@ const CARDS = [
   },
 ];
 
+/* The yellow Alturay marquee lives inside the last word of the heading so it
+   stays glued to "place." when the title rewraps on phones. On larger screens
+   CSS pulls it back out of flow to its original absolute position. */
+function MarqueeChip() {
+  return (
+    <span className="landing-eio__frag landing-eio__frag--chip" aria-hidden="true">
+      <span className="landing-eio__marquee">
+        <span className="landing-eio__marquee-track">
+          {[0, 1].map((copy) => (
+            <span className="landing-eio__marquee-copy" key={copy} aria-hidden="true">
+              <span className="landing-eio__frag-monogram">Alturay</span>
+            </span>
+          ))}
+        </span>
+      </span>
+    </span>
+  );
+}
+
 export default function LandingEverything() {
   const titleRef = useRef(null);
   const cardsRef = useRef(null);
@@ -267,22 +286,28 @@ export default function LandingEverything() {
               {TITLE_CHARS.map((words, lineIndex) => (
                 <Fragment key={lineIndex}>
                   {lineIndex === 1 ? <br className="landing-eio__break" /> : null}
-                  {words.map((chars, wordIndex) => (
-                    <Fragment key={wordIndex}>
-                      <span className="landing-eio__word">
-                        {chars.map((item, charIndex) => (
-                          <span
-                            key={charIndex}
-                            className="landing-eio__char"
-                            style={{ transitionDelay: item.delay }}
-                          >
-                            {item.char}
-                          </span>
-                        ))}
-                      </span>
-                      {wordIndex < words.length - 1 ? ' ' : ''}
-                    </Fragment>
-                  ))}
+                  {words.map((chars, wordIndex) => {
+                    const isFinalWord =
+                      lineIndex === TITLE_CHARS.length - 1 &&
+                      wordIndex === words.length - 1;
+                    return (
+                      <Fragment key={wordIndex}>
+                        <span className="landing-eio__word">
+                          {chars.map((item, charIndex) => (
+                            <span
+                              key={charIndex}
+                              className="landing-eio__char"
+                              style={{ transitionDelay: item.delay }}
+                            >
+                              {item.char}
+                            </span>
+                          ))}
+                          {isFinalWord ? <MarqueeChip /> : null}
+                        </span>
+                        {wordIndex < words.length - 1 ? ' ' : ''}
+                      </Fragment>
+                    );
+                  })}
                 </Fragment>
               ))}
             </span>
@@ -292,21 +317,6 @@ export default function LandingEverything() {
             <div className="landing-eio__frag landing-eio__frag--doc">
               <div className="landing-eio__frag-sheet" />
               <div className="landing-eio__frag-seal" />
-            </div>
-            <div className="landing-eio__frag landing-eio__frag--chip">
-              <div className="landing-eio__marquee">
-                <div className="landing-eio__marquee-track">
-                  {[0, 1].map((copy) => (
-                    <span
-                      className="landing-eio__marquee-copy"
-                      key={copy}
-                      aria-hidden="true"
-                    >
-                      <span className="landing-eio__frag-monogram">Alturay</span>
-                    </span>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
         </div>
