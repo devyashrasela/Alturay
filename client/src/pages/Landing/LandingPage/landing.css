@@ -979,7 +979,9 @@ body:has(.landing-page) {
 
 @media (max-width: 760px) {
   .landing-page {
-    --hero-scroll-distance: 95dvh;
+    /* Inherit the desktop 140dvh hero scroll length. Shortening it on phones
+       sped up the same scale-up, so the enlargement no longer matched the
+       laptop even though the final size and position were identical. */
     --hero-release-distance: 32dvh;
   }
 
@@ -1073,8 +1075,8 @@ body:has(.landing-page) {
   .landing-hero__back,
   .landing-hero__panel {
     --layer-radius: 22px;
-    /* Static geometry keeps the compact hero layers out of the per-frame
-       style/paint work; only their shared parent is transformed on scroll. */
+    /* Resting geometry. The scroll hook writes the desktop tilt/radius
+       reduction directly while the parent artwork expands. */
     border-radius: var(--layer-radius);
     transform: rotate(var(--layer-rotate));
   }
@@ -1097,15 +1099,22 @@ body:has(.landing-page) {
     top: 16px;
   }
 
-  /* The masked grain and non-scaling SVG strokes are barely visible in the
-     short phone strip but expensive to rasterize while the panel is scaled. */
-  .landing-hero__texture,
+  /* Keep the desktop grain and thread details on phones. A finer grain keeps
+     the dots from becoming oversized after the larger cover zoom, while the
+     SVG keeps its non-scaling strokes. */
+  .landing-hero__texture {
+    background-size: 4px 4px;
+    opacity: 0.12;
+  }
+
   .landing-hero__threads {
-    display: none;
+    stroke-width: 1.2;
   }
 
   /* The visible strip is short, so the decorative orbits and logo are smaller
-     than their desktop counterparts. */
+     than their desktop counterparts. The scroll hook writes a counter-scale
+     here so they grow at the desktop rate instead of inheriting the larger
+     cover zoom. */
   .landing-hero__orbit {
     top: 50%;
   }
@@ -1197,10 +1206,12 @@ body:has(.landing-page) {
     font-size: 8px;
   }
 
-  /* Phones keep the cards still in the panel. Only their resting tilt remains;
-     they ride with the artwork zoom and can leave the screen naturally. */
+  /* Resting tilt. The scroll hook cancels the panel zoom locally and eases
+     each card to its framed laptop position, so the cards grow at the desktop
+     rate and stay in view instead of being cropped by the wide cover. */
   .landing-hero__ui--products,
-  .landing-hero__ui--invoice {
+  .landing-hero__ui--invoice,
+  .landing-hero__ui--access {
     transform: rotate(var(--ui-rotate));
   }
 
@@ -1216,8 +1227,41 @@ body:has(.landing-page) {
     top: 14%;
   }
 
+  /* The access card returns in the compact card family: same laptop structure,
+     tighter rhythm, centered at the bottom of the short phone panel. It is
+     centered with auto margins rather than a transform so the scroll hook can
+     own its transform without a leftover translate. */
   .landing-hero__ui--access {
-    display: none;
+    --ui-rotate: 1.2deg;
+    left: 0;
+    right: 0;
+    bottom: 5%;
+    margin-inline: auto;
+  }
+
+  .landing-hero__access-body {
+    gap: 6px;
+    margin-top: 5px;
+  }
+
+  .landing-hero__avatar {
+    width: 16px;
+    height: 16px;
+    border-width: 1px;
+    font-size: 6px;
+  }
+
+  .landing-hero__avatar+.landing-hero__avatar {
+    margin-left: -4px;
+  }
+
+  .landing-hero__access-meta {
+    gap: 0;
+    font-size: 7px;
+  }
+
+  .landing-hero__access-name {
+    font-size: 8px;
   }
 }
 
