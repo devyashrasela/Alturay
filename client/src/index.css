@@ -299,6 +299,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
 }
 
 html {
@@ -362,7 +363,11 @@ textarea {
   font-family: inherit;
 }
 
-/* Accessible, consistent focus indicators */
+/* Keep keyboard focus visible without flashing a ring on pointer taps. */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
 :focus-visible {
   outline: 2px solid var(--icon);
   outline-offset: 2px;
