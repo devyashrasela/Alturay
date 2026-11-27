@@ -40,7 +40,7 @@ export default function DashboardHeader({
     <div className="dash-head">
       <div>
         <h1 className="page-title">
-          {greeting}{firstName ? `, ${firstName}` : ''} 👋
+          {greeting}{firstName ? `, ${firstName}` : ''}
         </h1>
         <p className="page-sub">
           {isStaff
