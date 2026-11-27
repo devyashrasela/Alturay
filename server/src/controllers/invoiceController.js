@@ -37,7 +37,7 @@ exports.list = async (req, res, next) => {
         {
           model: User,
           as: 'creator',
-          attributes: ['id', 'name'],
+          attributes: ['id', 'name', 'email'],
         },
       ],
     });
@@ -172,7 +172,7 @@ exports.create = async (req, res, next) => {
       where: { id: invoice.id, business_id: req.businessId },
       include: [
         { model: InvoiceItem, as: 'items' },
-        { model: User, as: 'creator', attributes: ['id', 'name'] },
+        { model: User, as: 'creator', attributes: ['id', 'name', 'email'] },
       ],
     });
 
@@ -209,7 +209,7 @@ exports.getById = async (req, res, next) => {
         {
           model: User,
           as: 'creator',
-          attributes: ['id', 'name'],
+          attributes: ['id', 'name', 'email'],
         },
       ],
     });
@@ -326,7 +326,7 @@ exports.update = async (req, res, next) => {
       where: { id: invoice.id, business_id: req.businessId },
       include: [
         { model: InvoiceItem, as: 'items' },
-        { model: User, as: 'creator', attributes: ['id', 'name'] },
+        { model: User, as: 'creator', attributes: ['id', 'name', 'email'] },
       ],
     });
 

@@ -42,6 +42,7 @@ export default function RightDock({
 }) {
   const navigate = useNavigate();
   const { activeBusinessId, activeBusiness } = useSelector((s) => s.business);
+  const currentUserId = useSelector((s) => s.auth.user?.id);
   const currentTheme =
     useSelector((s) => s.theme?.currentTheme || s.theme?.current) ||
     (typeof document !== 'undefined' && document.documentElement?.getAttribute('data-theme')) ||
@@ -638,6 +639,23 @@ export default function RightDock({
                     <p>{invoiceData.notes}</p>
                   </div>
                 )}
+
+                <div className="dock-invoice__creator">
+                  <span className="dock-invoice__creator-label">Created by</span>
+                  <div className="dock-invoice__creator-person">
+                    <span className="dock-invoice__creator-name">
+                      {invoiceData.creator?.name || 'Unknown'}
+                      {invoiceData.creator?.id && invoiceData.creator.id === currentUserId && (
+                        <span className="dock-invoice__creator-you"> (you)</span>
+                      )}
+                    </span>
+                    {invoiceData.creator?.email && (
+                      <span className="dock-invoice__creator-email">
+                        {invoiceData.creator.email}
+                      </span>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           )}
