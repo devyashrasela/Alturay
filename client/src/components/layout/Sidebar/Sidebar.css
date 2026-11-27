@@ -357,7 +357,7 @@ a.item[aria-current="page"] {
 .side-flyout {
   position: fixed;
   z-index: 90;
-  background: var(--panel);
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 14px;
   padding: 6px;

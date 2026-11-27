@@ -38,7 +38,7 @@
   right: 0;
   top: calc(100% + 8px);
   width: 320px;
-  background: var(--panel);
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 12px;
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.55);
@@ -67,7 +67,7 @@
   font-weight: 600;
   font-size: 13.5px;
   color: var(--text);
-  background: var(--panel-2);
+  background: transparent;
 }
 
 .notif-head__badge {

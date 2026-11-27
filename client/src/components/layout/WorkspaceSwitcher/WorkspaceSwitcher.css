@@ -49,7 +49,7 @@
   left: 0;
   top: calc(100% + 6px);
   width: 252px;
-  background: var(--panel);
+  background: var(--bg);
   border: 1px solid var(--border);
   border-radius: 12px;
   box-shadow: 0 20px 48px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
@@ -79,7 +79,7 @@
   padding: 0 12px;
   border-bottom: 1px solid var(--border);
   color: var(--muted);
-  background: var(--panel-2);
+  background: transparent;
 }
 
 .wss input {
@@ -180,7 +180,7 @@
 .wsadd {
   border-top: 1px solid var(--border);
   padding: 5px;
-  background: var(--panel-2);
+  background: transparent;
 }
 
 .wsa {

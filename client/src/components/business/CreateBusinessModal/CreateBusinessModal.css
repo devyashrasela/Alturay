@@ -36,7 +36,7 @@
   align-items: center;
   gap: 16px;
   padding: 12px;
-  background: var(--color-bg-muted, var(--hover));
+  background: transparent;
   border: 1px dashed var(--color-border, var(--border));
   border-radius: var(--radius-md, 8px);
   transition: border-color 0.15s ease;
