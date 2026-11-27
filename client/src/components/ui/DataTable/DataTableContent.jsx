@@ -1,4 +1,5 @@
 import { PageLoader } from '../Loader/Spinner';
+import EmptyState from '../EmptyState/EmptyState';
 import {
   DataTableTable,
   DataTableHead,
@@ -28,20 +29,7 @@ export function DataTableContent({
 
   if (isEmpty) {
     if (!emptyState) return null;
-    return (
-      <div className="card empty">
-        {emptyState.icon ? (
-          <div className="ico">{emptyState.icon}</div>
-        ) : null}
-        <h3>{emptyState.title}</h3>
-        {emptyState.description && <p>{emptyState.description}</p>}
-        {emptyState.actionLabel && emptyState.onAction && (
-          <button type="button" className="btn primary" onClick={emptyState.onAction}>
-            {emptyState.actionLabel}
-          </button>
-        )}
-      </div>
-    );
+    return <EmptyState {...emptyState} />;
   }
 
   if (children) {

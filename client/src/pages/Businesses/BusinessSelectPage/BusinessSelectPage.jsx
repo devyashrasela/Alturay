@@ -7,6 +7,8 @@ import { useGetBusinessesQuery } from '../../../store/api/businessApi';
 import { addToast } from '../../../store/slices/uiSlice';
 import { PageLoader } from '../../../components/ui/Loader/Spinner';
 import Icon from '../../../components/ui/Icon/Icon';
+import UserMenu from '../../../components/layout/UserMenu/UserMenu';
+import UserSettingsModal from '../../../components/layout/UserSettingsModal/UserSettingsModal';
 import CreateBusinessModal from '../../../components/business/CreateBusinessModal/CreateBusinessModal';
 import './BusinessSelect.css';
 
@@ -17,6 +19,8 @@ export default function BusinessSelectPage() {
   const currentTheme = useSelector((s) => s.theme?.currentTheme) || (typeof document !== 'undefined' && document.documentElement?.getAttribute('data-theme')) || 'dark';
   const { data, isLoading } = useGetBusinessesQuery();
   const [showModal, setShowModal] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsTab, setSettingsTab] = useState('profile');
 
   const businesses = data?.data?.businesses || [];
 
@@ -37,11 +41,18 @@ export default function BusinessSelectPage() {
     navigate('/login');
   };
 
+  const handleOpenUserSettings = (tab = 'profile') => {
+    setSettingsTab(tab);
+    setSettingsOpen(true);
+  };
+
+  const handleOpenHelp = () => handleOpenUserSettings('help');
+
   if (isLoading) return <PageLoader />;
 
   return (
     <div className="biz-select-page">
-      {/* ── Top section: Brand logo, name, and help link (no border, no header bar) ── */}
+      {/* ── Top section: Brand logo, name, and account menu (no border, no header bar) ── */}
       <div className="top">
         <div className="brand">
           <img
@@ -55,10 +66,10 @@ export default function BusinessSelectPage() {
           <span>Alturay</span>
         </div>
         <div className="tr">
-          <a href="mailto:support@alturay.com">
-            <Icon name="help" size={18} />
-            <span>Help</span>
-          </a>
+          <UserMenu
+            onOpenUserSettings={handleOpenUserSettings}
+            onOpenHelp={handleOpenHelp}
+          />
         </div>
       </div>
 
@@ -143,12 +154,20 @@ export default function BusinessSelectPage() {
         </div>
       </main>
 
-      {/* Modal */}
+      {/* Modals */}
       {showModal && (
         <CreateBusinessModal
           isOpen={showModal}
           onClose={() => setShowModal(false)}
           onSuccess={handleCreatedSuccess}
+        />
+      )}
+
+      {settingsOpen && (
+        <UserSettingsModal
+          isOpen={settingsOpen}
+          initialTab={settingsTab}
+          onClose={() => setSettingsOpen(false)}
         />
       )}
     </div>

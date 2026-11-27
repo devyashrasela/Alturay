@@ -9,7 +9,8 @@
   min-width: 0;
   overflow: hidden;
   background: var(--bg);
-  border-left: 1px solid var(--border);
+  border-left: 0;
+  box-shadow: inset 1px 0 0 var(--border);
   visibility: hidden;
   z-index: 40;
 }

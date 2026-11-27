@@ -58,6 +58,41 @@ export default function InvoicesPage() {
   const meta = data?.meta || {};
   const selectedInvoice = dock?.data;
 
+  const hasInvoiceFilters = Boolean(search.trim()) || Boolean(typeFilter);
+  const documentLabel =
+    typeFilter === 'invoice'
+      ? 'invoices'
+      : typeFilter === 'bill'
+        ? 'bills'
+        : 'invoices or bills';
+  const nextDocumentLabel =
+    typeFilter === 'invoice' ? 'invoice' : typeFilter === 'bill' ? 'bill' : 'invoice or bill';
+
+  const clearInvoiceFilters = () => {
+    setSearch('');
+    setTypeFilter('');
+    setPage(1);
+    navigate(location.pathname, { replace: true });
+  };
+
+  const emptyState = hasInvoiceFilters
+    ? {
+        icon: <Icon name="search" size={32} />,
+        title: `No matching ${documentLabel}`,
+        description: search.trim()
+          ? `No ${documentLabel} match “${search.trim()}” in this view. Try another search or clear the filters.`
+          : `No ${documentLabel} are available in this view. Try another tab or clear the filters.`,
+        actionLabel: 'Clear filters',
+        onAction: clearInvoiceFilters,
+      }
+    : {
+        icon: <Icon name="file" size={32} />,
+        title: `No ${documentLabel} yet`,
+        description: `Create your first ${nextDocumentLabel} to see it here.`,
+        actionLabel: canCreate ? 'New invoice' : undefined,
+        onAction: canCreate ? () => navigate('/invoices/new?type=invoice') : undefined,
+      };
+
   // Auto-open dock when redirected from edit/create with a selected invoice
   const handledTargetRef = useRef(null);
   useEffect(() => {
@@ -230,13 +265,7 @@ export default function InvoicesPage() {
         <DataTable.Content
           isLoading={isLoading}
           isEmpty={invoices.length === 0}
-          emptyState={{
-            icon: <Icon name="file" size={32} />,
-            title: 'No invoices found',
-            description: 'You have not created any invoices yet.',
-            actionLabel: canCreate ? 'New invoice' : undefined,
-            onAction: canCreate ? () => navigate('/invoices/new?type=invoice') : undefined,
-          }}
+          emptyState={emptyState}
           columns={columns}
           data={invoices}
           onRowClick={handleRowClick}

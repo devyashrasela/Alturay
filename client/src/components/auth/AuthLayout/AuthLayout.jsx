@@ -1,4 +1,7 @@
+import { Link } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import '../../../pages/Auth/Auth.css';
+
 export default function AuthLayout({ title, subtitle, children, footer }) {
   return (
     <div className="auth-screen">
@@ -26,6 +29,10 @@ export default function AuthLayout({ title, subtitle, children, footer }) {
 
           <div className="auth-panel__content">
             <header className="auth-head">
+              <Link to="/" className="auth-back">
+                <ArrowLeft size={16} aria-hidden="true" />
+                <span>Back</span>
+              </Link>
               <h1 className="auth-head__title" id="auth-title">{title}</h1>
               <p className="auth-head__subtitle">{subtitle}</p>
             </header>

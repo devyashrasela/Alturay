@@ -15,7 +15,7 @@
   -webkit-font-smoothing: antialiased;
 }
 
-/* ── Top Bar: No header border/box, just logo, brand name, and help button ── */
+/* ── Top Bar: No header border/box, just logo, brand name, and account menu ── */
 .biz-select-page .top {
   height: 49px;
   display: flex;
@@ -50,36 +50,6 @@
 .biz-select-page .tr {
   display: flex;
   align-items: center;
-  gap: 18px;
-  color: var(--text-2);
-}
-
-.biz-select-page .tr a,
-.biz-select-page .tr button {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  height: 30px;
-  padding: 0 6px;
-  border-radius: 8px;
-  font-size: 14px;
-  color: var(--text-2);
-  border: 0;
-  background: transparent;
-  cursor: pointer;
-  text-decoration: none;
-  transition: background 0.12s, color 0.12s;
-}
-
-.biz-select-page .tr a:hover,
-.biz-select-page .tr button:hover {
-  background: var(--hover);
-  color: var(--text);
-}
-
-.biz-select-page .tr .i {
-  width: 18px;
-  height: 18px;
 }
 
 /* ── Main Blueprint Frame ── */

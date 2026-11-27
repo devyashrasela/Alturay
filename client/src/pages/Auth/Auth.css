@@ -80,6 +80,29 @@
   text-align: left;
 }
 
+.auth-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 14px;
+  padding: 4px 2px;
+  border-radius: var(--radius-sm);
+  color: var(--color-text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.auth-back:hover {
+  color: var(--color-text-primary);
+}
+
+.auth-back:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
 .auth-head__title {
   font-family: var(--font-family);
   font-size: clamp(30px, 2.5vw, 36px);
