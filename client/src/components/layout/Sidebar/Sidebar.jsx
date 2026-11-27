@@ -146,13 +146,6 @@ export default function Sidebar({ collapsed, onToggleCollapse, onQuickSearch }) 
                 </NavLink>
                 <button type="button" className="sub dis" disabled>
                   <span>
-                    Summary
-                    <small>Overview</small>
-                  </span>
-                  <span className="soon">SOON</span>
-                </button>
-                <button type="button" className="sub dis" disabled>
-                  <span>
                     Replenishment
                     <small>Add stock</small>
                   </span>
@@ -226,13 +219,6 @@ export default function Sidebar({ collapsed, onToggleCollapse, onQuickSearch }) 
               </button>
 
               <div className="sublist">
-                <button type="button" className="sub dis" disabled>
-                  <span>
-                    Overview
-                    <small>Billing dashboard</small>
-                  </span>
-                  <span className="soon">SOON</span>
-                </button>
 
                 <NavLink
                   to="/invoices"
