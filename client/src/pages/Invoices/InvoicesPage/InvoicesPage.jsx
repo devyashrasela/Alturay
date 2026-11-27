@@ -29,11 +29,13 @@ export default function InvoicesPage() {
   const location = useLocation();
   const { activeBusinessId, activeBusiness } = useSelector((s) => s.business);
   const { dock } = useSelector((s) => s.ui);
-  const { can } = usePermissions();
+  const currentUserId = useSelector((s) => s.auth.user?.id);
+  const { can, role } = usePermissions();
 
   const selectedInvoiceId = dock?.open && dock?.type === 'invoice' ? dock.data?.id : null;
 
   const canCreate = can('invoice.create');
+  const canSeeCreatedBy = ['owner', 'admin', 'manager'].includes(role);
   const [page, setPage] = useState(1);
   const [typeFilter, setTypeFilter] = useState('');
   const [confirmCancel, setConfirmCancel] = useState(false);
@@ -149,7 +151,7 @@ export default function InvoicesPage() {
     {
       key: 'invoice_number',
       header: 'Document',
-      width: '18%',
+      width: canSeeCreatedBy ? '16%' : '19%',
       render: (inv) => (
         <span style={{ fontWeight: 600, color: 'var(--text)' }}>
           {inv.invoice_number}
@@ -157,37 +159,41 @@ export default function InvoicesPage() {
       ),
     },
     {
-      key: 'type',
-      header: 'Type',
-      width: '12%',
-      render: (inv) => (
-        <span style={{ textTransform: 'capitalize', color: 'var(--text-2)' }}>
-          {inv.type}
-        </span>
-      ),
-    },
-    {
       key: 'customer_name',
       header: 'Customer',
-      width: '26%',
+      width: canSeeCreatedBy ? '20%' : '25%',
       render: (inv) => inv.customer_name || 'Walk-in customer',
     },
     {
       key: 'issue_date',
       header: 'Issue date',
-      width: '16%',
+      width: canSeeCreatedBy ? '12%' : '14%',
       render: (inv) => <span className="tax">{formatDate(inv.issue_date)}</span>,
     },
     {
       key: 'due_date',
       header: 'Due date',
-      width: '16%',
+      width: canSeeCreatedBy ? '12%' : '14%',
       render: (inv) => <span className="tax">{formatDate(inv.due_date)}</span>,
     },
+    ...(canSeeCreatedBy
+      ? [
+          {
+            key: 'creator',
+            header: 'Created By',
+            width: '16%',
+            render: (inv) => {
+              const name = inv.creator?.name || '—';
+              const isYou = Boolean(inv.creator?.id && inv.creator.id === currentUserId);
+              return isYou ? `${name} (you)` : name;
+            },
+          },
+        ]
+      : []),
     {
       key: 'total_amount',
       header: 'Amount',
-      width: '16%',
+      width: canSeeCreatedBy ? '12%' : '14%',
       align: 'right',
       price: true,
       render: (inv) => (
@@ -199,7 +205,7 @@ export default function InvoicesPage() {
     {
       key: 'status',
       header: 'Status',
-      width: '14%',
+      width: canSeeCreatedBy ? '12%' : '14%',
       render: (inv) => {
         const status = effectiveStatus(inv);
         return <StatusBadge status={status} />;
@@ -208,7 +214,7 @@ export default function InvoicesPage() {
   ];
 
   return (
-    <div>
+    <div className="invoices-page">
       {/* ── Page Header matching Alturay_UI_redesign.html .ph ── */}
       <div className="ph">
         <div>
@@ -273,6 +279,8 @@ export default function InvoicesPage() {
           renderRow={(inv) => {
             const isSelected = selectedInvoiceId === inv.id;
             const status = effectiveStatus(inv);
+            const creatorName = inv.creator?.name || '—';
+            const isCreatorYou = Boolean(inv.creator?.id && inv.creator.id === currentUserId);
 
             return (
               <DataTable.Row
@@ -282,10 +290,15 @@ export default function InvoicesPage() {
                 data-id={inv.id}
               >
                 <td>{inv.invoice_number}</td>
-                <td style={{ textTransform: 'capitalize' }}>{inv.type}</td>
                 <td>{inv.customer_name || 'Walk-in customer'}</td>
                 <td className="tax">{formatDate(inv.issue_date)}</td>
                 <td className="tax">{formatDate(inv.due_date)}</td>
+                <td className={`invoices-created-by${isCreatorYou ? ' is-you' : ''}`}>
+                  <span className="invoices-created-by-content">
+                    <span className="invoices-created-by-name">{creatorName}</span>
+                    {isCreatorYou && <span className="invoices-created-by-you">(you)</span>}
+                  </span>
+                </td>
                 <td className="num price">
                   {formatCurrency(inv.total_amount, activeBusiness?.currency)}
                 </td>
