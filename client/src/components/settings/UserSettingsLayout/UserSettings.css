@@ -172,6 +172,14 @@
   transition: color var(--transition-fast);
 }
 
+.settings-sidebar__item > span:not(.settings-sidebar__soon) {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .settings-sidebar__item:hover:not(:disabled):not(.settings-sidebar__item--active) {
   background: var(--sidebar-hover-bg);
   color: var(--sidebar-text-strong);
@@ -197,11 +205,13 @@
 
 .settings-sidebar__soon {
   margin-left: auto;
+  flex: none;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--sidebar-text-muted);
+  white-space: nowrap;
 }
 
 .settings-sidebar__empty {

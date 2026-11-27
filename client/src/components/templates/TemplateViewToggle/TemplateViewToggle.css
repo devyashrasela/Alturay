@@ -1,0 +1,44 @@
+.template-view-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--color-border, var(--border));
+  border-radius: 10px;
+  background: transparent;
+}
+
+.template-view-toggle__button {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--color-text-secondary, var(--text-2));
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast, 120ms ease),
+    color var(--transition-fast, 120ms ease);
+}
+
+.template-view-toggle__button:hover {
+  color: var(--color-text-primary, var(--text));
+}
+
+.template-view-toggle__button:focus-visible {
+  outline: 2px solid var(--color-primary, var(--accent));
+  outline-offset: 1px;
+}
+
+/* Selected state matches a selected sidebar navigation item. */
+.template-view-toggle__button--active {
+  background: var(--hover);
+  color: var(--color-text-primary, var(--text));
+}
+
+.template-view-toggle__button--active:hover {
+  color: var(--color-text-primary, var(--text));
+}

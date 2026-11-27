@@ -10,7 +10,7 @@ import TemplateCard from '../TemplateCard/TemplateCard';
 import Button from '../../ui/Button/Button';
 import './TemplateSelector.css';
 
-export default function TemplateSelector({ type = 'invoice' }) {
+export default function TemplateSelector({ type = 'invoice', view = 'grid' }) {
   const dispatch = useDispatch();
   const { activeBusiness } = useSelector((s) => s.business);
   const [updateBusiness, { isLoading: isSaving }] = useUpdateBusinessMutation();
@@ -84,7 +84,7 @@ export default function TemplateSelector({ type = 'invoice' }) {
     <div className="template-selector">
       {/* Templates Grid */}
       <div
-        className="template-grid"
+        className={`template-grid ${view === 'list' ? 'template-grid--list' : ''}`}
         role="radiogroup"
         aria-label={`Select ${type} template`}
       >
@@ -95,6 +95,7 @@ export default function TemplateSelector({ type = 'invoice' }) {
             <TemplateCard
               key={templateId}
               template={meta}
+              layout={view}
               isSelected={selected === templateId}
               isActive={savedTemplateId === templateId}
               isDefault={defaultTemplateId === templateId}

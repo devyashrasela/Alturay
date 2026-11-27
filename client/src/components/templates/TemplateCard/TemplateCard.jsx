@@ -2,6 +2,7 @@ import './TemplateCard.css';
 
 export default function TemplateCard({
   template,
+  layout = 'grid',
   isSelected,
   isActive,
   isDefault,
@@ -15,13 +16,14 @@ export default function TemplateCard({
   };
 
   const isReceipt = template.id === 'receipt';
+  const isList = layout === 'list';
 
   return (
     <div
       role="radio"
       aria-checked={isSelected}
       tabIndex={0}
-      className={`template-card ${isSelected ? 'template-card--selected' : ''}`}
+      className={`template-card ${isList ? 'template-card--list' : ''} ${isSelected ? 'template-card--selected' : ''}`}
       onClick={() => onSelect(template.id)}
       onKeyDown={handleKeyDown}
       id={`template-card-${template.id}`}
@@ -59,7 +61,7 @@ export default function TemplateCard({
 
       <div className="template-card__body">
         <div className="template-card__header-row">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className="template-card__heading">
             <h3 className="template-card__title">{template.name}</h3>
             <div className="template-card__badges">
               {isActive ? (

@@ -34,6 +34,62 @@
   border-color: var(--color-primary, var(--accent));
 }
 
+/* List layout: details on the left, compact preview on the right. */
+.template-card--list {
+  flex-direction: row;
+  min-height: 118px;
+}
+
+.template-card--list:hover {
+  transform: none;
+}
+
+.template-card--list .template-card__body {
+  order: 2;
+  justify-content: center;
+  padding: 14px 52px 14px 18px;
+}
+
+.template-card--list .template-card__radio {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.template-card--list .template-card__header-row {
+  margin-bottom: 4px;
+}
+
+.template-card--list .template-card__heading {
+  flex: 1 1 auto;
+  flex-wrap: wrap;
+}
+
+.template-card--list .template-card__preview-wrap {
+  order: 1;
+  width: clamp(140px, 20vw, 190px);
+  flex: 0 0 auto;
+  aspect-ratio: auto;
+  padding: 12px;
+  border-bottom: 0;
+  border-right: 1px solid var(--color-border, var(--border));
+}
+
+.template-card--list .template-card__image {
+  max-height: 100px;
+}
+
+.template-card--list .template-card__receipt-mock {
+  width: 112px;
+  padding: 8px 10px;
+  gap: 4px;
+}
+
+.template-card--list .template-card__desc {
+  flex: 0 1 auto;
+}
+
 /* Preview Area */
 .template-card__preview-wrap {
   position: relative;
@@ -129,6 +185,13 @@
   margin-bottom: 6px;
 }
 
+.template-card__heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
 .template-card__title {
   font-size: 15px;
   font-weight: 600;
@@ -203,4 +266,44 @@
 .template-card--selected .template-card__radio-inner {
   opacity: 1;
   transform: scale(1);
+}
+
+@media (max-width: 640px) {
+  .template-card--list {
+    min-height: 104px;
+  }
+
+  .template-card--list .template-card__body {
+    padding: 12px 44px 12px 14px;
+  }
+
+  .template-card--list .template-card__radio {
+    right: 14px;
+  }
+
+  .template-card--list .template-card__preview-wrap {
+    width: 108px;
+    padding: 8px;
+  }
+
+  .template-card--list .template-card__image {
+    max-height: 76px;
+  }
+
+  .template-card--list .template-card__receipt-mock {
+    width: 88px;
+    padding: 6px 8px;
+    gap: 3px;
+  }
+
+  .template-card--list .template-card__title {
+    font-size: 14px;
+  }
+
+  .template-card--list .template-card__desc {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
 }
