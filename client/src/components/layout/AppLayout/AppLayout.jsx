@@ -209,6 +209,15 @@ export default function AppLayout() {
     <div
       className={`app ${collapsed ? 'collapsed' : ''} ${dock?.open ? 'panel' : ''} ${dock?.wide ? 'wide' : ''} ${mobileNavOpen ? 'mobile-nav-open' : ''}`}
     >
+      <button
+        type="button"
+        className="mobile-nav-backdrop"
+        aria-label="Close navigation"
+        aria-hidden={!mobileNavOpen}
+        tabIndex={-1}
+        onClick={closeMobileNav}
+      />
+
       <Sidebar
         collapsed={collapsed}
         onToggleCollapse={toggleCollapsed}
