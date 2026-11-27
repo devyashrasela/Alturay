@@ -22,6 +22,19 @@ exports.list = async (req, res, next) => {
 
     const { count, rows } = await Customer.findAndCountAll({
       where: whereClause,
+      attributes: [
+        'id',
+        'name',
+        'email',
+        'phone',
+        'address_line1',
+        'address_line2',
+        'city',
+        'state',
+        'pincode',
+        'is_active',
+        'created_at',
+      ],
       limit: parsedLimit,
       offset,
       order: [['created_at', 'DESC']],

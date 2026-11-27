@@ -4,7 +4,9 @@ const { Product } = require('../models');
 exports.list = async (req, res, next) => {
   try {
     const { page = 1, limit = 20, search = '' } = req.query;
-    const offset = (parseInt(page) - 1) * parseInt(limit);
+    const parsedLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 200);
+    const parsedPage = Math.max(parseInt(page, 10) || 1, 1);
+    const offset = (parsedPage - 1) * parsedLimit;
 
     const whereClause = { business_id: req.businessId };
     if (search) {
@@ -16,7 +18,18 @@ exports.list = async (req, res, next) => {
 
     const { count, rows } = await Product.findAndCountAll({
       where: whereClause,
-      limit: parseInt(limit),
+      attributes: [
+        'id',
+        'name',
+        'sku',
+        'description',
+        'unit_price',
+        'tax_rate',
+        'unit',
+        'is_active',
+        'created_at',
+      ],
+      limit: parsedLimit,
       offset,
       order: [['created_at', 'DESC']],
     });
@@ -25,10 +38,10 @@ exports.list = async (req, res, next) => {
       success: true,
       data: { products: rows },
       meta: {
-        page: parseInt(page),
-        limit: parseInt(limit),
+        page: parsedPage,
+        limit: parsedLimit,
         total: count,
-        totalPages: Math.ceil(count / parseInt(limit)),
+        totalPages: Math.ceil(count / parsedLimit),
       },
     });
   } catch (error) {

@@ -5,7 +5,9 @@ const { calculateInvoiceTotals } = require('../services/invoiceCalculator');
 exports.list = async (req, res, next) => {
   try {
     const { page = 1, limit = 20, type, status, search = '' } = req.query;
-    const offset = (parseInt(page) - 1) * parseInt(limit);
+    const parsedLimit = Math.min(Math.max(parseInt(limit, 10) || 20, 1), 100);
+    const parsedPage = Math.max(parseInt(page, 10) || 1, 1);
+    const offset = (parsedPage - 1) * parsedLimit;
 
     const whereClause = { business_id: req.businessId };
     if (req.memberRole === 'staff') {
@@ -22,18 +24,31 @@ exports.list = async (req, res, next) => {
 
     const { count, rows } = await Invoice.findAndCountAll({
       where: whereClause,
-      // The `items` join multiplies rows, so count distinct invoices instead of
-      // joined rows — otherwise the pagination reports phantom pages.
-      distinct: true,
-      col: 'id',
-      limit: parseInt(limit),
+      attributes: [
+        'id',
+        'business_id',
+        'customer_id',
+        'invoice_number',
+        'type',
+        'customer_name',
+        'customer_phone',
+        'customer_email',
+        'issue_date',
+        'due_date',
+        'subtotal',
+        'tax_total',
+        'discount_amount',
+        'discount_percent',
+        'total_amount',
+        'status',
+        'created_by',
+        'created_at',
+        'updated_at',
+      ],
+      limit: parsedLimit,
       offset,
       order: [['created_at', 'DESC']],
       include: [
-        {
-          model: InvoiceItem,
-          as: 'items',
-        },
         {
           model: User,
           as: 'creator',
@@ -46,10 +61,10 @@ exports.list = async (req, res, next) => {
       success: true,
       data: { invoices: rows },
       meta: {
-        page: parseInt(page),
-        limit: parseInt(limit),
+        page: parsedPage,
+        limit: parsedLimit,
         total: count,
-        totalPages: Math.ceil(count / parseInt(limit)),
+        totalPages: Math.ceil(count / parsedLimit),
       },
     });
   } catch (error) {
