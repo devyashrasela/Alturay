@@ -43,6 +43,7 @@
 
 .side-scroll {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   padding: 11px 13px;
   scrollbar-width: thin;
@@ -278,7 +279,8 @@ a.item[aria-current="page"] {
 }
 
 .collapse-btn,
-.collapse {
+.collapse,
+.side-close {
   width: 32px;
   height: 32px;
   border-radius: 9px;
@@ -291,66 +293,74 @@ a.item[aria-current="page"] {
   transition: background 0.12s, color 0.12s;
 }
 
+.side-close {
+  display: none;
+}
+
 .collapse-btn:hover,
 .collapse-btn:focus-visible,
 .collapse:hover,
-.collapse:focus-visible {
+.collapse:focus-visible,
+.side-close:hover,
+.side-close:focus-visible {
   background: var(--hover);
   color: var(--text);
 }
 
-/* ── Collapsed rail state (64px) ── */
-.app.collapsed .side {
-  width: 64px;
-}
+/* ── Collapsed rail state (64px), desktop only ── */
+@media (min-width: 1001px) {
+  .app.collapsed .side {
+    width: 64px;
+  }
 
-.app.collapsed .side-top {
-  justify-content: center;
-  padding: 0;
-  gap: 0;
-}
+  .app.collapsed .side-top {
+    justify-content: center;
+    padding: 0;
+    gap: 0;
+  }
 
-.app.collapsed .wswrap,
-.app.collapsed .lbl,
-.app.collapsed .qt,
-.app.collapsed .qs kbd,
-.app.collapsed .item .chev,
-.app.collapsed .sublist {
-  display: none !important;
-}
+  .app.collapsed .wswrap,
+  .app.collapsed .lbl,
+  .app.collapsed .qt,
+  .app.collapsed .qs kbd,
+  .app.collapsed .item .chev,
+  .app.collapsed .sublist {
+    display: none !important;
+  }
 
-.app.collapsed .side-scroll {
-  padding: 10px 11px;
-}
+  .app.collapsed .side-scroll {
+    padding: 10px 11px;
+  }
 
-.app.collapsed .qs {
-  padding: 0;
-  justify-content: center;
-  gap: 0;
-}
+  .app.collapsed .qs {
+    padding: 0;
+    justify-content: center;
+    gap: 0;
+  }
 
-.app.collapsed .item {
-  justify-content: center;
-  padding: 0;
-  gap: 0;
-}
+  .app.collapsed .item {
+    justify-content: center;
+    padding: 0;
+    gap: 0;
+  }
 
-.app.collapsed .item[aria-expanded="true"] {
-  background: none;
-}
+  .app.collapsed .item[aria-expanded="true"] {
+    background: none;
+  }
 
-.app.collapsed .item:hover {
-  background: var(--hover);
-}
+  .app.collapsed .item:hover {
+    background: var(--hover);
+  }
 
-.app.collapsed .item.active,
-.app.collapsed .item.cur {
-  background: var(--hover);
-}
+  .app.collapsed .item.active,
+  .app.collapsed .item.cur {
+    background: var(--hover);
+  }
 
-.app.collapsed .side-foot {
-  justify-content: center;
-  padding: 0;
+  .app.collapsed .side-foot {
+    justify-content: center;
+    padding: 0;
+  }
 }
 
 /* ── Floating Flyout on Collapsed Hover ── */
@@ -375,4 +385,25 @@ a.item[aria-current="page"] {
   text-transform: uppercase;
   color: var(--muted);
   font-weight: 600;
+}
+
+/* ── Mobile drawer: close control and pinned footer ── */
+@media (max-width: 1000px) {
+  .app.mobile-nav-open .side-scroll {
+    overscroll-behavior: contain;
+  }
+
+  .app.mobile-nav-open .side-foot {
+    height: auto;
+    min-height: calc(42px + env(safe-area-inset-bottom, 0px));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  .side-foot .collapse {
+    display: none;
+  }
+
+  .side-foot .side-close {
+    display: grid;
+  }
 }

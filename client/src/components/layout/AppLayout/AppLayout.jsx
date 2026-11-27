@@ -50,6 +50,7 @@ export default function AppLayout() {
 
   // Track previous values for auto-close logic
   const prevPathnameRef = useRef(location.pathname);
+  const prevMobilePathRef = useRef(location.pathname);
   const prevBusinessIdRef = useRef(activeBusinessId);
 
   const { data: meData } = useGetMeQuery(undefined, { skip: !isAuthenticated });
@@ -86,6 +87,8 @@ export default function AppLayout() {
     });
   }, []);
 
+  const closeMobileNav = useCallback(() => setMobileNavOpen(false), []);
+
   const handleOpenUserSettings = useCallback((tab = 'profile') => {
     setUserSettingsTab(tab);
     setUserSettingsOpen(true);
@@ -116,16 +119,16 @@ export default function AppLayout() {
     };
   }, []);
 
-  // Keyboard escape for dock
+  // Keyboard escape for dock and mobile navigation
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key === 'Escape' && dock?.open && !userSettingsOpen) {
-        handleCloseDock();
-      }
+      if (e.key !== 'Escape' || userSettingsOpen) return;
+      if (dock?.open) handleCloseDock();
+      else if (mobileNavOpen) closeMobileNav();
     };
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
-  }, [dock?.open, userSettingsOpen, handleCloseDock]);
+  }, [dock?.open, mobileNavOpen, userSettingsOpen, handleCloseDock, closeMobileNav]);
 
   // Auto-close dock on route change
   useEffect(() => {
@@ -134,6 +137,14 @@ export default function AppLayout() {
     }
     prevPathnameRef.current = location.pathname;
   }, [location.pathname, dock?.open, dispatch]);
+
+  // Auto-close mobile navigation on route change
+  useEffect(() => {
+    if (prevMobilePathRef.current !== location.pathname && mobileNavOpen) {
+      closeMobileNav();
+    }
+    prevMobilePathRef.current = location.pathname;
+  }, [location.pathname, mobileNavOpen, closeMobileNav]);
 
   // Auto-close dock on workspace switch
   useEffect(() => {
@@ -201,6 +212,7 @@ export default function AppLayout() {
       <Sidebar
         collapsed={collapsed}
         onToggleCollapse={toggleCollapsed}
+        onCloseMobileNav={closeMobileNav}
       />
 
       <div className="app-layout__main-col">

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { createPortal } from 'react-dom';
@@ -7,7 +7,9 @@ import WorkspaceSwitcher from '../WorkspaceSwitcher/WorkspaceSwitcher';
 import { usePermissions } from '../../../hooks/usePermissions';
 import './Sidebar.css';
 
-export default function Sidebar({ collapsed, onToggleCollapse, onQuickSearch }) {
+const DESKTOP_NAV_QUERY = '(min-width: 1001px)';
+
+export default function Sidebar({ collapsed, onToggleCollapse, onCloseMobileNav, onQuickSearch }) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const currentTheme = useSelector((state) => state.theme?.currentTheme) || (typeof document !== 'undefined' && document.documentElement?.getAttribute('data-theme')) || 'dark';
@@ -24,12 +26,21 @@ export default function Sidebar({ collapsed, onToggleCollapse, onQuickSearch }) 
   const [flyout, setFlyout] = useState(null);
   const flyoutTimerRef = useRef(null);
 
+  useEffect(() => {
+    const media = window.matchMedia(DESKTOP_NAV_QUERY);
+    const clearOnMobile = () => {
+      if (!media.matches) setFlyout(null);
+    };
+    media.addEventListener('change', clearOnMobile);
+    return () => media.removeEventListener('change', clearOnMobile);
+  }, []);
+
   const toggleGroup = (id) => {
     setOpenGroups((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
   const showFlyout = (e, groupData) => {
-    if (!collapsed) return;
+    if (!collapsed || !window.matchMedia(DESKTOP_NAV_QUERY).matches) return;
     clearTimeout(flyoutTimerRef.current);
     const rect = e.currentTarget.getBoundingClientRect();
     setFlyout({
@@ -351,7 +362,7 @@ export default function Sidebar({ collapsed, onToggleCollapse, onQuickSearch }) 
         </nav>
       </div>
 
-      {/* ── Footer with Sidebar Collapse Toggle ── */}
+      {/* ── Footer: desktop collapse / mobile close ── */}
       <div className="side-foot">
         <button
           type="button"
@@ -363,6 +374,15 @@ export default function Sidebar({ collapsed, onToggleCollapse, onQuickSearch }) 
           onClick={onToggleCollapse}
         >
           <Icon name={collapsed ? 'dright' : 'panel'} size={18} />
+        </button>
+        <button
+          type="button"
+          className="side-close"
+          aria-label="Close navigation"
+          title="Close navigation"
+          onClick={onCloseMobileNav}
+        >
+          <Icon name="xmark" size={18} />
         </button>
       </div>
 

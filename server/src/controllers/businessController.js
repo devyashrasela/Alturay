@@ -45,7 +45,7 @@ exports.list = async (req, res, next) => {
     const businesses = memberships.map((m) => ({
       ...m.business.toJSON(),
       role: m.role,
-      joined_at: m.created_at,
+      joined_at: m.get('created_at'),
     }));
 
     return res.json({ success: true, data: { businesses } });
