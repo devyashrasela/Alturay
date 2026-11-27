@@ -11,6 +11,7 @@ const sequelize = new Sequelize(
     port: config.db.port,
     dialect: 'mysql',
     dialectModule: mysql2,
+    dialectOptions: { ssl: config.db.ssl },
     logging: false,
     pool: {
       max: 10,

@@ -1,5 +1,7 @@
 require('dotenv').config();
 
+const tls = require('tls');
+
 const requiredEnvVars = ['DB_HOST', 'DB_NAME', 'DB_USER', 'JWT_SECRET'];
 
 for (const envVar of requiredEnvVars) {
@@ -24,6 +26,10 @@ module.exports = {
     name: process.env.DB_NAME,
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD || '',
+    ssl: {
+      ca: [...tls.rootCertificates],
+      rejectUnauthorized: true,
+    },
   },
 
   jwt: {

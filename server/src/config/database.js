@@ -1,5 +1,9 @@
 require('dotenv').config();
 
+const tls = require('tls');
+
+const dialectOptions = { ssl: { ca: [...tls.rootCertificates], rejectUnauthorized: true } };
+
 module.exports = {
   development: {
     username: process.env.DB_USER || 'root',
@@ -8,6 +12,7 @@ module.exports = {
     host: process.env.DB_HOST || 'localhost',
     port: parseInt(process.env.DB_PORT, 10) || 3306,
     dialect: 'mysql',
+    dialectOptions,
     logging: false,
   },
   test: {
@@ -17,6 +22,7 @@ module.exports = {
     host: process.env.DB_HOST || 'localhost',
     port: parseInt(process.env.DB_PORT, 10) || 3306,
     dialect: 'mysql',
+    dialectOptions,
     logging: false,
   },
   production: {
@@ -26,6 +32,7 @@ module.exports = {
     host: process.env.DB_HOST,
     port: parseInt(process.env.DB_PORT, 10) || 3306,
     dialect: 'mysql',
+    dialectOptions,
     logging: false,
     pool: {
       max: 10,
