@@ -2,7 +2,7 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  background: var(--color-bg-card, var(--panel));
+  background: transparent;
   border: 2px solid var(--color-border, var(--border));
   border-radius: var(--radius-lg, 12px);
   overflow: hidden;
@@ -95,7 +95,7 @@
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 11;
-  background: var(--color-bg-muted, var(--hover));
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -243,7 +243,7 @@
   height: 20px;
   border-radius: 50%;
   border: 2px solid var(--color-border, var(--border));
-  background: var(--color-bg-card, var(--panel));
+  background: transparent;
   transition: all 0.2s ease;
   flex-shrink: 0;
 }

@@ -22,7 +22,7 @@
   align-items: center;
   border: 1px solid var(--border);
   border-radius: 9px;
-  background: var(--panel-2);
+  background: transparent;
   overflow: hidden;
   height: 32px;
   width: 100%;
@@ -123,7 +123,7 @@
   align-items: center;
   gap: 6px;
   border: 1px solid var(--border);
-  background: var(--panel-2);
+  background: transparent;
   color: var(--text-2);
   cursor: pointer;
   font-size: 13px;
@@ -162,7 +162,7 @@
 
 .datatable-card,
 .card.tbl {
-  background: var(--panel);
+  background: transparent;
   border: 1px solid var(--border);
   border-radius: 18px;
   overflow: hidden;
@@ -190,7 +190,7 @@ th {
   font-size: 13.5px;
   font-weight: 500;
   color: var(--muted);
-  background: var(--panel-2);
+  background: transparent;
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
 }
@@ -260,7 +260,7 @@ td.num,
   border-top: 1px solid var(--border);
   color: var(--muted);
   font-size: 13px;
-  background: var(--panel-2);
+  background: transparent;
 }
 
 .db-pagination-btns {
@@ -273,7 +273,7 @@ td.num,
   padding: 0 10px;
   border-radius: 6px;
   border: 1px solid var(--border);
-  background: var(--panel);
+  background: transparent;
   color: var(--text-2);
   font-size: 12.5px;
   cursor: pointer;
@@ -307,7 +307,7 @@ td.num,
   align-items: center;
   justify-content: center;
   border: 1px solid var(--border);
-  background: var(--panel-2);
+  background: transparent;
   color: var(--text-2);
   cursor: pointer;
   padding: 0;

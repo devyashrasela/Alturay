@@ -94,7 +94,7 @@
 }
 
 .dcard {
-  background: var(--panel);
+  background: transparent;
   border: 1px solid var(--border);
   border-radius: 12px;
 }

@@ -599,7 +599,7 @@ export default function CreateInvoicePage() {
                     gap: 3,
                     padding: '8px 12px',
                     borderRadius: 'var(--radius-md, 6px)',
-                    background: 'var(--color-bg-muted, rgba(255, 255, 255, 0.04))',
+                    background: 'transparent',
                     border: '1px solid var(--color-border)',
                     fontSize: 12,
                   }}

@@ -49,7 +49,7 @@
 
 /* ── Base Card ── */
 .bcard {
-  background: var(--panel);
+  background: transparent;
   border: 1px solid var(--border);
   border-radius: 16px;
   overflow: hidden;
@@ -548,7 +548,7 @@
 
 /* ── Aside: Paper Invoice Letterhead Preview ── */
 .acard {
-  background: var(--panel);
+  background: transparent;
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 18px;

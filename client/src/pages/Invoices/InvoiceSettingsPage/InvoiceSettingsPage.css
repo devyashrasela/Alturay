@@ -54,7 +54,7 @@
 /* Card - Must have overflow: visible so dropdown popovers are never clipped */
 .inv-settings-card {
   width: 100%;
-  background: var(--panel);
+  background: transparent;
   border: 1px solid var(--border);
   border-radius: 16px;
   padding: 24px;
