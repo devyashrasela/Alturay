@@ -462,7 +462,7 @@ The resulting distribution files are output to `client/dist/`.
 
 Alturay is architected to be deployed in a decoupled environment:
 
-- **Frontend**: Can be deployed to static hosting providers such as [Vercel](https://vercel.com/) or [Netlify](https://www.netlify.com/). Set the build command to `npm run build` and output directory to `dist`. Configure the environment variable `VITE_API_URL` pointing to your production backend.
+- **Frontend**: Deployed to [Vercel](https://vercel.com/). Set the build command to `npm run build` and output directory to `dist`. Configure the environment variable `VITE_API_URL` pointing to your production backend. The SPA uses `BrowserRouter`, so Vercel must serve `index.html` for unknown paths; without that rewrite, refreshing a deep link such as `/dashboard` returns a host-level 404. `vercel.json` (at the repo root and in `client/`) provides this fallback.
 - **Backend**: Can be deployed to container or Node.js hosting platforms such as [Render](https://render.com/), [Fly.io](https://fly.io/), or [AWS](https://aws.amazon.com/). Ensure `CLIENT_URL` matches your frontend production domain and that MySQL database credentials are configured in your production environment variables.
 
 ---
